@@ -25,3 +25,7 @@ ocamlc -o trs parser.cmo lexer.cmo Askz3.cmo Rewriting.cmo
 # EXAMPLE:
 
 ./trs src/effect/ex1.ss src/effect/output.txt > src/effect/output.txt 2>&1
+
+# ONLINE DEMO:
+
+http://loris-5.d2.comp.nus.edu.sg/Effect/
