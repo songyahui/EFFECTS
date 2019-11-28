@@ -1,0 +1,3 @@
+[0] ./trs
+[1] src/effect/ex1.ss
+[2] src/effect/output.txt
