@@ -1,4 +1,0 @@
-(declare-const t Int)
-(assert (and(= t 0)(= t 0)) ) 
- (check-sat) 
-

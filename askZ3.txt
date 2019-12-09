@@ -1,3 +1,0 @@
-(assert (and(< 0 1)(< 0 1)) ) 
- (check-sat) 
-
