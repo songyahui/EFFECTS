@@ -1,2 +1,0 @@
-n=0/\Done\/n>0/\Send.(Send^n-1).Done\/n<0/\Send.(Send^w) |- (n>0\/n=0)/\(Send^n).Done\/n<0/\Send^w
-
