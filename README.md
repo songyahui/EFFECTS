@@ -14,4 +14,4 @@ ocamlc -c Rewriting.ml
 ocamlc -o trs parser.cmo lexer.cmo Askz3.cmo Rewriting.cmo
 
 Example:
-./trs src/effect/ex1.ss src/effect/output.txt > src/effect/output.txt 2>&1
+./trs src/effect/ex1.ee src/effect/output.txt > src/effect/output.txt 2>&1
