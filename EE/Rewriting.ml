@@ -214,7 +214,7 @@ let rec derivative (p :pure) (es:es) (ev:string): effect =
 ----------------------CONTAINMENT--------------------
 ----------------------------------------------------*)
 
-let rec compareTerm term1 term2 = 
+let rec compareTerm (term1:terms) (term2:terms) : bool = 
   match (term1, term2) with 
     (Var s1, Var s2) -> true
   | (Plus (tIn1, num1), Plus (tIn2, num2)) -> compareTerm tIn1 tIn2 && num1 == num2
@@ -224,7 +224,7 @@ let rec compareTerm term1 term2 =
 
 
 
-let rec stricTcompareTerm term1 term2 = 
+let rec stricTcompareTerm (term1:terms) (term2:terms) : bool = 
   match (term1, term2) with 
     (Var s1, Var s2) -> String.compare s1 s2 == 0
   | (Plus (tIn1, num1), Plus (tIn2, num2)) -> stricTcompareTerm tIn1 tIn2 && num1 == num2
@@ -469,7 +469,7 @@ let rec enForcePure eff1 eff2 =
   | Disj (_,_) -> raise (Foo "enForcePure exception")
   ;;
 
-let rec quantified_by_Term term str = 
+let rec quantified_by_Term (term:terms) str = 
   match term with 
     Var s1 -> if String.compare s1 str == 0 then true else false
   | Plus (tIn1, num1) -> quantified_by_Term tIn1 str
@@ -912,7 +912,7 @@ let () =
     let ic = open_in inputfile in
     try 
       let line = String.trim (input_line ic ) in  (* 从输入通道读入一行并丢弃'\n'字符 *)
-      let EE (lhs, rhs) = Parser.main Lexer.token (Lexing.from_string line) in
+      let EE (lhs, rhs) = Parser.ee Lexer.token (Lexing.from_string line) in
       let result = printReport lhs rhs in 
       let oc = open_out outputfile in    (* 新建或修改文件,返回通道 *)
       fprintf oc "%s\n" result;   (* 写一些东西 *)

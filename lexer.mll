@@ -1,6 +1,7 @@
 { open Parser }
 
 rule token = parse
+| "program" {TESTPRO}
 | "|-" {ENTIL}
 | [' ']* {SPACES} 
 | "TRUE" { TRUE }

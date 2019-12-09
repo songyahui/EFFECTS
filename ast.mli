@@ -1,6 +1,7 @@
 (*----------------------------------------------------
 ---------------------DATA STRUCTURE-----------------
-----------------------------------------------------*)
+----------------------------------------------------*)             
+
 type terms = Var of string
            | Plus of terms * int
            | Minus of terms * int
@@ -27,13 +28,36 @@ type pure = TRUE
           | PureAnd of pure * pure
           | Neg of pure
 
-
-
 (*Effects*)
 type effect = Effect of pure * es
           | Disj of effect * effect
 
 type entilment = EE of effect * effect
+
+type spec = PrePost of effect * effect
+
+type _type = INT | FLOAT | BOOL | VOID
+
+type mn = string
+type var = string 
+
+type expression = Unit 
+          | Integer of int
+          | Bool of bool
+          | Float of float
+          | Variable of var
+          | LocalDel of _type * var * expression 
+          | Call of mn * var list 
+          | Assign of var * expression
+          | Seq of expression * expression
+          | EventRaise of event
+          | IfElse of expression * expression * expression
+
+type meth = Meth of _type * mn * ((_type * var) list) * spec * expression
+
+type program = PROG of (meth list)
+
+
 
 
 

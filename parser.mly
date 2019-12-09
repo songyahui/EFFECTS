@@ -3,7 +3,7 @@
 %token <string> EVENT
 %token <string> VAR
 %token <int> NUM
-%token EMPTY CHOICE LPAR RPAR CONCAT OMEGA POWER PLUS MINUS TRUE FALSE DISJ CONJ SPACES ENTIL
+%token EMPTY CHOICE LPAR RPAR CONCAT OMEGA POWER PLUS MINUS TRUE FALSE DISJ CONJ SPACES ENTIL TESTPRO
 %token EOF GT LT EQ 
 
 %left POWER
@@ -12,12 +12,16 @@
 %left DISJ
 %left CONJ
 
-%start main
-%type <Ast.entilment> main
+%start prog ee
+%type <Ast.entilment> ee
+%type <Ast.program> prog
 
 %%
 
-main: r = entailment EOF { r }
+ee: r = entailment EOF { r }
+
+
+prog: r = TESTPRO {PROG []}
 
 term:
 | str = VAR { Var str }

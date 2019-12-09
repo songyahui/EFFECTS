@@ -4,6 +4,7 @@
 type token = 
   | VAR of (string)
   | TRUE
+  | TESTPRO
   | SPACES
   | RPAR
   | POWER
@@ -31,4 +32,6 @@ exception Error
 
 (* The monolithic API. *)
 
-val main: (Lexing.lexbuf -> token) -> Lexing.lexbuf -> (Ast.entilment)
+val prog: (Lexing.lexbuf -> token) -> Lexing.lexbuf -> (Ast.program)
+
+val ee: (Lexing.lexbuf -> token) -> Lexing.lexbuf -> (Ast.entilment)
