@@ -98,7 +98,7 @@ let askZ3 pi =
   let oc = open_out inFile in    (* 新建或修改文件,返回通道 *)
       fprintf oc "%s\n" (declear^assertions);   (* 写一些东西 *)
       close_out oc;                (* 写入并关闭通道 *)
-      Sys.command ("z3 -smt2 "^ inFile ^" > " ^ outFile);
+      ignore (Sys.command ("z3 -smt2 "^ inFile ^" > " ^ outFile));
       let ic = open_in outFile in
       try 
         let line = input_line ic in  (* 从输入通道读入一行并丢弃'\n'字符 *)
