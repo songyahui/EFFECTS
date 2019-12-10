@@ -47,14 +47,12 @@ type expression = Unit
           | Float of float
           | Variable of var
           | LocalDel of _type * var * expression 
-          | Call of mn * var list 
+          | Call of mn * expression list 
           | Assign of var * expression
           | Seq of expression * expression
           | EventRaise of event
           | IfElse of expression * expression * expression
-          | BinPLus of expression * expression
-          | BinMInus of expression * expression
-        
+
 type param  = (_type * var) list
 
 type meth = Meth of _type * mn * param * spec * expression

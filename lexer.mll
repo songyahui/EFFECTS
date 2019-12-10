@@ -34,11 +34,18 @@ rule token = parse
 | "float" {FLOATT}
 | "bool" {BOOLT}
 | "void" {VOIDT}
+| "event" {EVENTKEY}
 | "|-" {ENTIL}
 | "TRUE" { TRUE }
 | "FALSE" { FALSE }
+| "if" {IF}
+| "else" {ELSE}
+| "require" {REQUIRE}
+| "ensure" {ENSURE}
 | int      { INTE (int_of_string (Lexing.lexeme lexbuf)) }
 | float    { FLOATE (float_of_string (Lexing.lexeme lexbuf)) }
+| "true" { TRUEE (bool_of_string (Lexing.lexeme lexbuf))}
+| "false" { FALSEE (bool_of_string (Lexing.lexeme lexbuf))}
 | '"'      { read_string (Buffer.create 17) lexbuf }
 | ['A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']* as str { EVENT str }
 | id as str { VAR str }
@@ -50,14 +57,17 @@ rule token = parse
 | 'w' { OMEGA }
 | '|' { CHOICE }
 | '.' { CONCAT }
-| '"'      { read_string (Buffer.create 17) lexbuf }
+| '"' { read_string (Buffer.create 17) lexbuf }
 | '(' { LPAR }
 | ')' { RPAR }
 | '{' { LBRACK  }
 | '}' { RBRACK }
 | ',' { COMMA }
+| ';' { SIMI }
 | '+' { PLUS }
 | '-' { MINUS }
+| "/*" {LSPEC}
+| "*/" {RSPEC}
 | "\\/" {DISJ}
 | "/\\" {CONJ}
 | _ { raise (SyntaxError ("Unexpected char: " ^ Lexing.lexeme lexbuf)) }

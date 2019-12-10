@@ -4,29 +4,39 @@
 type token = 
   | VOIDT
   | VAR of (string)
+  | TRUEE of (bool)
   | TRUE
   | TESTPRO
   | STRING of (string)
+  | SIMI
+  | RSPEC
   | RPAR
+  | REQUIRE
   | RBRACK
   | POWER
   | PLUS
   | OMEGA
   | MINUS
   | LT
+  | LSPEC
   | LPAR
   | LBRACK
   | INTT
   | INTE of (int)
+  | IF
   | GT
   | FLOATT
   | FLOATE of (float)
+  | FALSEE of (bool)
   | FALSE
+  | EVENTKEY
   | EVENT of (string)
   | EQ
   | EOF
   | ENTIL
+  | ENSURE
   | EMPTY
+  | ELSE
   | DISJ
   | CONJ
   | CONCAT
