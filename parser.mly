@@ -44,7 +44,8 @@ expres:
 | {Unit}
 | t = INTE {Integer t}
 
-meth: t = type_   name = VAR   LPAR p = param RPAR LBRACK e= expres RBRACK {Meth (t, name, p, PrePost(Effect(TRUE, Emp),Effect(TRUE, Emp)), e)}
+meth: t = type_   name = VAR   LPAR p = param RPAR LBRACK e = expres RBRACK {Meth (t , name, p, PrePost(Effect(TRUE, Emp),Effect(TRUE, Emp)), e)}
+
  
 
 term:

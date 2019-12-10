@@ -23,7 +23,7 @@ let float = digit* frac? exp?
 
 (* part 3 *)
 let white = [' ' '\t']+
-let newline = '\r' | '\n' | "\r\n"
+let newline = '\n' | '\r' | "\r\n" 
 let id = ['a'-'v' 'x'-'z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*
 
 
@@ -50,6 +50,7 @@ rule token = parse
 | 'w' { OMEGA }
 | '|' { CHOICE }
 | '.' { CONCAT }
+| '"'      { read_string (Buffer.create 17) lexbuf }
 | '(' { LPAR }
 | ')' { RPAR }
 | '{' { LBRACK  }
