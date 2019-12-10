@@ -52,8 +52,12 @@ type expression = Unit
           | Seq of expression * expression
           | EventRaise of event
           | IfElse of expression * expression * expression
+          | BinPLus of expression * expression
+          | BinMInus of expression * expression
+        
+type param  = (_type * var) list
 
-type meth = Meth of _type * mn * ((_type * var) list) * spec * expression
+type meth = Meth of _type * mn * param * spec * expression
 
 type program = PROG of (meth list)
 

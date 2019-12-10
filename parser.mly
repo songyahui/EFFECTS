@@ -1,9 +1,13 @@
 %{ open Ast %}
+%{ open List %}
 
 %token <string> EVENT
 %token <string> VAR
-%token <int> NUM
-%token EMPTY CHOICE LPAR RPAR CONCAT OMEGA POWER PLUS MINUS TRUE FALSE DISJ CONJ SPACES ENTIL TESTPRO
+%token <int> INTE
+%token <float> FLOATE
+%token <string> STRING
+%token EMPTY CHOICE LPAR RPAR CONCAT OMEGA POWER PLUS MINUS TRUE FALSE DISJ CONJ   ENTIL TESTPRO INTT FLOATT BOOLT VOIDT 
+%token LBRACK RBRACK COMMA 
 %token EOF GT LT EQ 
 
 %left POWER
@@ -12,30 +16,50 @@
 %left DISJ
 %left CONJ
 
-%start prog ee
+%start meth ee
 %type <Ast.entilment> ee
-%type <Ast.program> prog
+%type <Ast.meth> meth
 
 %%
 
 ee: r = entailment EOF { r }
 
 
-prog: r = TESTPRO {PROG []}
+prog: TESTPRO {PROG []}
+
+type_: 
+| INTT {INT}
+| FLOATT {FLOAT}
+| BOOLT {BOOL}
+| VOIDT {VOID}
+
+singleP: t = type_   var = VAR {[(t, var)]}
+
+param:
+| {[]}
+| p = singleP {p}
+| p1 = singleP   COMMA   p2 = param {append p1 p2 }
+
+expres:
+| {Unit}
+| t = INTE {Integer t}
+
+meth: t = type_   name = VAR   LPAR p = param RPAR LBRACK e= expres RBRACK {Meth (t, name, p, PrePost(Effect(TRUE, Emp),Effect(TRUE, Emp)), e)}
+ 
 
 term:
 | str = VAR { Var str }
 | LPAR r = term RPAR { r }
-| a = term PLUS b = NUM {Plus (a, b)}
-| a = term MINUS b = NUM {Minus (a, b)}
+| a = term PLUS b = INTE {Plus (a, b)}
+| a = term MINUS b = INTE {Minus (a, b)}
 
 pure:
 | TRUE {TRUE}
 | FALSE {FALSE}
 | LPAR r = pure RPAR { r }
-| a = term GT b = NUM {Gt (a, b)}
-| a = term LT b = NUM {Lt (a, b)}
-| a = term EQ b = NUM {Eq (a, b)}
+| a = term GT b = INTE {Gt (a, b)}
+| a = term LT b = INTE {Lt (a, b)}
+| a = term EQ b = INTE {Eq (a, b)}
 | a = pure CONJ b = pure {PureAnd (a, b)}
 | a = pure DISJ b = pure {PureOr (a, b)}
 
@@ -55,4 +79,4 @@ effect:
 | a = effect  DISJ  b=effect  {Disj (a,b)}
 
 entailment:
-| lhs = effect SPACES ENTIL SPACES rhs = effect {EE (lhs, rhs)}
+| lhs = effect   ENTIL   rhs = effect {EE (lhs, rhs)}

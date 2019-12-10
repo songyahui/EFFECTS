@@ -2,19 +2,25 @@
 (* The type of tokens. *)
 
 type token = 
+  | VOIDT
   | VAR of (string)
   | TRUE
   | TESTPRO
-  | SPACES
+  | STRING of (string)
   | RPAR
+  | RBRACK
   | POWER
   | PLUS
   | OMEGA
-  | NUM of (int)
   | MINUS
   | LT
   | LPAR
+  | LBRACK
+  | INTT
+  | INTE of (int)
   | GT
+  | FLOATT
+  | FLOATE of (float)
   | FALSE
   | EVENT of (string)
   | EQ
@@ -24,7 +30,9 @@ type token =
   | DISJ
   | CONJ
   | CONCAT
+  | COMMA
   | CHOICE
+  | BOOLT
 
 (* This exception is raised by the monolithic API functions. *)
 
@@ -32,6 +40,6 @@ exception Error
 
 (* The monolithic API. *)
 
-val prog: (Lexing.lexbuf -> token) -> Lexing.lexbuf -> (Ast.program)
+val meth: (Lexing.lexbuf -> token) -> Lexing.lexbuf -> (Ast.meth)
 
 val ee: (Lexing.lexbuf -> token) -> Lexing.lexbuf -> (Ast.entilment)
