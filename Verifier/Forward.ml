@@ -4,6 +4,8 @@ open Ast
 open Printf
 open Parser
 open Lexer
+open Pretty
+
 
 let rec printType (ty:_type) :string =
   match ty with
@@ -60,7 +62,7 @@ let rec printExpr (expr: expression):string =
 
 let rec printSpec (s:spec ) :string = 
   match s with 
-  PrePost (e1, e2) -> "stopped here\n"
+  PrePost (e1, e2) -> "\n[Pre: " ^ showEffect e1 ^ "]\n[Post:"^ showEffect e2 ^"]\n"
 
 
 let rec printMeth (me:meth) :string = 

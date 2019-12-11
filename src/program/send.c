@@ -1,9 +1,10 @@
+#include "primitives.c"
+
 void send (int n) 
     /*
     require TRUE/\Emp
     ensure TRUE/\Emp
     */
-
 {
 
     if (eq(n, 0)) { 
@@ -14,3 +15,6 @@ void send (int n)
         send (minus(n, 1));
     }
 } 
+int main (){
+    send(5);
+}

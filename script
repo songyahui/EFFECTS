@@ -7,9 +7,10 @@ ocamlc -c ast.mli
 ocamlc -c parser.mli
 ocamlc -c parser.ml
 ocamlc -c lexer.ml
+ocamlc -c Pretty.ml
 ocamlc -c EE/Askz3.ml
 ocamlc -c -I EE/ EE/Rewriting.ml 
-ocamlc -o trs parser.cmo lexer.cmo Askz3.cmo Rewriting.cmo -I EE/
+ocamlc -o trs parser.cmo lexer.cmo Askz3.cmo Pretty.cmo Rewriting.cmo -I EE/
 
 ocamlc -c -I Verifier/ Verifier/Forward.ml 
-ocamlc -o verify parser.cmo lexer.cmo Forward.cmo -I Verifier/
+ocamlc -o verify parser.cmo lexer.cmo Pretty.cmo Forward.cmo -I Verifier/
