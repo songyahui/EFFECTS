@@ -99,11 +99,12 @@ let rec verification (expr:expression) (state:effect): effect =
     ;;
 *)
 
+
 let () = 
     let inputfile = (Sys.getcwd () ^ "/" ^ Sys.argv.(1)) in 
     let ic = open_in inputfile in
     try 
-      let lines =  (input_lines ic ) in  (* 从输入通道读入一行并丢弃'\n'字符 *)
+      let lines =  (input_lines ic ) in  
       let line = List.fold_right (fun x acc -> acc ^ "\n" ^ x) (List.rev lines) "" in 
       
       let dl = Parser.prog Lexer.token (Lexing.from_string line) in

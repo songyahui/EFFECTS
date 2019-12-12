@@ -69,13 +69,18 @@ expres:
 meth : t = type_   name = VAR   LPAR p = param RPAR s = spec LBRACK e = expres RBRACK {Method (Meth (t , name, p, s, e))}
 head : SHARP INCLUDE str= STRING {Include str} 
 
-prog1:
-| me =  head { [me]}
-| hd =meth   tl = prog {hd::tl}
+(*decare:
+| me =  head { me}
+| hd = meth {hd}
+*)
+
+prog_rest:
+| EOF {[]}
+| tl = prog hd = prog_rest  {append tl hd}
 
 prog:
-| me =  meth { [me]}
-| hd =head   tl = prog1 {hd::tl}
+| me =  meth p = prog_rest {append [me] p}
+| hd =head  p = prog_rest {append [hd] p}
 
 spec: LSPEC REQUIRE e1 = effect  ENSURE e2 = effect RSPEC {PrePost(e1, e2)}
 
