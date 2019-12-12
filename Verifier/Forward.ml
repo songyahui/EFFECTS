@@ -71,11 +71,15 @@ let rec printMeth (me:meth) :string =
     printType t ^ mn^ "(" ^ printParam list_parm ^ ") "^ printSpec spec^"{"^ printExpr expression ^"}\n";;
 
 
-let rec printProg (prog: meth list) :string =
-  match prog with 
+let rec printProg (pram: declare list) :string =
+  match pram with 
     [] -> ""
-  | x::xs -> printMeth x ^ printProg xs ;;
-
+  | x::xs -> 
+    let str = (match x with 
+              Include str -> str ^ "\n" 
+            | Method me -> printMeth me 
+    )in
+    str ^ printProg xs ;;
 
 let rec input_lines file =
   match try [input_line file] with End_of_file -> [] with
@@ -84,6 +88,17 @@ let rec input_lines file =
   | _ -> failwith "Weird input_line return value"
  
 
+(*
+let rec verification (expr:expression) (state:effect): effect = 
+  match expr with 
+    Unit -> state
+  | Seq (e1, e2) -> 
+    let state' = verification e1 state in 
+    verification e2 state'
+
+    ;;
+*)
+
 let () = 
     let inputfile = (Sys.getcwd () ^ "/" ^ Sys.argv.(1)) in 
     let ic = open_in inputfile in
@@ -91,10 +106,11 @@ let () =
       let lines =  (input_lines ic ) in  (* 从输入通道读入一行并丢弃'\n'字符 *)
       let line = List.fold_right (fun x acc -> acc ^ "\n" ^ x) (List.rev lines) "" in 
       
-      let me = Parser.meth Lexer.token (Lexing.from_string line) in
-      let result = printMeth me in 
-      print_string result;
-      close_in ic                  (* 关闭输入通道 *) 
+      let dl = Parser.prog Lexer.token (Lexing.from_string line) in
+      let result = printProg dl in 
+        print_string result;
+        close_in ic;
+               (* 关闭输入通道 *) 
   
     with e ->                      (* 一些不可预见的异常发生 *)
       close_in_noerr ic;           (* 紧急关闭 *)

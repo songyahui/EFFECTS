@@ -15,6 +15,12 @@ void send (int n)
         send (minus(n, 1));
     }
 } 
-int main (){
+
+int main ()
+    /*
+    require TRUE/\Emp
+    ensure TRUE/\Emp
+    */
+{
     send(5);
 }

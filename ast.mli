@@ -40,6 +40,7 @@ type _type = INT | FLOAT | BOOL | VOID
 
 type mn = string
 type var = string 
+type includ = string 
 
 type expression = Unit 
           | Integer of int
@@ -57,7 +58,9 @@ type param  = (_type * var) list
 
 type meth = Meth of _type * mn * param * spec * expression
 
-type program = PROG of (meth list)
+type declare = Include of string | Method of meth
+
+type program = declare list
 
 
 

@@ -42,6 +42,7 @@ rule token = parse
 | "else" {ELSE}
 | "require" {REQUIRE}
 | "ensure" {ENSURE}
+| "include" {INCLUDE}
 | int      { INTE (int_of_string (Lexing.lexeme lexbuf)) }
 | float    { FLOATE (float_of_string (Lexing.lexeme lexbuf)) }
 | "true" { TRUEE (bool_of_string (Lexing.lexeme lexbuf))}
@@ -66,6 +67,7 @@ rule token = parse
 | ';' { SIMI }
 | '+' { PLUS }
 | '-' { MINUS }
+| '#' { SHARP }
 | "/*" {LSPEC}
 | "*/" {RSPEC}
 | "\\/" {DISJ}

@@ -8,9 +8,9 @@
 %token <string> STRING
 %token <bool> TRUEE  
 %token <bool> FALSEE
-%token EMPTY EVENTKEY CHOICE LPAR RPAR CONCAT OMEGA POWER PLUS MINUS TRUE FALSE DISJ CONJ   ENTIL TESTPRO INTT FLOATT BOOLT VOIDT 
+%token EMPTY EVENTKEY CHOICE LPAR RPAR CONCAT OMEGA POWER PLUS MINUS TRUE FALSE DISJ CONJ   ENTIL INTT FLOATT BOOLT VOIDT 
 %token LBRACK RBRACK COMMA SIMI  IF ELSE REQUIRE ENSURE LSPEC RSPEC
-%token EOF GT LT EQ 
+%token EOF GT LT EQ  INCLUDE SHARP
 
 %left POWER
 %left CHOICE
@@ -18,16 +18,15 @@
 %left DISJ
 %left CONJ
 
-%start meth ee
+%start prog ee
 %type <Ast.entilment> ee
-%type <Ast.meth> meth
+%type <Ast.program> prog
 
 %%
 
 ee: r = entailment EOF { r }
 
 
-prog: TESTPRO {PROG []}
 
 type_: 
 | INTT {INT}
@@ -66,7 +65,17 @@ expres:
 | e1 = expres_help SIMI e2 = expres {Seq (e1, e2)}
 | IF LPAR e1 = expres_help RPAR LBRACK e2 = expres RBRACK ELSE LBRACK e3 = expres RBRACK {IfElse (e1, e2, e3)}
 
-meth: t = type_   name = VAR   LPAR p = param RPAR s = spec LBRACK e = expres RBRACK {Meth (t , name, p, s, e)}
+
+meth : t = type_   name = VAR   LPAR p = param RPAR s = spec LBRACK e = expres RBRACK {Method (Meth (t , name, p, s, e))}
+head : SHARP INCLUDE str= STRING {Include str} 
+
+prog1:
+| me =  head { [me]}
+| hd =meth   tl = prog {hd::tl}
+
+prog:
+| me =  meth { [me]}
+| hd =head   tl = prog1 {hd::tl}
 
 spec: LSPEC REQUIRE e1 = effect  ENSURE e2 = effect RSPEC {PrePost(e1, e2)}
 

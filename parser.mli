@@ -6,9 +6,9 @@ type token =
   | VAR of (string)
   | TRUEE of (bool)
   | TRUE
-  | TESTPRO
   | STRING of (string)
   | SIMI
+  | SHARP
   | RSPEC
   | RPAR
   | REQUIRE
@@ -23,6 +23,7 @@ type token =
   | LBRACK
   | INTT
   | INTE of (int)
+  | INCLUDE
   | IF
   | GT
   | FLOATT
@@ -50,6 +51,6 @@ exception Error
 
 (* The monolithic API. *)
 
-val meth: (Lexing.lexbuf -> token) -> Lexing.lexbuf -> (Ast.meth)
+val prog: (Lexing.lexbuf -> token) -> Lexing.lexbuf -> (Ast.program)
 
 val ee: (Lexing.lexbuf -> token) -> Lexing.lexbuf -> (Ast.entilment)
