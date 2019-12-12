@@ -65,10 +65,43 @@ let rec printSpec (s:spec ) :string =
   PrePost (e1, e2) -> "\n[Pre: " ^ showEffect e1 ^ "]\n[Post:"^ showEffect e2 ^"]\n"
 
 
+
+
+
+let rec input_lines file =
+  match try [input_line file] with End_of_file -> [] with
+   [] -> []
+  | [line] -> (String.trim line) :: input_lines file
+  | _ -> failwith "Weird input_line return value"
+
+
+let rec concatEffEs (eff:effect) (es:es) : effect = 
+  match eff with 
+    Effect (p,e) -> Effect (p, Cons (e, es))
+  | Disj (eff1, eff2) -> Disj ((concatEffEs eff1 es), (concatEffEs eff2 es));; 
+ 
+
+
+let rec verification (expr:expression) (state:effect): effect = 
+  match expr with 
+    Unit -> state
+  | EventRaise ev -> concatEffEs state (Event ev)
+  | Seq (e1, e2) -> 
+    let state' = verification e1 state in 
+    verification e2 state'
+  | IfElse (e1, e2, e3) -> Disj ((verification e2 state), (verification e3 state))
+ (* | Call of mn * expression list ....*)
+  | _ -> state
+    ;;
+
 let rec printMeth (me:meth) :string = 
   match me with 
-    Meth (t, mn , list_parm, spec, expression) -> 
-    printType t ^ mn^ "(" ^ printParam list_parm ^ ") "^ printSpec spec^"{"^ printExpr expression ^"}\n";;
+    Meth (t, mn , list_parm, PrePost (pre, post), expression) -> 
+    let p = printType t ^ mn^ "(" ^ printParam list_parm ^ ") "^ printSpec (PrePost (pre, post))^"{"^ printExpr expression ^"}\n" in
+    let forward = "------------------------\n"^showEffect (verification expression (pre) ) ^ "\n"in 
+    p ^ forward
+    ;;
+
 
 
 let rec printProg (pram: declare list) :string =
@@ -80,25 +113,6 @@ let rec printProg (pram: declare list) :string =
             | Method me -> printMeth me 
     )in
     str ^ printProg xs ;;
-
-let rec input_lines file =
-  match try [input_line file] with End_of_file -> [] with
-   [] -> []
-  | [line] -> (String.trim line) :: input_lines file
-  | _ -> failwith "Weird input_line return value"
- 
-
-(*
-let rec verification (expr:expression) (state:effect): effect = 
-  match expr with 
-    Unit -> state
-  | Seq (e1, e2) -> 
-    let state' = verification e1 state in 
-    verification e2 state'
-
-    ;;
-*)
-
 
 let () = 
     let inputfile = (Sys.getcwd () ^ "/" ^ Sys.argv.(1)) in 

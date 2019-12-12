@@ -69,10 +69,6 @@ expres:
 meth : t = type_   name = VAR   LPAR p = param RPAR s = spec LBRACK e = expres RBRACK {Method (Meth (t , name, p, s, e))}
 head : SHARP INCLUDE str= STRING {Include str} 
 
-(*decare:
-| me =  head { me}
-| hd = meth {hd}
-*)
 
 prog_rest:
 | EOF {[]}
