@@ -17,6 +17,7 @@ type token =
   | PLUS
   | OMEGA
   | MINUS
+  | LTEQ
   | LT
   | LSPEC
   | LPAR
@@ -25,6 +26,7 @@ type token =
   | INTE of (int)
   | INCLUDE
   | IF
+  | GTEQ
   | GT
   | FLOATT
   | FLOATE of (float)
@@ -32,6 +34,7 @@ type token =
   | FALSE
   | EVENTKEY
   | EVENT of (string)
+  | EQEQ
   | EQ
   | EOF
   | ENTIL

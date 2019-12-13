@@ -7,12 +7,12 @@ void send (int n)
     */
 {
 
-    if (eq(n, 0)) { 
+    if (n == 0) { 
         event ("Done");
     }
     else {
         event ("Send"); 
-        send (minus(n, 1));
+        send (n- 1);
     }
 } 
 

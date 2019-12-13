@@ -14,36 +14,35 @@ let rec printType (ty:_type) :string =
   | BOOL  -> "bool "
   | VOID  -> "void ";;
 
+
 let rec printParam (params: param):string = 
   match params with 
     [] -> ""
   | [(t, v)] -> printType t ^ v
   | (t, v)::xs ->  printType t ^ v ^ "," ^ printParam xs ;;
 
+
 let rec print_real_Param (params: expression list):string = 
+  let rec printarg v = (match v with
+  Unit  -> "unit"
+  | Integer num -> string_of_int num
+  | Bool b -> string_of_bool b 
+  | Float f -> string_of_float f
+  | Variable v -> v 
+  | Call (name, elist) -> name ^ "(" ^ print_real_Param elist ^ ")"
+  | BinOp (e1, e2, str) -> printarg e1 ^ str ^ printarg e2 
+  | _ -> "undefined"
+  ) in 
   match params with 
     [] -> ""
-  | [v] ->  
-    (match v with
-    Unit  -> "unit"
-    | Integer num -> string_of_int num
-    | Bool b -> string_of_bool b 
-    | Float f -> string_of_float f
-    | Variable v -> v 
-    | Call (name, elist) -> name ^ "(" ^ print_real_Param elist ^ ")"
-    | _ -> "undefined"
-    )
+  | [v] ->  printarg v
+    
   | v::xs ->  
-    let pre = (match v with
-    Unit  -> "unit"
-    | Integer num -> string_of_int num
-    | Bool b -> string_of_bool b 
-    | Float f -> string_of_float f
-    | Variable v -> v 
-    | Call (name, elist) -> name ^ "(" ^ print_real_Param elist ^ ")"
-    | _ -> "undefined"
-    ) in 
+    let pre = printarg v in 
     pre ^ "," ^ print_real_Param xs ;;
+
+
+
 
 let rec printExpr (expr: expression):string = 
   match expr with 
@@ -58,7 +57,14 @@ let rec printExpr (expr: expression):string =
   | Seq (e1, e2) -> printExpr e1 ^ "\n" ^ printExpr e2
   | EventRaise ev -> ev
   | IfElse (e1, e2, e3) -> "if " ^ printExpr e1 ^ " then " ^ printExpr e2 ^ " else " ^ printExpr e3 
+  | Cond (e1, e2, str) -> printExpr e1 ^ str ^ printExpr e2 
+  | BinOp (e1, e2, str) -> printExpr e1 ^ str ^ printExpr e2 
+  
+  
   ;;
+
+
+
 
 let rec printSpec (s:spec ) :string = 
   match s with 
@@ -90,7 +96,7 @@ let rec verification (expr:expression) (state:effect): effect =
     let state' = verification e1 state in 
     verification e2 state'
   | IfElse (e1, e2, e3) -> Disj ((verification e2 state), (verification e3 state))
- (* | Call of mn * expression list ....*)
+  (*| Call (name, exprList) -> *)
   | _ -> state
     ;;
 
@@ -98,11 +104,10 @@ let rec printMeth (me:meth) :string =
   match me with 
     Meth (t, mn , list_parm, PrePost (pre, post), expression) -> 
     let p = printType t ^ mn^ "(" ^ printParam list_parm ^ ") "^ printSpec (PrePost (pre, post))^"{"^ printExpr expression ^"}\n" in
-    let forward = "------------------------\n"^showEffect (verification expression (pre) ) ^ "\n"in 
-    p ^ forward
+    (*let forward = "------------------------\n"
+    ^showEffect (verification expression (pre) ) ^ "\n"in *)
+    p 
     ;;
-
-
 
 let rec printProg (pram: declare list) :string =
   match pram with 

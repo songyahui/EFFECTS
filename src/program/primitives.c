@@ -1,19 +1,9 @@
 #include <stdio.h>
 
-int eq (int a, int b) 
+
+
+void event (char * ev)
+
 {
-    if (a == b) return 1;
-    else return 0;
-}
-
-void event (char * ev){
     printf ("%s\n",ev);
-}
-
-int minus (int a, int b) {
-    return a - b ;
-}
-
-int plus (int a, int b) {
-    return a + b;
 }

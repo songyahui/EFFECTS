@@ -72,6 +72,9 @@ rule token = parse
 | "*/" {RSPEC}
 | "\\/" {DISJ}
 | "/\\" {CONJ}
+| "==" {EQEQ}
+| ">=" {GTEQ}
+| "<=" {LTEQ}
 | _ { raise (SyntaxError ("Unexpected char: " ^ Lexing.lexeme lexbuf)) }
 | eof { EOF }
 

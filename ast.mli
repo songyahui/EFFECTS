@@ -53,6 +53,8 @@ type expression = Unit
           | Seq of expression * expression
           | EventRaise of event
           | IfElse of expression * expression * expression
+          | Cond of expression * expression * string
+          | BinOp of expression * expression * string
 
 type param  = (_type * var) list
 
