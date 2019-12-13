@@ -42,8 +42,6 @@ let rec print_real_Param (params: expression list):string =
     pre ^ "," ^ print_real_Param xs ;;
 
 
-
-
 let rec printExpr (expr: expression):string = 
   match expr with 
     Unit  -> "unit"
@@ -64,13 +62,9 @@ let rec printExpr (expr: expression):string =
   ;;
 
 
-
-
 let rec printSpec (s:spec ) :string = 
   match s with 
   PrePost (e1, e2) -> "\n[Pre: " ^ showEffect e1 ^ "]\n[Post:"^ showEffect e2 ^"]\n"
-
-
 
 
 
@@ -88,17 +82,20 @@ let rec concatEffEs (eff:effect) (es:es) : effect =
  
 
 
-let rec verification (expr:expression) (state:effect): effect = 
+let rec verification1 (expr:expression) (state:effect): effect = 
   match expr with 
     Unit -> state
   | EventRaise ev -> concatEffEs state (Event ev)
   | Seq (e1, e2) -> 
-    let state' = verification e1 state in 
-    verification e2 state'
-  | IfElse (e1, e2, e3) -> Disj ((verification e2 state), (verification e3 state))
+    let state' = verification1 e1 state in 
+    verification1 e2 state'
+  | IfElse (e1, e2, e3) -> Disj ((verification1 e2 state), (verification1 e3 state))
   (*| Call (name, exprList) -> *)
   | _ -> state
     ;;
+
+let rec verification (dec:declare) (prog: program): string = 
+  "stopped here!";;
 
 let rec printMeth (me:meth) :string = 
   match me with 
@@ -121,16 +118,20 @@ let rec printProg (pram: declare list) :string =
 
 let () = 
     let inputfile = (Sys.getcwd () ^ "/" ^ Sys.argv.(1)) in 
+    let outputfile = (Sys.getcwd ()^ "/" ^ Sys.argv.(2)) in
     let ic = open_in inputfile in
     try 
       let lines =  (input_lines ic ) in  
       let line = List.fold_right (fun x acc -> acc ^ "\n" ^ x) (List.rev lines) "" in 
-      
-      let dl = Parser.prog Lexer.token (Lexing.from_string line) in
-      let result = printProg dl in 
-        print_string result;
-        close_in ic;
-               (* 关闭输入通道 *) 
+      let prog = Parser.prog Lexer.token (Lexing.from_string line) in
+      let testprintProg = printProg prog in 
+      let verification_re = List.fold_right (fun dec acc -> acc ^ (verification dec prog)) prog ""  in
+      let oc = open_out outputfile in    (* 新建或修改文件,返回通道 *)
+      fprintf oc "%s\n" verification_re;   (* 写一些东西 *)
+      close_out oc;                (* 写入并关闭通道 *)
+      print_string testprintProg;
+      flush stdout;                (* 现在写入默认设备 *)
+      close_in ic                  (* 关闭输入通道 *) 
   
     with e ->                      (* 一些不可预见的异常发生 *)
       close_in_noerr ic;           (* 紧急关闭 *)
