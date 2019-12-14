@@ -5,6 +5,7 @@ open Printf
 open Parser
 open Lexer
 open Pretty
+open Rewriting 
 
 
 let rec printType (ty:_type) :string =
@@ -108,6 +109,13 @@ let rec searMeth (prog: program) (name:string) : meth option=
     ;;
 
 
+let checkPrecondition (state:effect) (pre:effect) : bool = 
+  let reverseState = reverseEff state in
+  let reversePre = reverseEff pre in 
+  (*check containment*)
+  let (result_tree, result) =  Rewriting.containment reverseState  reversePre [] in 
+  result;;
+
 let rec verifier (expr:expression) (state:effect) (prog: program): effect = 
   match expr with 
     Unit -> state
@@ -122,9 +130,10 @@ let rec verifier (expr:expression) (state:effect) (prog: program): effect =
     | Some me -> 
       (match me with 
         Meth (t, mn , list_parm, PrePost (pre, post), expression) -> 
+          if checkPrecondition state pre == true then 
           concatEffEff state post
+          else raise (Foo ("PreCondition does not hold: "^ name ^"!"))
       )
-
     )
   | _ -> state
     ;;

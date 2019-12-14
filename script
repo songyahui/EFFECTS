@@ -12,5 +12,5 @@ ocamlc -c EE/Askz3.ml
 ocamlc -c -I EE/ EE/Rewriting.ml 
 ocamlc -o trs parser.cmo lexer.cmo Askz3.cmo Pretty.cmo Rewriting.cmo -I EE/
 
-ocamlc -c -I Verifier/ Verifier/Forward.ml 
-ocamlc -o verify parser.cmo lexer.cmo Pretty.cmo Forward.cmo -I Verifier/
+ocamlc -c -I Verifier/ -I EE/ Verifier/Forward.ml 
+ocamlc -o verify parser.cmo lexer.cmo Pretty.cmo Askz3.cmo Rewriting.cmo Forward.cmo -I Verifier/ -I EE/

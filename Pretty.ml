@@ -142,3 +142,20 @@ let rec showContext (d:context):string =
     [] -> ""
   | (piL, esL, piR, esR)::rest -> (showEntailmentEff (Effect (piL, esL)) (Effect (piR, esR)) )^ ("\n") ^ showContext rest
   ;;
+
+let rec reverseEs (es:es) : es = 
+  match es with 
+    Bot -> Bot
+  | Emp -> Emp
+  | Event ev -> Event ev 
+  | Cons (es1, es2) -> Cons (reverseEs es2, reverseEs es1)
+  | ESOr (es1, es2) -> ESOr (reverseEs es1, reverseEs es2)
+  | Ttimes (es1, t) -> Ttimes (reverseEs es1, t)
+  | Omega (es1) ->  Omega (reverseEs es1) 
+  ;;
+
+let rec reverseEff (eff:effect) : effect =
+  match eff with 
+    Effect (p,es) ->  Effect (p, reverseEs es)
+  | Disj (eff1, eff2) -> Disj ((reverseEff eff1), (reverseEff eff2)) 
+  ;;
