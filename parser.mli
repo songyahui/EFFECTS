@@ -28,8 +28,6 @@ type token =
   | IF
   | GTEQ
   | GT
-  | FLOATT
-  | FLOATE of (float)
   | FALSEE of (bool)
   | FALSE
   | EVENTKEY

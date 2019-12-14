@@ -81,28 +81,65 @@ let rec concatEffEs (eff:effect) (es:es) : effect =
   | Disj (eff1, eff2) -> Disj ((concatEffEs eff1 es), (concatEffEs eff2 es));; 
  
 
+let rec concatEffEff (eff1:effect) (eff2:effect) : effect = 
+  match eff1 with 
+    Effect (p1,e1) -> 
+      (match eff2 with
+        Effect (p2,e2) -> Effect (PureAnd(p1,p2) , Cons(e1, e2))
+      | Disj (ef1, ef2) -> Disj ((concatEffEff eff1 ef1), (concatEffEff eff1 ef2))
+      )
+  | Disj (ef1, ef2) -> 
+      (match eff2 with
+        Effect (p2,e2) -> Disj ((concatEffEff ef1 eff2), (concatEffEff ef1 eff2))
+      | Disj (_, _ ) -> Disj ((concatEffEff ef1 eff2), (concatEffEff ef2 eff2))
+      )
+      ;;
 
-let rec verification1 (expr:expression) (state:effect): effect = 
+let rec searMeth (prog: program) (name:string) : meth option= 
+  match prog with 
+    [] -> None
+  | x::xs -> 
+    (match x with 
+      Include str -> searMeth xs name
+    | Method (Meth (t, mn , list_parm, PrePost (pre, post), expression)) -> 
+      if mn = name then Some (Meth (t, mn , list_parm, PrePost (pre, post), expression))
+      else searMeth xs name 
+    )
+    ;;
+
+
+let rec verification1 (expr:expression) (state:effect) (prog: program): effect = 
   match expr with 
     Unit -> state
   | EventRaise ev -> concatEffEs state (Event ev)
   | Seq (e1, e2) -> 
-    let state' = verification1 e1 state in 
-    verification1 e2 state'
-  | IfElse (e1, e2, e3) -> Disj ((verification1 e2 state), (verification1 e3 state))
-  (*| Call (name, exprList) -> *)
+    let state' = verification1 e1 state prog in 
+    verification1 e2 state' prog
+  | IfElse (e1, e2, e3) -> Disj ((verification1 e2 state prog), (verification1 e3 state prog))
+  | Call (name, exprList) -> 
+    (match searMeth prog name with 
+      None -> Effect (TRUE, Event ("no found method: " ^ name))
+    | Some me -> 
+      (match me with 
+        Meth (t, mn , list_parm, PrePost (pre, post), expression) -> 
+          concatEffEff state post
+      )
+
+    )
   | _ -> state
     ;;
 
 let rec verification (dec:declare) (prog: program): string = 
-  "stopped here!";;
+  match dec with 
+    Include str -> ""
+  | Method (Meth (t, mn , list_parm, PrePost (pre, post), expression)) -> 
+    showEffect (verification1 expression (pre) prog) ^ "\n"
+ ;;
 
 let rec printMeth (me:meth) :string = 
   match me with 
     Meth (t, mn , list_parm, PrePost (pre, post), expression) -> 
     let p = printType t ^ mn^ "(" ^ printParam list_parm ^ ") "^ printSpec (PrePost (pre, post))^"{"^ printExpr expression ^"}\n" in
-    (*let forward = "------------------------\n"
-    ^showEffect (verification expression (pre) ) ^ "\n"in *)
     p 
     ;;
 

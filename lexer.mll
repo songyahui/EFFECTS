@@ -31,7 +31,6 @@ rule token = parse
 | white    { token lexbuf }
 | newline  { next_line lexbuf; token lexbuf }
 | "int" {INTT} 
-| "float" {FLOATT}
 | "bool" {BOOLT}
 | "void" {VOIDT}
 | "event" {EVENTKEY}
@@ -44,7 +43,6 @@ rule token = parse
 | "ensure" {ENSURE}
 | "include" {INCLUDE}
 | int      { INTE (int_of_string (Lexing.lexeme lexbuf)) }
-| float    { FLOATE (float_of_string (Lexing.lexeme lexbuf)) }
 | "true" { TRUEE (bool_of_string (Lexing.lexeme lexbuf))}
 | "false" { FALSEE (bool_of_string (Lexing.lexeme lexbuf))}
 | '"'      { read_string (Buffer.create 17) lexbuf }

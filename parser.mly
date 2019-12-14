@@ -4,11 +4,10 @@
 %token <string> EVENT
 %token <string> VAR
 %token <int> INTE
-%token <float> FLOATE
 %token <string> STRING
 %token <bool> TRUEE  
 %token <bool> FALSEE
-%token EMPTY EVENTKEY CHOICE LPAR RPAR CONCAT OMEGA POWER PLUS MINUS TRUE FALSE DISJ CONJ   ENTIL INTT FLOATT BOOLT VOIDT 
+%token EMPTY EVENTKEY CHOICE LPAR RPAR CONCAT OMEGA POWER PLUS MINUS TRUE FALSE DISJ CONJ   ENTIL INTT BOOLT VOIDT 
 %token LBRACK RBRACK COMMA SIMI  IF ELSE REQUIRE ENSURE LSPEC RSPEC
 %token EOF GT LT EQ  INCLUDE SHARP EQEQ GTEQ LTEQ
 
@@ -30,7 +29,6 @@ ee: r = entailment EOF { r }
 
 type_: 
 | INTT {INT}
-| FLOATT {FLOAT}
 | BOOLT {BOOL}
 | VOIDT {VOID}
 
@@ -50,7 +48,6 @@ real_param:
 expres_help : 
 | {Unit}
 | t = INTE {Integer t}
-| f = FLOATE {Float f}
 | b =  TRUEE {Bool b }
 | b =  FALSEE {Bool b }
 | v = VAR {Variable v}
