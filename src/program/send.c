@@ -16,12 +16,23 @@ void send (int n)
     }
 } 
 
-int main ()
+void server (int n)
     /*
     require TRUE/\Emp
     ensure TRUE/\Emp
     */
 {
-    send(5);
+    event("Ready");
+    send(n);
+	server(n);
+}
+
+int main ()
+/*
+    require TRUE/\Emp
+    ensure TRUE/\Emp
+    */
+{
+    server (5);
 }
 

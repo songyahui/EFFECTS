@@ -8,7 +8,7 @@ open Ast
 open Printf
 
 
-
+exception Foo of string
 
 let rec iter f = function
   | [] -> ()

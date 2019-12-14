@@ -108,17 +108,17 @@ let rec searMeth (prog: program) (name:string) : meth option=
     ;;
 
 
-let rec verification1 (expr:expression) (state:effect) (prog: program): effect = 
+let rec verifier (expr:expression) (state:effect) (prog: program): effect = 
   match expr with 
     Unit -> state
   | EventRaise ev -> concatEffEs state (Event ev)
   | Seq (e1, e2) -> 
-    let state' = verification1 e1 state prog in 
-    verification1 e2 state' prog
-  | IfElse (e1, e2, e3) -> Disj ((verification1 e2 state prog), (verification1 e3 state prog))
+    let state' = verifier e1 state prog in 
+    verifier e2 state' prog
+  | IfElse (e1, e2, e3) -> Disj ((verifier e2 state prog), (verifier e3 state prog))
   | Call (name, exprList) -> 
     (match searMeth prog name with 
-      None -> Effect (TRUE, Event ("no found method: " ^ name))
+      None -> raise (Foo ("Method: "^ name ^" not defined!"))
     | Some me -> 
       (match me with 
         Meth (t, mn , list_parm, PrePost (pre, post), expression) -> 
@@ -133,7 +133,7 @@ let rec verification (dec:declare) (prog: program): string =
   match dec with 
     Include str -> ""
   | Method (Meth (t, mn , list_parm, PrePost (pre, post), expression)) -> 
-    showEffect (verification1 expression (pre) prog) ^ "\n"
+    showEffect (verifier expression (pre) prog) ^ "\n"
  ;;
 
 let rec printMeth (me:meth) :string = 
