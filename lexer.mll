@@ -24,7 +24,7 @@ let float = digit* frac? exp?
 (* part 3 *)
 let white = [' ' '\t']+
 let newline = '\n' | '\r' | "\r\n" 
-let id = ['a'-'v' 'x'-'z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*
+let id = ['a'-'v' 'x'-'z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*
 
 
 rule token = parse
@@ -66,6 +66,8 @@ rule token = parse
 | '+' { PLUS }
 | '-' { MINUS }
 | '#' { SHARP }
+| '_' {UNDERLINE}
+| '*' {KLEENE}
 | "/*" {LSPEC}
 | "*/" {RSPEC}
 | "\\/" {DISJ}

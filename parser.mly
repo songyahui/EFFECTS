@@ -9,7 +9,7 @@
 %token <bool> FALSEE
 %token EMPTY EVENTKEY CHOICE LPAR RPAR CONCAT OMEGA POWER PLUS MINUS TRUE FALSE DISJ CONJ   ENTIL INTT BOOLT VOIDT 
 %token LBRACK RBRACK COMMA SIMI  IF ELSE REQUIRE ENSURE LSPEC RSPEC
-%token EOF GT LT EQ  INCLUDE SHARP EQEQ GTEQ LTEQ
+%token EOF GT LT EQ  INCLUDE SHARP EQEQ GTEQ LTEQ UNDERLINE KLEENE
 
 %left POWER
 %left CHOICE
@@ -87,9 +87,11 @@ spec: LSPEC REQUIRE e1 = effect  ENSURE e2 = effect RSPEC {PrePost(e1, e2)}
 
 term:
 | str = VAR { Var str }
+| n = INTE {Number n}
 | LPAR r = term RPAR { r }
 | a = term PLUS b = INTE {Plus (a, b)}
 | a = term MINUS b = INTE {Minus (a, b)}
+| KLEENE {Kleene}
 
 pure:
 | TRUE {TRUE}
@@ -109,7 +111,9 @@ es:
 | a = es CHOICE b = es { ESOr(a, b) }
 | r = es POWER t = term { Ttimes(r, t )}
 | r = es POWER OMEGA { Omega r }
+| UNDERLINE {Underline}
 | a = es CONCAT b = es { Cons(a, b) } 
+
 
 effect:
 | LPAR r = effect RPAR { r }

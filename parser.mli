@@ -4,6 +4,7 @@
 type token = 
   | VOIDT
   | VAR of (string)
+  | UNDERLINE
   | TRUEE of (bool)
   | TRUE
   | STRING of (string)
@@ -22,6 +23,7 @@ type token =
   | LSPEC
   | LPAR
   | LBRACK
+  | KLEENE
   | INTT
   | INTE of (int)
   | INCLUDE

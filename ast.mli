@@ -3,8 +3,10 @@
 ----------------------------------------------------*)             
 
 type terms = Var of string
+           | Number of int
            | Plus of terms * int
            | Minus of terms * int
+           | Kleene 
 
 (* We use a string to represent an single event *)
 type event =  string 
@@ -17,6 +19,7 @@ type es = Bot
         | ESOr of es * es
         | Ttimes of es * terms
         | Omega of es
+        | Underline
 
 (*Arithimetic pure formulae*)
 type pure = TRUE

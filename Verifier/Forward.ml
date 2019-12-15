@@ -53,7 +53,7 @@ let rec printExpr (expr: expression):string =
   | LocalDel (t, v, e)->  printType t ^ v ^ " = " ^ printExpr e
   | Call (name, elist) -> name ^ "(" ^ print_real_Param elist ^ ")"
   | Assign (v, e) -> v ^ " = " ^ printExpr e
-  | Seq (e1, e2) -> printExpr e1 ^ "\n" ^ printExpr e2
+  | Seq (e1, e2) -> printExpr e1 ^ ";" ^ printExpr e2
   | EventRaise ev -> ev
   | IfElse (e1, e2, e3) -> "if " ^ printExpr e1 ^ " then " ^ printExpr e2 ^ " else " ^ printExpr e3 
   | Cond (e1, e2, str) -> printExpr e1 ^ str ^ printExpr e2 
@@ -115,6 +115,7 @@ let checkPrecondition (state:effect) (pre:effect) : bool =
   result;;
 
 let rec verifier (expr:expression) (state:effect) (prog: program): effect = 
+  print_string ("-----\n"^printExpr expr ^", "^showEffect state ^"\n");
   match expr with 
     Unit -> state
   | EventRaise ev -> concatEffEs state (Event ev)
@@ -131,7 +132,7 @@ let rec verifier (expr:expression) (state:effect) (prog: program): effect =
           if checkPrecondition state pre == true then 
           concatEffEff state post
           else 
-          raise (Foo ("PreCondition does not hold: "^ name ^"!\n"^printReport state pre))
+          raise (Foo ("PreCondition does not hold when calling: "^ name ^"!\n"^printReport (reverseEff state) (reverseEff pre)))
       )
     )
   | _ -> state
@@ -146,10 +147,10 @@ let rec verification (dec:declare) (prog: program): string =
     let postcon = "[Postcondition: "^ (showEffect (normalEffect post)) ^ "]\n" in 
     let acc = normalEffect (verifier expression (pre) prog) in 
     let accumulated = "[Real Effect: " ^(showEffect (normalEffect acc )) ^ "]\n" in 
-    let (result_tree, result) =  Rewriting.containment acc (normalEffect post) [] in 
+    (*let (result_tree, result) =  Rewriting.containment acc (normalEffect post) [] in 
     let result = "[Result: "^ string_of_bool result ^"]\n" in 
-    let printTree = printTree ~line_prefix:"* " ~get_name ~get_children result_tree in
-    "=======================\n"^ head ^ precon ^ accumulated ^ postcon ^ result ^ "\n" ^ printTree ^ "\n"
+    let printTree = printTree ~line_prefix:"* " ~get_name ~get_children result_tree in*)
+    "=======================\n"^ head ^ precon ^ accumulated ^ postcon ^ (*result ^ "\n" ^ printTree ^*) "\n"
     
  ;;
 
@@ -178,12 +179,12 @@ let () =
       let lines =  (input_lines ic ) in  
       let line = List.fold_right (fun x acc -> acc ^ "\n" ^ x) (List.rev lines) "" in 
       let prog = Parser.prog Lexer.token (Lexing.from_string line) in
-      (*let testprintProg = printProg prog in 
-      print_string testprintProg;*)
-      let verification_re = List.fold_right (fun dec acc -> acc ^ (verification dec prog)) prog ""  in
+      let testprintProg = printProg prog in 
+      print_string testprintProg;
+      (*let verification_re = List.fold_right (fun dec acc -> acc ^ (verification dec prog)) prog ""  in
       let oc = open_out outputfile in    (* 新建或修改文件,返回通道 *)
       fprintf oc "%s\n" verification_re;   (* 写一些东西 *)
-      close_out oc;                (* 写入并关闭通道 *)
+      close_out oc;                (* 写入并关闭通道 *)*)
       flush stdout;                (* 现在写入默认设备 *)
       close_in ic                  (* 关闭输入通道 *) 
   

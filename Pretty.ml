@@ -76,8 +76,10 @@ type context =  ( pure * es * pure * es) list
 let rec showTerms (t:terms):string = 
   match t with
     Var name -> name
+  | Number n -> string_of_int n
   | Plus (t, num) -> (showTerms t) ^ ("+") ^ (string_of_int num)
   | Minus (t, num) -> (showTerms t) ^ ("-") ^ (string_of_int num)
+  | Kleene -> "*"
   ;;
 
 (*To pretty print event sequences*)
@@ -90,6 +92,7 @@ let rec showES (es:es):string =
   | ESOr (es1, es2) -> "("^(showES es1) ^ "+" ^ (showES es2)^")"
   | Ttimes (es, t) -> (showES es) ^ "^" ^ (showTerms t)
   | Omega es -> (showES es) ^ "^" ^  "w" 
+  | Underline -> "_"
   ;;
 
 (*To pretty print pure formulea*)
