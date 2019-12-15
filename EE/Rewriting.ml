@@ -174,9 +174,10 @@ let rec normalPure (pi:pure):pure =
     (match li with 
       [] -> acc 
     | x :: xs -> PureAnd (x, (connectPi xs acc)) 
-    )
-  in if length finalPi == 0 then  TRUE
-     else connectPi (tl finalPi) (hd finalPi)
+    ) in 
+  let filte_true = List.filter (fun ele-> not (comparePure ele TRUE)  ) finalPi in 
+  if length filte_true == 0 then  TRUE
+  else connectPi (tl filte_true) (hd filte_true)
   ;;
 
 let rec normalEffect eff =

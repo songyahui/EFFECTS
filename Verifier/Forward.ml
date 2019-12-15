@@ -58,8 +58,6 @@ let rec printExpr (expr: expression):string =
   | IfElse (e1, e2, e3) -> "if " ^ printExpr e1 ^ " then " ^ printExpr e2 ^ " else " ^ printExpr e3 
   | Cond (e1, e2, str) -> printExpr e1 ^ str ^ printExpr e2 
   | BinOp (e1, e2, str) -> printExpr e1 ^ str ^ printExpr e2 
-  
-  
   ;;
 
 
@@ -143,7 +141,16 @@ let rec verification (dec:declare) (prog: program): string =
   match dec with 
     Include str -> ""
   | Method (Meth (t, mn , list_parm, PrePost (pre, post), expression)) -> 
-    showEffect (verifier expression (pre) prog) ^ "\n"
+    let head = "[Verification for method: "^mn^"]\n"in 
+    let precon = "[Precondition: "^(showEffect (normalEffect pre)) ^ "]\n" in
+    let postcon = "[Postcondition: "^ (showEffect (normalEffect post)) ^ "]\n" in 
+    let acc = normalEffect (verifier expression (pre) prog) in 
+    let accumulated = "[Real Effect: " ^(showEffect (normalEffect acc )) ^ "]\n" in 
+    let (result_tree, result) =  Rewriting.containment acc (normalEffect post) [] in 
+    let result = "[Result: "^ string_of_bool result ^"]\n" in 
+    let printTree = printTree ~line_prefix:"* " ~get_name ~get_children result_tree in
+    "=======================\n"^ head ^ precon ^ accumulated ^ postcon ^ result ^ "\n" ^ printTree ^ "\n"
+    
  ;;
 
 let rec printMeth (me:meth) :string = 
