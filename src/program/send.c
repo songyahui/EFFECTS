@@ -2,7 +2,7 @@
 
 void send (int n) 
     /*
-    require TRUE/\Emp
+    require TRUE/\emp
     ensure (n>0\/n=0)/\(Send^n).Done\/n<0/\Send^w
     */
 {
@@ -18,8 +18,8 @@ void send (int n)
 
 void server (int n)
     /*
-    require TRUE/\Emp
-    ensure TRUE/\Emp
+    require TRUE/\emp
+    ensure TRUE/\emp
     */
 {
     event("Ready");
@@ -29,8 +29,8 @@ void server (int n)
 
 int main ()
 /*
-    require TRUE/\Emp
-    ensure TRUE/\Emp
+    require TRUE/\emp
+    ensure TRUE/\emp
     */
 {
     server (5);

@@ -30,6 +30,7 @@ let id = ['a'-'v' 'x'-'z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*
 rule token = parse
 | white    { token lexbuf }
 | newline  { next_line lexbuf; token lexbuf }
+| "emp" { EMPTY }
 | "int" {INTT} 
 | "bool" {BOOLT}
 | "void" {VOIDT}
@@ -48,7 +49,6 @@ rule token = parse
 | '"'      { read_string (Buffer.create 17) lexbuf }
 | ['A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']* as str { EVENT str }
 | id as str { VAR str }
-| "Emp" { EMPTY }
 | '>' {GT}
 | '<' {LT}
 | '=' {EQ}

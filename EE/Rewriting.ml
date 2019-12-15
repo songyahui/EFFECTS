@@ -136,6 +136,7 @@ let rec normalES es pi =
       let normalES1 = normalES es1 pi in
       (match (normalES1, es2) with 
         (Emp, _) -> es2
+      | (_, Emp) -> normalES1
       | (Bot, _) -> Bot
       | (Omega _, _ ) -> normalES1
       | (normal_es1, _) -> Cons (normal_es1, normalES es2 pi)

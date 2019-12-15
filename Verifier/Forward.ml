@@ -113,7 +113,7 @@ let checkPrecondition (state:effect) (pre:effect) : bool =
   let reverseState = reverseEff state in
   let reversePre = reverseEff pre in 
   (*check containment*)
-  let (result_tree, result) =  Rewriting.containment reverseState  reversePre [] in 
+  let (result_tree, result) =  Rewriting.containment (normalEffect reverseState) (normalEffect reversePre) [] in 
   result;;
 
 let rec verifier (expr:expression) (state:effect) (prog: program): effect = 
@@ -132,7 +132,8 @@ let rec verifier (expr:expression) (state:effect) (prog: program): effect =
         Meth (t, mn , list_parm, PrePost (pre, post), expression) -> 
           if checkPrecondition state pre == true then 
           concatEffEff state post
-          else raise (Foo ("PreCondition does not hold: "^ name ^"!"))
+          else 
+          raise (Foo ("PreCondition does not hold: "^ name ^"!\n"^printReport state pre))
       )
     )
   | _ -> state
@@ -170,12 +171,12 @@ let () =
       let lines =  (input_lines ic ) in  
       let line = List.fold_right (fun x acc -> acc ^ "\n" ^ x) (List.rev lines) "" in 
       let prog = Parser.prog Lexer.token (Lexing.from_string line) in
-      let testprintProg = printProg prog in 
+      (*let testprintProg = printProg prog in 
+      print_string testprintProg;*)
       let verification_re = List.fold_right (fun dec acc -> acc ^ (verification dec prog)) prog ""  in
       let oc = open_out outputfile in    (* 新建或修改文件,返回通道 *)
       fprintf oc "%s\n" verification_re;   (* 写一些东西 *)
       close_out oc;                (* 写入并关闭通道 *)
-      print_string testprintProg;
       flush stdout;                (* 现在写入默认设备 *)
       close_in ic                  (* 关闭输入通道 *) 
   

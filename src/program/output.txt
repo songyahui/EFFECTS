@@ -1,4 +1,4 @@
-true/\true/\(Emp.Emp)
-(true/\n>0\/n=0/\true/\(((Emp.Ready).(Send^n.Done)).Emp))\/(true/\n>0\/n=0/\true/\(((Emp.Ready).(Send^n.Done)).Emp))
-((Emp.Done))\/((true/\n>0\/n=0/\((Emp.Send).(Send^n.Done)))\/(true/\n<0/\((Emp.Send).Send^w)))
+true/\true/\(emp.emp)
+(true/\n>0\/n=0/\true/\(((emp.Ready).(Send^n.Done)).emp))\/(true/\n>0\/n=0/\true/\(((emp.Ready).(Send^n.Done)).emp))
+((emp.Done))\/((true/\n>0\/n=0/\((emp.Send).(Send^n.Done)))\/(true/\n<0/\((emp.Send).Send^w)))
 
