@@ -79,7 +79,7 @@ let rec showTerms (t:terms):string =
   | Number n -> string_of_int n
   | Plus (t, num) -> (showTerms t) ^ ("+") ^ (string_of_int num)
   | Minus (t, num) -> (showTerms t) ^ ("-") ^ (string_of_int num)
-  | Kleene -> "*"
+
   ;;
 
 (*To pretty print event sequences*)
@@ -93,6 +93,7 @@ let rec showES (es:es):string =
   | Ttimes (es, t) -> (showES es) ^ "^" ^ (showTerms t)
   | Omega es -> (showES es) ^ "^" ^  "w" 
   | Underline -> "_"
+  | Kleene es -> (showES es) ^ "^" ^ "*"
   ;;
 
 (*To pretty print pure formulea*)
@@ -155,6 +156,8 @@ let rec reverseEs (es:es) : es =
   | ESOr (es1, es2) -> ESOr (reverseEs es1, reverseEs es2)
   | Ttimes (es1, t) -> Ttimes (reverseEs es1, t)
   | Omega (es1) ->  Omega (reverseEs es1) 
+  | Underline -> Underline
+  | Kleene es1 ->  Kleene (reverseEs es1)
   ;;
 
 let rec reverseEff (eff:effect) : effect =

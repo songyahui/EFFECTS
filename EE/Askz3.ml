@@ -5,9 +5,12 @@ open Sys
 open Unix
 open Printf
 
+exception FooAskz3 of string
+
 let rec convertTerm (t:terms):string = 
   match t with
     Var name -> " " ^ name ^ " "
+  | Number n -> " " ^ string_of_int n ^ " "
   | Plus (t, num) -> ("(+") ^ (convertTerm t) ^  (string_of_int num) ^ ")"
   | Minus (t, num) -> ("(-") ^ (convertTerm t) ^  (string_of_int num) ^ ")"
   ;;
@@ -57,6 +60,7 @@ let rec getAllVarFromTerm (t:terms) (acc:string list):string list =
   Var name -> append acc [name]
 | Plus (t, num) -> getAllVarFromTerm t acc
 | Minus (t, num) -> getAllVarFromTerm t acc
+| _ -> acc
 ;;
 
 let rec getAllVarFromPure (pi:pure) (acc:string list):string list = 

@@ -114,15 +114,14 @@ let checkPrecondition (state:effect) (pre:effect) : bool =
   let (result_tree, result) =  Rewriting.containment (normalEffect reverseState) (normalEffect reversePre) [] in 
   result;;
 
-let rec verifier (expr:expression) (state:effect) (prog: program): effect = 
-  print_string ("-----\n"^printExpr expr ^", "^showEffect state ^"\n");
+let rec verifier (caller:string) (expr:expression) (state:effect) (prog: program): effect = 
   match expr with 
     Unit -> state
   | EventRaise ev -> concatEffEs state (Event ev)
   | Seq (e1, e2) -> 
-    let state' = verifier e1 state prog in 
-    verifier e2 state' prog
-  | IfElse (e1, e2, e3) -> Disj ((verifier e2 state prog), (verifier e3 state prog))
+    let state' = verifier caller e1 state prog in 
+    verifier caller e2 state' prog
+  | IfElse (e1, e2, e3) -> Disj ((verifier caller e2 state prog), (verifier caller e3 state prog))
   | Call (name, exprList) -> 
     (match searMeth prog name with 
       None -> raise (Foo ("Method: "^ name ^" not defined!"))
@@ -132,7 +131,7 @@ let rec verifier (expr:expression) (state:effect) (prog: program): effect =
           if checkPrecondition state pre == true then 
           concatEffEff state post
           else 
-          raise (Foo ("PreCondition does not hold when calling: "^ name ^"!\n"^printReport (reverseEff state) (reverseEff pre)))
+          raise (Foo ("PreCondition does not hold when " ^ caller^" is calling: "^ name ^"!\n"^printReport (reverseEff state) (reverseEff pre)))
       )
     )
   | _ -> state
@@ -145,7 +144,7 @@ let rec verification (dec:declare) (prog: program): string =
     let head = "[Verification for method: "^mn^"]\n"in 
     let precon = "[Precondition: "^(showEffect (normalEffect pre)) ^ "]\n" in
     let postcon = "[Postcondition: "^ (showEffect (normalEffect post)) ^ "]\n" in 
-    let acc = normalEffect (verifier expression (pre) prog) in 
+    let acc = normalEffect (verifier mn expression (pre) prog) in 
     let accumulated = "[Real Effect: " ^(showEffect (normalEffect acc )) ^ "]\n" in 
     (*let (result_tree, result) =  Rewriting.containment acc (normalEffect post) [] in 
     let result = "[Result: "^ string_of_bool result ^"]\n" in 
@@ -179,12 +178,12 @@ let () =
       let lines =  (input_lines ic ) in  
       let line = List.fold_right (fun x acc -> acc ^ "\n" ^ x) (List.rev lines) "" in 
       let prog = Parser.prog Lexer.token (Lexing.from_string line) in
-      let testprintProg = printProg prog in 
-      print_string testprintProg;
-      (*let verification_re = List.fold_right (fun dec acc -> acc ^ (verification dec prog)) prog ""  in
+      (*let testprintProg = printProg prog in 
+      print_string testprintProg;*)
+      let verification_re = List.fold_right (fun dec acc -> acc ^ (verification dec prog)) prog ""  in
       let oc = open_out outputfile in    (* 新建或修改文件,返回通道 *)
       fprintf oc "%s\n" verification_re;   (* 写一些东西 *)
-      close_out oc;                (* 写入并关闭通道 *)*)
+      close_out oc;                (* 写入并关闭通道 *)
       flush stdout;                (* 现在写入默认设备 *)
       close_in ic                  (* 关闭输入通道 *) 
   

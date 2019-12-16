@@ -1,8 +1,24 @@
 ====================================
-Tick |- Tick
+((Send._^*).Ready) |- (_^*.Ready)
 [Result] Succeed
 
-* Tick |- Tick
-* └── Tick |- Tick   [Unfold with Fst = Tick]
-*     └── emp |- emp   [Frame-Prove] with R = emp
+* ((Send._^*).Ready) |- (_^*.Ready)
+* └── ((Send._^*).Ready) |- (_^*.Ready)   [Unfold with Fst = Send]
+*     └── (_^*.Ready) |- (_^*.Ready)
+*         ├── (_^*.Ready) |- (_^*.Ready)   [Unfold with Fst = _]
+*         │   └── (((emp._^*).Ready))\/(emp) |- (((emp._^*).Ready))\/(emp)[LHSOR]
+*         │       ├── (_^*.Ready) |- (((emp._^*).Ready))\/(emp)[RHSOR]
+*         │       │   ├── (_^*.Ready) |- (_^*.Ready)   [Reoccur-Prove]
+*         │       │   └── (_^*.Ready) |- emp   [Frame-Prove] with R = (_^*.Ready)
+*         │       └── emp |- (((emp._^*).Ready))\/(emp)[RHSOR]
+*         │           ├── emp |- (_^*.Ready)   [DISPROVE]
+*         │           └── emp |- emp   [Frame-Prove] with R = emp
+*         └── (_^*.Ready) |- (_^*.Ready)   [Unfold with Fst = Ready]
+*             └── (((emp._^*).Ready))\/(emp) |- (((emp._^*).Ready))\/(emp)[LHSOR]
+*                 ├── (_^*.Ready) |- (((emp._^*).Ready))\/(emp)[RHSOR]
+*                 │   ├── (_^*.Ready) |- (_^*.Ready)   [Reoccur-Prove]
+*                 │   └── (_^*.Ready) |- emp   [Frame-Prove] with R = (_^*.Ready)
+*                 └── emp |- (((emp._^*).Ready))\/(emp)[RHSOR]
+*                     ├── emp |- (_^*.Ready)   [DISPROVE]
+*                     └── emp |- emp   [Frame-Prove] with R = emp
 

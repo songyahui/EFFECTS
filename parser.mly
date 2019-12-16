@@ -91,7 +91,7 @@ term:
 | LPAR r = term RPAR { r }
 | a = term PLUS b = INTE {Plus (a, b)}
 | a = term MINUS b = INTE {Minus (a, b)}
-| KLEENE {Kleene}
+
 
 pure:
 | TRUE {TRUE}
@@ -113,6 +113,7 @@ es:
 | r = es POWER OMEGA { Omega r }
 | UNDERLINE {Underline}
 | a = es CONCAT b = es { Cons(a, b) } 
+| a = es POWER KLEENE {Kleene a}
 
 
 effect:

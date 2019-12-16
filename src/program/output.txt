@@ -12,8 +12,8 @@
 
 =======================
 [Verification for method: send]
-[Precondition: emp]
-[Real Effect: (Done)\/((n>0\/n=0/\(Send.(Send^n.Done)))\/(n<0/\(Send.Send^w)))]
+[Precondition: (Ready._^*)]
+[Real Effect: (((Ready._^*).Done))\/((n>0\/n=0/\(((Ready._^*).Send).(Send^n.Done)))\/(n<0/\(((Ready._^*).Send).Send^w)))]
 [Postcondition: (n>0\/n=0/\(Send^n.Done))\/(n<0/\Send^w)]
 
 

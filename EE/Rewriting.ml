@@ -13,76 +13,10 @@ open Pretty
 ocamlc -o trs  Tree.ml  Rewriting.ml
 *)
 
-
-
-(*----------------------------------------------------
-------------------Utility Functions------------------
-----------------------------------------------------*)
-exception Foo of string
-
-
-let rec nullable (pi :pure) (es:es) : bool=
-  match es with
-    Bot -> false 
-  | Emp -> true
-  | Event ev -> false 
-  | Cons (es1 , es2) -> (nullable pi es1) && (nullable pi es2)
-  | ESOr (es1 , es2) -> (nullable pi es1) || (nullable pi es2)
-  | Ttimes (es1, t) -> askZ3 (PureAnd (pi, Eq (t,0))) 
-  | Omega es1 -> false
-;;
-    
-let rec fst (pi :pure) (es:es): event list = 
-  match es with
-    Bot -> []
-  | Emp -> []
-  | Event ev ->  [ev]
-  | Omega es1 -> fst pi es1
-  | Ttimes (es1, t) -> fst pi es1
-  | Cons (es1 , es2) ->  if nullable pi es1 then append (fst pi es1) (fst pi es2) else fst pi es1
-  | ESOr (es1, es2) -> append (fst pi es1) (fst pi es2)
-;;
-
-let rec appendEff_ES eff es = 
-  match eff with 
-    Effect (p , es_eff) ->  Effect(p, Cons (es_eff, es))
-  | Disj (eff1 , eff2)  ->  Disj (appendEff_ES eff1 es, appendEff_ES eff2 es)
-  
-  (*raise ( Foo "appendEff_ES exception!")*)
-  ;;
-
-
-let rec derivative (p :pure) (es:es) (ev:string): effect =
-  match es with
-    Bot -> Effect (FALSE,  Bot)
-  | Emp -> Effect (FALSE,  Bot)
-  | Event ev1 -> 
-      if (String.compare ev1 ev) == 0 then Effect (p, Emp) else Effect (FALSE, Bot)
-  | Omega es1 -> appendEff_ES (derivative p es1 ev) es
-  | ESOr (es1 , es2) -> Disj (derivative p es1 ev, derivative p es2 ev)
-  | Ttimes (es1, t) -> 
-      let pi = PureAnd (Gt (t, 0), p) in
-      let efF = derivative pi es1 ev in 
-      let esT_minus1 = Ttimes (es1,  Minus (t, 1)) in
-      appendEff_ES efF esT_minus1
-  | Cons (es1 , es2) -> 
-      if nullable p es1 
-      then let efF = derivative p es1 ev in 
-          let effL = appendEff_ES efF es2 in 
-          let effR = derivative p es2 ev in 
-          Disj (effL, effR)
-      else let efF = derivative p es1 ev in 
-          appendEff_ES efF es2     
-;;
-
-
-(*----------------------------------------------------
-----------------------CONTAINMENT--------------------
-----------------------------------------------------*)
-
 let rec compareTerm (term1:terms) (term2:terms) : bool = 
   match (term1, term2) with 
     (Var s1, Var s2) -> true
+  | (Number n1, Number n2) -> n1 == n2 
   | (Plus (tIn1, num1), Plus (tIn2, num2)) -> compareTerm tIn1 tIn2 && num1 == num2
   | (Minus (tIn1, num1), Minus (tIn2, num2)) -> compareTerm tIn1 tIn2 && num1 == num2
   | _ -> false 
@@ -93,6 +27,7 @@ let rec compareTerm (term1:terms) (term2:terms) : bool =
 let rec stricTcompareTerm (term1:terms) (term2:terms) : bool = 
   match (term1, term2) with 
     (Var s1, Var s2) -> String.compare s1 s2 == 0
+  | (Number n1, Number n2) -> n1 == n2 
   | (Plus (tIn1, num1), Plus (tIn2, num2)) -> stricTcompareTerm tIn1 tIn2 && num1 == num2
   | (Minus (tIn1, num1), Minus (tIn2, num2)) -> stricTcompareTerm tIn1 tIn2 && num1 == num2
   | _ -> false 
@@ -113,6 +48,82 @@ let rec comparePure (pi1:pure) (pi2:pure):bool =
   | _ -> false
   ;;
 
+(*----------------------------------------------------
+------------------Utility Functions------------------
+----------------------------------------------------*)
+exception Foo of string
+
+
+let rec nullable (pi :pure) (es:es) : bool=
+  match es with
+    Bot -> false 
+  | Emp -> true
+  | Event ev -> false 
+  | Cons (es1 , es2) -> (nullable pi es1) && (nullable pi es2)
+  | ESOr (es1 , es2) -> (nullable pi es1) || (nullable pi es2)
+  | Ttimes (es1, t) -> askZ3 (PureAnd (pi, Eq (t,0))) 
+  | Omega es1 -> false
+  | Underline -> false
+  | Kleene es1 -> true
+;;
+    
+let rec fst (pi :pure) (es:es): event list = 
+  match es with
+    Bot -> []
+  | Emp -> []
+  | Event ev ->  [ev]
+  | Omega es1 -> fst pi es1
+  | Ttimes (es1, t) -> fst pi es1
+  | Cons (es1 , es2) ->  if nullable pi es1 then append (fst pi es1) (fst pi es2) else fst pi es1
+  | ESOr (es1, es2) -> append (fst pi es1) (fst pi es2)
+  | Underline -> ["_"]
+  | Kleene es1 -> fst pi es1
+;;
+
+let rec appendEff_ES eff es = 
+  match eff with 
+    Effect (p , es_eff) ->  Effect(p, Cons (es_eff, es))
+  | Disj (eff1 , eff2)  ->  Disj (appendEff_ES eff1 es, appendEff_ES eff2 es)
+  
+  (*raise ( Foo "appendEff_ES exception!")*)
+  ;;
+
+
+let rec derivative (p :pure) (es:es) (ev:string): effect =
+  match es with
+    Bot -> Effect (FALSE,  Bot)
+  | Emp -> Effect (FALSE,  Bot)
+  | Underline -> Effect (p, Emp)
+  | Event ev1 -> 
+      if (String.compare ev "_") == 0 then  Effect (p, Emp)
+      else if (String.compare ev1 ev) == 0 then Effect (p, Emp) else Effect (FALSE, Bot)
+  | Omega es1 -> appendEff_ES (derivative p es1 ev) es
+  | ESOr (es1 , es2) -> Disj (derivative p es1 ev, derivative p es2 ev)
+  | Ttimes (es1, t) -> 
+      let pi = PureAnd (Gt (t, 0), p) in
+      let efF = derivative pi es1 ev in 
+      let esT_minus1 = Ttimes (es1,  Minus (t, 1)) in
+      appendEff_ES efF esT_minus1
+  | Cons (es1 , es2) -> 
+      if nullable p es1 
+      then let efF = derivative p es1 ev in 
+          let effL = appendEff_ES efF es2 in 
+          let effR = derivative p es2 ev in 
+          Disj (effL, effR)
+      else let efF = derivative p es1 ev in 
+          appendEff_ES efF es2    
+          
+  | Kleene es1 -> appendEff_ES  (derivative p es1 ev) es
+
+;;
+
+
+(*----------------------------------------------------
+----------------------CONTAINMENT--------------------
+----------------------------------------------------*)
+
+
+
 let rec getAllPi piIn acc= 
     (match piIn with 
       PureAnd (pi1, pi2) -> append (getAllPi pi1 acc ) (getAllPi pi2 acc )
@@ -132,6 +143,7 @@ let rec normalES es pi =
     Bot -> es
   | Emp -> es
   | Event ev -> es
+  | Underline -> Underline
   | Cons (es1, es2) -> 
       let normalES1 = normalES es1 pi in
       (match (normalES1, es2) with 
@@ -160,6 +172,8 @@ let rec normalES es pi =
       (match normalInside with
         Emp -> Emp
       | _ ->  Omega normalInside)
+  | Kleene es1 -> 
+      Kleene (normalES es1 pi)
   ;;
 
 let rec normalPure (pi:pure):pure = 
@@ -209,6 +223,8 @@ let rec compareES es1 es2 =
       let insideEq = (compareES esL esR) in
       let termEq = compareTerm termL termR in
       insideEq && termEq
+  | (Kleene esL, Kleene esR) -> compareES esL esR
+  | (Underline, Underline ) -> true
   | _ -> false
 ;;
 
@@ -342,7 +358,8 @@ let rec quantified_by_Term (term:terms) str =
     Var s1 -> if String.compare s1 str == 0 then true else false
   | Plus (tIn1, num1) -> quantified_by_Term tIn1 str
   | Minus (tIn1, num1) -> quantified_by_Term tIn1 str
-  ;;
+  | Number n -> raise (Foo "quantified_by_Term exception")
+   ;;
 
 
 let rec quantified_in_LHS esL str = 
@@ -363,7 +380,6 @@ value indicating the validility of the effect entailment
 -------------------------------------------------------------*)
 
 let rec containment (effL:effect) (effR:effect) (delta:context): (binary_tree * bool) = 
-
   let normalFormL = normalEffect effL in 
   let normalFormR = normalEffect effR in
   let showEntail  = showEntailmentEff normalFormL normalFormR in 
@@ -407,7 +423,7 @@ let rec containment (effL:effect) (effR:effect) (delta:context): (binary_tree * 
         if entailConstrains piL piR 
         then (Node(showEntail^"   [Frame-Prove]" ^" with R = "^(showES esL ), []),true) 
         else (Node(showEntail ^ "   [Frame-Contra]", []),false) 
-      else if (reoccur piL esL piR esR delta 2) == true  
+      else if (reoccur piL esL piR esR delta 1) == true  
       (*[Reoccur]*)
       then
         if entailConstrains piL (getPureFromEffect normalFormR)
@@ -416,6 +432,10 @@ let rec containment (effL:effect) (effR:effect) (delta:context): (binary_tree * 
       else 
         (match esL with
         (*LHSEX*)
+        | Kleene esIn ->  
+          unfold delta piL esL piR esR
+        | Cons (Kleene esIn, _) -> 
+          unfold delta piL esL piR esR
         | Ttimes (esIn, term) -> 
             (match term with 
               Var s -> 

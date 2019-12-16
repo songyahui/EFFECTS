@@ -2,6 +2,7 @@ open Rewriting
 open Printf
 
 let () = 
+  print_string ("test");
   let inputfile = (Sys.getcwd () ^ "/" ^ Sys.argv.(1)) in 
   let outputfile = (Sys.getcwd ()^ "/" ^ Sys.argv.(2)) in
   let ic = open_in inputfile in

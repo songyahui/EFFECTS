@@ -5,8 +5,7 @@
 type terms = Var of string
            | Number of int
            | Plus of terms * int
-           | Minus of terms * int
-           | Kleene 
+           | Minus of terms * int 
 
 (* We use a string to represent an single event *)
 type event =  string 
@@ -18,6 +17,7 @@ type es = Bot
         | Cons of es * es
         | ESOr of es * es
         | Ttimes of es * terms
+        | Kleene of es
         | Omega of es
         | Underline
 
