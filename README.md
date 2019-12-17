@@ -3,9 +3,10 @@ Automated verification tool for temporal properties
 
 # To Compile:
 
-chmod 755 script 
+chmod 755 compile 
 
-./script
+./clean
+./compile
 
 # Example:
 ./trs src/effect/ex1.ee src/effect/output.txt > src/effect/output.txt 2>&1
