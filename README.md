@@ -3,9 +3,12 @@ Automated verification tool for temporal properties
 
 # To Compile:
 
+chmod 755 clean 
+
 chmod 755 compile 
 
 ./clean
+
 ./compile
 
 # Example:
