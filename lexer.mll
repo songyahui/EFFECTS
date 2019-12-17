@@ -63,8 +63,8 @@ rule token = parse
 | '}' { RBRACK }
 | ',' { COMMA }
 | ';' { SIMI }
-| '+' { print_string "here+\n";PLUS }
-| '-' { print_string "here\n";MINUS }
+| '+' { PLUS }
+| '-' { MINUS }
 | '#' { SHARP }
 | '_' {UNDERLINE}
 | '*' {KLEENE}

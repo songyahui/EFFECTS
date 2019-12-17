@@ -108,10 +108,11 @@ let rec searMeth (prog: program) (name:string) : meth option=
 
 
 let checkPrecondition (state:effect) (pre:effect) : bool = 
-  let reverseState = reverseEff state in
-  let reversePre = reverseEff pre in 
+  let reverseState = normalEffect (reverseEff state) in
+  let reversePre = normalEffect (reverseEff pre) in 
   (*check containment*)
-  let (result_tree, result) =  Rewriting.containment (normalEffect reverseState) (normalEffect reversePre) [] in 
+  let varList = append (getAllVarFromEff reverseState) (getAllVarFromEff reversePre) in  
+  let (result_tree, result) =  Rewriting.containment reverseState reversePre [] varList in 
   result;;
 
 let rec verifier (caller:string) (expr:expression) (state:effect) (prog: program): effect = 

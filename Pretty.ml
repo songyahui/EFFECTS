@@ -104,9 +104,9 @@ let rec showPure (p:pure):string =
   | Gt (t, num) -> (showTerms t) ^ ">" ^ (string_of_int num)
   | Lt (t, num) -> (showTerms t) ^ "<" ^ (string_of_int num)
   | Eq (t, num) -> (showTerms t) ^ "=" ^ (string_of_int num)
-  | PureOr (p1, p2) -> showPure p1 ^ "\\/" ^ showPure p2
-  | PureAnd (p1, p2) -> showPure p1 ^ "/\\" ^ showPure p2
-  | Neg p -> "~" ^ showPure p
+  | PureOr (p1, p2) -> "("^showPure p1 ^ "\\/" ^ showPure p2^")"
+  | PureAnd (p1, p2) -> "("^showPure p1 ^ "/\\" ^ showPure p2^")"
+  | Neg p -> "(~" ^ showPure p^")"
   ;; 
 
 (*To pretty print effects*)

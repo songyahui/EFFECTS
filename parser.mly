@@ -11,7 +11,6 @@
 %token LBRACK RBRACK COMMA SIMI  IF ELSE REQUIRE ENSURE LSPEC RSPEC
 %token EOF GT LT EQ  INCLUDE SHARP EQEQ GTEQ LTEQ UNDERLINE KLEENE
 
-%left POWER
 %left CHOICE
 %left CONCAT
 %left DISJ
@@ -109,11 +108,11 @@ es:
 | str = EVENT { Event str }
 | LPAR r = es RPAR { r }
 | a = es CHOICE b = es { ESOr(a, b) }
-| r = es POWER t = term { Ttimes(r, t )}
-| r = es POWER OMEGA { Omega r }
+| LPAR r = es POWER t = term RPAR { Ttimes(r, t )}
+| LPAR r = es POWER OMEGA RPAR{ Omega r }
 | UNDERLINE {Underline}
 | a = es CONCAT b = es { Cons(a, b) } 
-| a = es POWER KLEENE {Kleene a}
+| LPAR a = es POWER KLEENE RPAR{Kleene a}
 
 
 effect:

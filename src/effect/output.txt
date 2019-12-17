@@ -1,6 +1,11 @@
 ====================================
-Send^t-1 |- Ready
-[Result] Fail
+(Send^t.Ready^t) |- (Send^t.Ready^t)
+[Result] Succeed
 
-* Send^t-1 |- Ready   [DISPROVE]
+* (Send^t.Ready^t) |- (Send^t.Ready^t)
+* ├── t=0/\emp |- t=0/\emp   [Frame-Prove] with R = emp
+* └── t>0/\(Send^t.Ready^t) |- t>0/\(Send^t.Ready^t)
+*     └── t>0/\(Send^t.Ready^t) |- t>0/\(Send^t.Ready^t)   [Unfold with Fst = Send]
+*         └── t>0/\(Send^t-1.Ready^t) |- t>0/\(Send^t-1.Ready^t)
+*             └── (t>0/\(t1>0\/t1=0))/\(Send^t1.Ready^t) |- (t>0/\(t1>0\/t1=0))/\(Send^t1.Ready^t)   [Reoccur-Prove]
 
