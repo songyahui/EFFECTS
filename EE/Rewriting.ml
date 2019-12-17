@@ -388,7 +388,7 @@ let rec containment (effL:effect) (effR:effect) (delta:context): (binary_tree * 
     let derivR = derivative piR esR ev in
     let deltaNew = append del [(piL, esL, piR, esR)] in
     let (tree, result) = containment derivL derivR deltaNew in
-    (Node (showEntailmentEff (Effect(piL, esL)) (Effect(piR, esR)) ^ "   [Unfold with Fst = "^  ev ^ "]",[tree] ), result)
+    (Node (showEntailmentEff (normalEffect (Effect(piL, esL))) (normalEffect(Effect(piR, esR))) ^ "   [Unfold with Fst = "^  ev ^ "]",[tree] ), result)
   in
   (*Unfold function which calls unfoldSingle*)
   let unfold del piL esL piR esR= 
@@ -397,8 +397,8 @@ let rec containment (effL:effect) (effR:effect) (delta:context): (binary_tree * 
     let trees = map (fun tuple -> getFst tuple ) resultL in
     let results = map (fun tuple -> getSnd tuple ) resultL in
     (*must be all the sub trees success && *)
-    let result = List.fold_right (&& ) results true in  
-    (Node (showEntailmentEff (Effect(piL, esL)) (Effect(piR, esR)) ,trees ), result)    
+    let result = List.fold_right (fun acc x -> if acc == false then acc else acc && x) results true in  
+    (Node (showEntailmentEff (normalEffect (Effect(piL, esL))) (normalEffect(Effect(piR, esR))) ,trees ), result)    
   in 
   
   match (normalFormL, normalFormR) with
@@ -406,15 +406,15 @@ let rec containment (effL:effect) (effR:effect) (delta:context): (binary_tree * 
     (*[LHSOR]*)
       let (tree1, re1 ) = (containment effL1 effR delta ) in
       let (tree2, re2 ) = (containment effL2 effR delta ) in
-      (Node (showEntailmentEff effL effR ^ showRule LHSOR, [tree1; tree2] ), re1 && re2)
+      (Node (showEntailmentEff normalFormL normalFormR ^ showRule LHSOR, [tree1; tree2] ), re1 && re2)
   | (_, Disj (effR1, effR2)) -> 
     (*[RHSOR]*)
       let (tree1, re1 ) = (containment effL effR1 delta ) in
       let (tree2, re2 ) = (containment effL effR2 delta ) in
-      (Node (showEntailmentEff effL effR ^ showRule RHSOR, [tree1; tree2] ), re1 || re2)
+      (Node (showEntailmentEff normalFormL normalFormR ^ showRule RHSOR, [tree1; tree2] ), re1 || re2)
   | (Effect (piL, esL), Effect (piR, esR))-> 
-      
-      if (nullable piL esL) == true && (nullable piR esR) == false 
+      if (comparePure piR FALSE == true ) then (Node(showEntail ^ "   [DISPROVE]", []), false)
+      else if (nullable piL esL) == true && (nullable piR esR) == false 
       (*[DISPROVE]*)
       then (Node(showEntail ^ "   [DISPROVE]", []), false) 
       else if (isEmp normalFormR) == true  
@@ -448,8 +448,10 @@ let rec containment (effL:effect) (effR:effect) (delta:context): (binary_tree * 
                             let leftNonZero = addConstrain normalFormL nonZeroCase in
                             let rightNonZero = addConstrain normalFormR nonZeroCase in
                             let (tree1, re1 ) = (containment leftZero rightZero delta ) in
+                            if re1 == false then (Node (showEntailmentEff normalFormL normalFormR ^ showRule LHSCASE ^ " *Pruning search*",[tree1] ), re1)
+                            else
                             let (tree2, re2 ) = (containment leftNonZero rightNonZero delta ) in
-                            (Node (showEntailmentEff effL effR ,[tree1; tree2] ), re1 && re2)
+                            (Node (showEntailmentEff normalFormL normalFormR ,[tree1; tree2] ), re1 && re2)
                 | false -> (*[UNFOLD]*)unfold delta piL esL piR esR
                 )
             | Plus  (Var t, num) -> 
@@ -481,8 +483,10 @@ let rec containment (effL:effect) (effR:effect) (delta:context): (binary_tree * 
                             let leftNonZero = addConstrain normalFormL nonZeroCase in
                             let rightNonZero = addConstrain normalFormR nonZeroCase in
                             let (tree1, re1 ) = (containment leftZero rightZero delta ) in
-                            let (tree2, re2 ) =  (containment leftNonZero rightNonZero delta ) in 
-                            (Node (showEntailmentEff effL effR , [tree1; tree2] ), re1 && re2)
+                            if re1 == false then (Node (showEntailmentEff normalFormL normalFormR ^ showRule LHSCASE ^ " *Pruning search*",[tree1] ), re1)
+                            else 
+                            let (tree2, re2 ) = (containment leftNonZero rightNonZero delta ) in
+                            (Node (showEntailmentEff normalFormL normalFormR ,[tree1; tree2] ), re1 && re2)
                         | false -> (*UNFOLD*) unfold delta piL esL piR esR
                         )
               | Plus  (Var t, num) -> 
@@ -553,7 +557,7 @@ let rec containment (effL:effect) (effR:effect) (delta:context): (binary_tree * 
                             let rightNonZero = addConstrain normalFormR nonZeroCase in
                             let (tree1, re1 ) = (containment leftZero rightZero delta ) in
                             let (tree2, re2 ) =  (containment leftNonZero rightNonZero delta ) in 
-                            (Node (showEntailmentEff effL effR , [tree1; tree2] ), re1 || re2)
+                            (Node (showEntailmentEff normalFormL normalFormR , [tree1; tree2] ), re1 || re2)
                         | false -> (*UNFOLD*)unfold delta piL esL piR esR
                         )
                 | Plus  (Var t, num) -> 
@@ -822,6 +826,7 @@ ocamlfind ocamlopt -o trs -cclib -lstdc++ -thread -package z3 -linkpkg Tree.ml A
 1. containment, entilment, term rewriting system.
 2. not complete.
 
-
+prove reoccur, 2 times, 1 time?
+subsititution. 
 
 *)

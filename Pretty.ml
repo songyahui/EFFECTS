@@ -127,18 +127,18 @@ let showEntailmentES (es1:es) (es2:es):string = showES es1 ^ " |- "  ^ showES es
 (*To pretty print entialment rules*)
 let showRule (r:rule):string = 
   match r with
-    LHSOR -> "[LHSOR]"
-  | RHSOR -> "[RHSOR]"
-  | LHSEX -> "[LHSEX]"  
-  | RHSEX -> "[RHSEX]" 
-  | LHSSUB -> "[LHSSUB]"
-  | RHSSUB -> "[RHSSUB]"
-  | LHSCASE -> "LHSCASE"
-  | RHSCASE -> "RHSCASE"
-  | UNFOLD  -> "UNFOLD"
-  | DISPROVE -> "DISPROVE"
-  | FRAME  -> "FRAME"
-  | REOCCUR -> "REOCCUR"
+    LHSOR -> " [LHSOR] "
+  | RHSOR -> " [RHSOR] "
+  | LHSEX -> " [LHSEX] "  
+  | RHSEX -> " [RHSEX] " 
+  | LHSSUB -> " [LHSSUB] "
+  | RHSSUB -> " [RHSSUB] "
+  | LHSCASE -> " [LHSCASE] "
+  | RHSCASE -> " [RHSCASE] "
+  | UNFOLD  -> " [UNFOLD] "
+  | DISPROVE -> " [DISPROVE] "
+  | FRAME  -> " [FRAME] "
+  | REOCCUR -> " [REOCCUR] "
 
 (*To pretty print all the context entailments*)
 let rec showContext (d:context):string = 

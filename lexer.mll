@@ -13,7 +13,7 @@ let next_line lexbuf =
 }
 
 (* part 1 *)
-let int = '-'? ['0'-'9'] ['0'-'9']*
+let int =  ['0'-'9'] ['0'-'9']*
 
 (* part 2 *)
 let digit = ['0'-'9']
@@ -63,8 +63,8 @@ rule token = parse
 | '}' { RBRACK }
 | ',' { COMMA }
 | ';' { SIMI }
-| '+' { PLUS }
-| '-' { MINUS }
+| '+' { print_string "here+\n";PLUS }
+| '-' { print_string "here\n";MINUS }
 | '#' { SHARP }
 | '_' {UNDERLINE}
 | '*' {KLEENE}
