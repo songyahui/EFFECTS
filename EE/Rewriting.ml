@@ -259,16 +259,14 @@ let rec reoccur piL esL piR esR delta num =
       else reoccur piL esL piR esR rest num (*REOCCUR*) 
   ;;
 
-let rec addConstrain effect addPi =
-  match effect with
-    Effect (pi, eff) -> Effect (normalPure (PureAnd (pi, addPi)), eff)
-  | Disj (effL1, effL2) -> Disj (addConstrain effL1 addPi, addConstrain effL2 addPi)
-  ;;
+
 
 let entailConstrains pi1 pi2 = 
   (*print_string (showPure pi1 ^" and " ^ showPure pi2 ^" ==> ");
   print_string (string_of_bool (askZ3 (PureAnd (pi1, pi2))) ^ "\n");*)
-  askZ3 (PureAnd (pi1, pi2)) ;;
+  let sat = askZ3 (Neg (PureOr (Neg pi1, pi2))) in
+  if sat then false
+  else true;;
 
 let rec getPureFromEffect effect = 
   match effect with

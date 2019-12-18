@@ -17,6 +17,7 @@ type token =
   | POWER
   | PLUS
   | OMEGA
+  | NEGATION
   | MINUS
   | LTEQ
   | LT

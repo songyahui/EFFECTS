@@ -9,7 +9,7 @@
 %token <bool> FALSEE
 %token EMPTY EVENTKEY CHOICE LPAR RPAR CONCAT OMEGA POWER PLUS MINUS TRUE FALSE DISJ CONJ   ENTIL INTT BOOLT VOIDT 
 %token LBRACK RBRACK COMMA SIMI  IF ELSE REQUIRE ENSURE LSPEC RSPEC
-%token EOF GT LT EQ  INCLUDE SHARP EQEQ GTEQ LTEQ UNDERLINE KLEENE
+%token EOF GT LT EQ  INCLUDE SHARP EQEQ GTEQ LTEQ UNDERLINE KLEENE NEGATION
 
 %left CHOICE
 %left CONCAT
@@ -95,13 +95,13 @@ term:
 pure:
 | TRUE {TRUE}
 | FALSE {FALSE}
+| NEGATION LPAR a = pure RPAR {Neg a}
 | LPAR r = pure RPAR { r }
 | a = term GT b = INTE {Gt (a, b)}
 | a = term LT b = INTE {Lt (a, b)}
 | a = term EQ b = INTE {Eq (a, b)}
 | a = pure CONJ b = pure {PureAnd (a, b)}
 | a = pure DISJ b = pure {PureOr (a, b)}
-
 
 es:
 | EMPTY { Emp }

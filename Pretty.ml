@@ -18,6 +18,12 @@ let rec iter f = function
       f false x;
       iter f tl
 
+let rec addConstrain effect addPi =
+  match effect with
+    Effect (pi, eff) -> Effect ( (PureAnd (pi, addPi)), eff)
+  | Disj (effL1, effL2) -> Disj (addConstrain effL1 addPi, addConstrain effL2 addPi)
+  ;;
+
 let to_buffer ?(line_prefix = "") ~get_name ~get_children buf x =
   let rec print_root indent x =
     bprintf buf "%s\n" (get_name x);
@@ -90,31 +96,30 @@ let rec showES (es:es):string =
   | Event ev -> ev 
   | Cons (es1, es2) -> "("^(showES es1) ^ "." ^ (showES es2)^")"
   | ESOr (es1, es2) -> "("^(showES es1) ^ "+" ^ (showES es2)^")"
-  | Ttimes (es, t) -> (showES es) ^ "^" ^ (showTerms t)
-  | Omega es -> (showES es) ^ "^" ^  "w" 
+  | Ttimes (es, t) -> "("^(showES es) ^ "^" ^ (showTerms t)^")"
+  | Omega es -> "("^(showES es) ^ "^" ^  "w" ^")"
   | Underline -> "_"
-  | Kleene es -> (showES es) ^ "^" ^ "*"
+  | Kleene es -> "(" ^ (showES es) ^ "^" ^ "*"^")"
   ;;
 
 (*To pretty print pure formulea*)
 let rec showPure (p:pure):string = 
   match p with
-    TRUE -> "true"
-  | FALSE -> "false"
+    TRUE -> "TRUE"
+  | FALSE -> "FALSE"
   | Gt (t, num) -> (showTerms t) ^ ">" ^ (string_of_int num)
   | Lt (t, num) -> (showTerms t) ^ "<" ^ (string_of_int num)
   | Eq (t, num) -> (showTerms t) ^ "=" ^ (string_of_int num)
   | PureOr (p1, p2) -> "("^showPure p1 ^ "\\/" ^ showPure p2^")"
   | PureAnd (p1, p2) -> "("^showPure p1 ^ "/\\" ^ showPure p2^")"
-  | Neg p -> "(~" ^ showPure p^")"
+  | Neg p -> "(~" ^ "(" ^ showPure p^"))"
   ;; 
 
 (*To pretty print effects*)
 let rec showEffect (e:effect) :string = 
   match e with
     Effect (p, es) -> 
-      if p == TRUE then showES es
-      else showPure p ^ "/\\" ^ showES es
+      showPure p ^ "/\\" ^ showES es
   | Disj (es1, es2) -> "(" ^ showEffect es1 ^ ")\\/("  ^ showEffect es2^")"
   ;;
 

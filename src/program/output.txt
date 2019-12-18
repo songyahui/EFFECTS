@@ -1,19 +1,19 @@
 =======================
 [Verification for method: main]
-[Precondition: emp]
-[Real Effect: n>0\/n=0/\((Ready.Send)^n.Done)^w]
-[Postcondition: emp]
+[Precondition: TRUE/\emp]
+[Real Effect: (n>0\/n=0)/\(((Ready.(Send^n)).Done)^w)]
+[Postcondition: TRUE/\(((Ready.(Send^n)).Done)^w)]
 
 =======================
 [Verification for method: server]
-[Precondition: n>0\/n=0/\emp]
-[Real Effect: (n>0\/n=0/\((Ready.(Send^n.Done)).((Ready.Send)^n.Done)^w))\/(n>0\/n=0/\((Ready.(Send^n.Done)).((Ready.Send)^n.Done)^w))]
-[Postcondition: n>0\/n=0/\((Ready.Send)^n.Done)^w]
+[Precondition: (n>0\/n=0)/\emp]
+[Real Effect: (n>0\/n=0)/\((Ready.((Send^n).Done)).(((Ready.(Send^n)).Done)^w))]
+[Postcondition: (n>0\/n=0)/\(((Ready.(Send^n)).Done)^w)]
 
 =======================
 [Verification for method: send]
-[Precondition: (Ready._^*)]
-[Real Effect: (((Ready._^*).Done))\/((n>0\/n=0/\(((Ready._^*).Send).(Send^n.Done)))\/(n<0/\(((Ready._^*).Send).Send^w)))]
-[Postcondition: (n>0\/n=0/\(Send^n.Done))\/(n<0/\Send^w)]
+[Precondition: TRUE/\(Ready.(_^*))]
+[Real Effect: (n=0/\Done)\/((((n>0\/n=0)/\(~(n=0)))/\(Send.((Send^n).Done)))\/((n<0/\(~(n=0)))/\(Send.(Send^w))))]
+[Postcondition: ((n>0\/n=0)/\((Send^n).Done))\/(n<0/\(Send^w))]
 
 

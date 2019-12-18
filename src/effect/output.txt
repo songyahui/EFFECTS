@@ -1,16 +1,13 @@
 ====================================
-Send^5 |- Send^5
+((Ready.Send^n).Done) |- ((Ready.Send^n).Done)
 [Result] Succeed
 
-* Send^5 |- Send^5
-* └── Send^5 |- Send^5   [Unfold with Fst = Send]
-*     └── 5>0/\Send^4 |- 5>0/\Send^4
-*         └── 5>0/\Send^4 |- 5>0/\Send^4   [Unfold with Fst = Send]
-*             └── (4>0/\5>0)/\Send^3 |- (4>0/\5>0)/\Send^3
-*                 └── (4>0/\5>0)/\Send^3 |- (4>0/\5>0)/\Send^3   [Unfold with Fst = Send]
-*                     └── (4>0/\(3>0/\5>0))/\Send^2 |- (4>0/\(3>0/\5>0))/\Send^2
-*                         └── (4>0/\(3>0/\5>0))/\Send^2 |- (4>0/\(3>0/\5>0))/\Send^2   [Unfold with Fst = Send]
-*                             └── (4>0/\(3>0/\(2>0/\5>0)))/\Send^1 |- (4>0/\(3>0/\(2>0/\5>0)))/\Send^1
-*                                 └── (4>0/\(3>0/\(2>0/\5>0)))/\Send^1 |- (4>0/\(3>0/\(2>0/\5>0)))/\Send^1   [Unfold with Fst = Send]
-*                                     └── (5>0/\(4>0/\(3>0/\(2>0/\1>0))))/\emp |- (5>0/\(4>0/\(3>0/\(2>0/\1>0))))/\emp   [Frame-Prove] with R = emp
+* ((Ready.Send^n).Done) |- ((Ready.Send^n).Done)
+* └── ((Ready.Send^n).Done) |- ((Ready.Send^n).Done)   [Unfold with Fst = Ready]
+*     └── (Send^n.Done) |- (Send^n.Done)
+*         ├── (Send^n.Done) |- (Send^n.Done)   [Unfold with Fst = Send]
+*         │   └── n>0/\(Send^n-1.Done) |- n>0/\(Send^n-1.Done)
+*         │       └── n>0/\(Send^t1.Done) |- n>0/\(Send^t1.Done)   [Reoccur-Prove]
+*         └── (Send^n.Done) |- (Send^n.Done)   [Unfold with Fst = Done]
+*             └── emp |- emp   [Frame-Prove] with R = emp
 

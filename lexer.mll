@@ -68,6 +68,7 @@ rule token = parse
 | '#' { SHARP }
 | '_' {UNDERLINE}
 | '*' {KLEENE}
+| '~' {NEGATION}
 | "/*" {LSPEC}
 | "*/" {RSPEC}
 | "\\/" {DISJ}
