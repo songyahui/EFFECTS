@@ -1,14 +1,14 @@
 =======================
 [Verification for method: main]
 [Precondition: TRUE/\emp]
-[Real Effect: (n>0\/n=0)/\(((Ready.(Send^n)).Done)^w)]
-[Postcondition: TRUE/\(((Ready.(Send^n)).Done)^w)]
+[Real Effect: (n>0\/n=0)/\((Ready.((Send^n).Done))^w)]
+[Postcondition: TRUE/\((Ready.((Send^n).Done))^w)]
 
 =======================
 [Verification for method: server]
 [Precondition: (n>0\/n=0)/\emp]
-[Real Effect: (n>0\/n=0)/\((Ready.((Send^n).Done)).(((Ready.(Send^n)).Done)^w))]
-[Postcondition: (n>0\/n=0)/\(((Ready.(Send^n)).Done)^w)]
+[Real Effect: (n>0\/n=0)/\(Ready.((Send^n).(Done.((Ready.((Send^n).Done))^w))))]
+[Postcondition: (n>0\/n=0)/\((Ready.((Send^n).Done))^w)]
 
 =======================
 [Verification for method: send]

@@ -151,6 +151,7 @@ let rec normalES es pi =
   | Emp -> es
   | Event ev -> es
   | Underline -> Underline
+  | Cons (Cons (esIn1, esIn2), es2)-> normalES (Cons (esIn1, Cons (esIn2, es2))) pi
   | Cons (es1, es2) -> 
       let normalES1 = normalES es1 pi in
       let normalES2 = normalES es2 pi in
@@ -203,8 +204,40 @@ let rec normalPure (pi:pure):pure =
   else connectPi (tl filte_true) (hd filte_true)
   ;;
 
+let rec normalPureToDisj (p:pure):pure = 
+  match p with 
+    PureAnd (p1, PureOr(pIn1, pIn2)) ->  
+      let dealP1 = normalPureToDisj p1 in
+      let temp1 = normalPureToDisj (PureAnd(dealP1, pIn1)) in 
+      let temp2 = normalPureToDisj (PureAnd(dealP1, pIn2)) in 
+      PureOr (temp1 , temp2 )
+  | PureAnd (PureOr(pIn1, pIn2), p2) ->  
+      let dealP2 = normalPureToDisj p2 in
+      let temp1 = normalPureToDisj (PureAnd(dealP2, pIn1)) in 
+      let temp2 = normalPureToDisj (PureAnd(dealP2, pIn2)) in 
+      PureOr (temp1 , temp2 )
+  | Neg pi -> Neg (normalPureToDisj pi)
+  | _ -> p
+  ;;
+
+let rec splitDisj (p:pure) (es:es) :effect =
+  match p with 
+    PureOr (p1, p2) -> Disj (splitDisj p1 es, splitDisj p2 es) 
+  | _ -> Effect (p, es) 
+  ;;
+
+let rec deletePureOrInEff (eff:effect):effect = 
+  match eff with 
+    Effect (pi, es) -> 
+      let disjPure = normalPureToDisj pi in
+      splitDisj disjPure es
+  | Disj (eff1, eff2) -> Disj ((deletePureOrInEff eff1), (deletePureOrInEff eff2))
+  ;;
+
+
 let rec normalEffect eff =
-  match eff with
+  let noPureOr  = deletePureOrInEff eff in 
+  match noPureOr with
     Effect (p, es) -> 
       if (askZ3 p) == false then Effect (FALSE,  Bot)
       else if normalES es p== Bot then Effect (FALSE,  Bot)

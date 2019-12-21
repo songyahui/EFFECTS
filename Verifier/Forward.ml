@@ -193,8 +193,7 @@ let condToPure (expr :expression) :pure =
 
 let rec verifier (caller:string) (expr:expression) (state_H:effect) (state_C:effect) (prog: program): effect = 
   match expr with 
-    Unit -> state_C
-  | EventRaise ev -> concatEffEs state_C (Event ev)
+    EventRaise ev -> concatEffEs state_C (Event ev)
   | Seq (e1, e2) -> 
     let state_C' = verifier caller e1 state_H state_C prog in 
     verifier caller e2 state_H state_C' prog
