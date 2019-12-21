@@ -172,8 +172,8 @@ let substituteEffWithAgrs (eff:effect) (realArgs: expression list) (formal: (_ty
 
 
 let checkPrecondition (state:effect) (pre:effect) : bool = 
-  let reverseState = normalEffect (reverseEff state) in
-  let reversePre = normalEffect (reverseEff pre) in 
+  let reverseState =  (reverseEff state) in
+  let reversePre =  (reverseEff pre) in 
   (*check containment*)
   let varList = append (getAllVarFromEff reverseState) (getAllVarFromEff reversePre) in  
   let (result_tree, result) =  Rewriting.containment reverseState reversePre [] varList in 
@@ -212,15 +212,12 @@ let rec verifier (caller:string) (expr:expression) (state_H:effect) (state_C:eff
         match me with 
           Meth (t, mn , list_parm, PrePost (pre, post), expression) -> 
             let subPre = substituteEffWithAgrs pre exprList list_parm in 
-            let his_cur = normalEffect (concatEffEff state_H state_C) in 
+            let subPost = substituteEffWithAgrs post exprList list_parm in 
+            let his_cur =  (concatEffEff state_H state_C) in 
             if checkPrecondition (his_cur) subPre == true then 
               (print_string ("[Precondition holds] when " ^caller ^" is calling " ^ mn ^"\n\n");
               
-              print_string ( (showEffect (normalEffect state_C)) ^"\n");
-              print_string ( (showEffect (normalEffect post)) ^"\n");
-              print_string ( showEffect (concatEffEff (normalEffect state_C) (normalEffect post)) ^"\n");
-              let newState = (normalEffect (concatEffEff (normalEffect state_C) (normalEffect post))) in
-              print_string ( (showEffect newState) ^"\n");
+              let newState = ( (concatEffEff ( state_C) ( subPost))) in
               newState)
      
             else 
@@ -236,17 +233,17 @@ let rec verification (dec:declare) (prog: program): string =
     Include str -> ""
   | Method (Meth (t, mn , list_parm, PrePost (pre, post), expression)) -> 
     let head = "[Verification for method: "^mn^"]\n"in 
-    let precon = "[Precondition: "^(showEffect (normalEffect pre)) ^ "]\n" in
-    let postcon = "[Postcondition: "^ (showEffect (normalEffect post)) ^ "]\n" in 
-    let acc = normalEffect (verifier mn expression (pre) (Effect (TRUE, Emp)) prog) in 
-    let accumulated = "[Real Effect: " ^(showEffect (normalEffect acc )) ^ "]\n" in 
+    let precon = "[Precondition: "^(showEffect ( pre)) ^ "]\n" in
+    let postcon = "[Postcondition: "^ (showEffect ( post)) ^ "]\n" in 
+    let acc =  (verifier mn expression (pre) (Effect (TRUE, Emp)) prog) in 
+    let accumulated = "[Real Effect: " ^(showEffect ( acc )) ^ "]\n" in 
     print_string((showEntailmentEff acc post) ^ "\n") ;
-    (*
+    
     let varList = append (getAllVarFromEff acc) (getAllVarFromEff post) in  
-    let (result_tree, result) =  Rewriting.containment acc (normalEffect post) [] varList in 
+    let (result_tree, result) =  Rewriting.containment acc ( post) [] varList in 
     let result = "[Result: "^ string_of_bool result ^"]\n" in 
-    let printTree = printTree ~line_prefix:"* " ~get_name ~get_children result_tree in*)
-    "=======================\n"^ head ^ precon ^ accumulated ^ postcon (*^ result ^ "\n" ^ printTree *)^ "\n"
+    let printTree = printTree ~line_prefix:"* " ~get_name ~get_children result_tree in
+    "=======================\n"^ head ^ precon ^ accumulated ^ postcon ^ result ^ "\n" ^ printTree ^ "\n"
     
  ;;
 
