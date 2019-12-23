@@ -106,24 +106,7 @@ let rec searMeth (prog: program) (name:string) : meth option=
     )
     ;;
 
-let rec substituteTermWithAgr (t:terms) (realArg:expression) (formalArg: var):terms = 
-  match t with 
-    Var str -> if String.compare formalArg str == 0 then 
-    (
-      match realArg with 
-        Integer n -> Number n
-      | Variable v -> Var v
-      | Bool true -> Number 1
-      | Bool false -> Number 0
-      | BinOp (Variable v, Integer n, "+") -> Plus (Var v,  n)
-      | BinOp (Variable v, Integer n, "-") -> Minus (Var v,  n)
-      | _ -> raise (Foo "substituteTermWithAgr exception")
-    )
-    else Var str 
-  | Number n -> Number n
-  | Plus (term, n) -> Plus (substituteTermWithAgr term realArg formalArg, n)
-  | Minus (term, n) -> Minus (substituteTermWithAgr term realArg formalArg, n)
-  ;;
+
 
 
 let rec substitutePureWithAgr (pi:pure) (realArg:expression) (formalArg: var):pure = 
@@ -138,18 +121,7 @@ let rec substitutePureWithAgr (pi:pure) (realArg:expression) (formalArg: var):pu
   | Neg p -> Neg (substitutePureWithAgr p realArg formalArg)
   ;;
 
-let rec substituteESWithAgr (es:es) (realArg:expression) (formalArg: var):es = 
-  match es with 
-    Bot  -> es
-  | Emp  -> es
-  | Event ev  -> es
-  | Cons (es1, es2) ->  Cons (substituteESWithAgr es1 realArg formalArg, substituteESWithAgr es2 realArg formalArg)
-  | ESOr (es1, es2) ->  ESOr (substituteESWithAgr es1 realArg formalArg, substituteESWithAgr es2 realArg formalArg)
-  | Ttimes (esIn, t) -> Ttimes (substituteESWithAgr esIn realArg formalArg, substituteTermWithAgr t realArg formalArg)
-  | Kleene esIn -> Kleene (substituteESWithAgr esIn realArg formalArg)
-  | Omega esIn -> Omega (substituteESWithAgr esIn realArg formalArg)
-  | Underline -> es
-  ;;
+
 
 
 let rec substituteEffWithAgr (eff:effect) (realArg:expression) (formalArg: var):effect = 
@@ -197,6 +169,8 @@ let rec verifier (caller:string) (expr:expression) (state_H:effect) (state_C:eff
   | Seq (e1, e2) -> 
     let state_C' = verifier caller e1 state_H state_C prog in 
     verifier caller e2 state_H state_C' prog
+  | Assign (v, e) -> verifier caller e state_H state_C prog 
+  | LocalDel (t, v , e) ->   verifier caller e state_H state_C prog      
   | IfElse (e1, e2, e3) -> 
     let condIf = condToPure e1 in 
     let condElse = Neg condIf in 
@@ -216,10 +190,8 @@ let rec verifier (caller:string) (expr:expression) (state_H:effect) (state_C:eff
             let his_cur =  (concatEffEff state_H state_C) in 
             if checkPrecondition (his_cur) subPre == true then 
               (print_string ("[Precondition holds] when " ^caller ^" is calling " ^ mn ^"\n\n");
-              
               let newState = ( (concatEffEff ( state_C) ( subPost))) in
               newState)
-     
             else 
             raise (Foo ("PreCondition does not hold when " ^ caller^" is calling: "^ name ^"!\n"^printReport (reverseEff his_cur) (reverseEff pre)))
       

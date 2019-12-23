@@ -170,3 +170,35 @@ let rec reverseEff (eff:effect) : effect =
     Effect (p,es) ->  Effect (p, reverseEs es)
   | Disj (eff1, eff2) -> Disj ((reverseEff eff1), (reverseEff eff2)) 
   ;;
+
+let rec substituteTermWithAgr (t:terms) (realArg:expression) (formalArg: var):terms = 
+  match t with 
+    Var str -> if String.compare formalArg str == 0 then 
+    (
+      match realArg with 
+        Integer n -> Number n
+      | Variable v -> Var v
+      | Bool true -> Number 1
+      | Bool false -> Number 0
+      | BinOp (Variable v, Integer n, "+") -> Plus (Var v,  n)
+      | BinOp (Variable v, Integer n, "-") -> Minus (Var v,  n)
+      | _ -> raise (Foo "substituteTermWithAgr exception")
+    )
+    else Var str 
+  | Number n -> Number n
+  | Plus (term, n) -> Plus (substituteTermWithAgr term realArg formalArg, n)
+  | Minus (term, n) -> Minus (substituteTermWithAgr term realArg formalArg, n)
+  ;;
+
+let rec substituteESWithAgr (es:es) (realArg:expression) (formalArg: var):es = 
+  match es with 
+    Bot  -> es
+  | Emp  -> es
+  | Event ev  -> es
+  | Cons (es1, es2) ->  Cons (substituteESWithAgr es1 realArg formalArg, substituteESWithAgr es2 realArg formalArg)
+  | ESOr (es1, es2) ->  ESOr (substituteESWithAgr es1 realArg formalArg, substituteESWithAgr es2 realArg formalArg)
+  | Ttimes (esIn, t) -> Ttimes (substituteESWithAgr esIn realArg formalArg, substituteTermWithAgr t realArg formalArg)
+  | Kleene esIn -> Kleene (substituteESWithAgr esIn realArg formalArg)
+  | Omega esIn -> Omega (substituteESWithAgr esIn realArg formalArg)
+  | Underline -> es
+  ;;

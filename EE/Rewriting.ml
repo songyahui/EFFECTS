@@ -145,6 +145,7 @@ let rec normalTerms (t:terms):terms  =
   | _ -> t 
   ;;
 
+
 let rec normalES es pi = 
   match es with
     Bot -> es
@@ -177,6 +178,7 @@ let rec normalES es pi =
       | _ -> 
         let allPi = getAllPi pi [] in 
         if (existPi (Eq (terms, 0)) allPi) || (compareTerm t (Number 0 )) then Emp else Ttimes (normalInside, t))
+        (*else if (existPi (Eq (terms, n)) allPi)) then Emp else Ttimes (normalInside, t))*)
   | Omega es1 -> 
       let normalInside = normalES es1 pi in 
       (match normalInside with
@@ -411,6 +413,107 @@ let rec quantified_in_LHS esL str =
   | _ -> false
   ;;
 
+let rec getFirstVar (es :es): string option = 
+    match es with 
+      Cons (es1, es2) -> 
+        (
+        match getFirstVar es1 with 
+          None -> getFirstVar es2 
+        | Some str -> Some str
+        )
+    | ESOr (es1, es2) -> 
+        (
+        match getFirstVar es1 with 
+          None -> getFirstVar es2 
+        | Some str -> Some str
+        )
+    | Ttimes (esIn, t) -> 
+        let rec getVarFromTerm term = 
+          match term with 
+            Var str -> Some str 
+          | Number n -> None 
+          | Plus (tt, n) -> getVarFromTerm tt 
+          | Minus (tt, n) -> getVarFromTerm tt 
+        in getVarFromTerm t 
+    | Kleene esIn -> getFirstVar esIn
+    | Omega esIn -> getFirstVar esIn
+    | _ -> None
+;;
+
+let existialRHS esL esR:bool = 
+  let rec checkExist es str:bool =
+    match es with 
+      Cons (es1, es2) -> checkExist es1 str || checkExist es2 str
+    | ESOr (es1, es2) -> checkExist es1 str || checkExist es2 str
+    | Ttimes (esIn, te) -> 
+      let rec checkExistTerm t s = 
+        match t with 
+          Var str -> String.compare s str == 0
+        | Number n -> false 
+        | Plus (tt, n) -> checkExistTerm tt s
+        | Minus (tt, n) -> checkExistTerm tt s
+      in 
+      checkExistTerm te str
+    | Kleene esIn -> checkExist esIn str
+    | Omega esIn ->  checkExist esIn str
+    | _ -> false
+  in 
+  match getFirstVar esR with 
+    None -> false
+  | Some (str) -> 
+  (*print_string (str^"\n");*)
+  not (checkExist esL str)
+  ;;
+
+let getInstansVal esL: int list = 
+  let rec getAllVal (es :es): int list = 
+    match es with 
+      Cons (es1, es2) -> append (getAllVal es1) (getAllVal es2)
+    | ESOr (es1, es2) -> append (getAllVal es1) (getAllVal es2)
+    | Ttimes (esIn, t) -> 
+        let rec getValFromTerm term = 
+          match term with 
+            Var str -> []
+          | Number n -> [n] 
+          | Plus (tt, n) -> getValFromTerm tt 
+          | Minus (tt, n) -> getValFromTerm tt 
+        in getValFromTerm t 
+    | Kleene esIn -> getAllVal esIn
+    | Omega esIn -> getAllVal esIn
+    | _ -> []
+  in 
+  getAllVal esL
+  ;;
+
+
+let rec substituteTermWithVal (t:terms) (var1:string) (val1: int):terms = 
+  match t with 
+    Var str -> if String.compare var1 str == 0 then (Number val1) else Var str 
+  | Number n -> Number n
+  | Plus (term, n) -> Plus (substituteTermWithVal term var1 val1, n)
+  | Minus (term, n) -> Minus (substituteTermWithVal term var1 val1, n)
+  ;;
+
+let rec substituteESWithVal (es:es) (var1:string) (val1: int):es = 
+  match es with 
+    Bot  -> es
+  | Emp  -> es
+  | Event ev  -> es
+  | Cons (es1, es2) ->  Cons (substituteESWithVal es1 var1 val1, substituteESWithVal es2 var1 val1)
+  | ESOr (es1, es2) ->  ESOr (substituteESWithVal es1 var1 val1, substituteESWithVal es2 var1 val1)
+  | Ttimes (esIn, t) -> Ttimes (substituteESWithVal esIn var1 val1, substituteTermWithVal t var1 val1)
+  | Kleene esIn -> Kleene (substituteESWithVal esIn var1 val1)
+  | Omega esIn -> Omega (substituteESWithVal esIn var1 val1)
+  | Underline -> es
+  ;;
+
+let instantiateEff (pi:pure) (es:es) (instances: int list): effect list = 
+  match getFirstVar es with 
+    None -> []
+  | Some (str) ->  
+    map (fun n -> Effect (pi, substituteESWithVal es str n) ) instances 
+  ;;
+
 
 (*-------------------------------------------------------------
 --------------------Main Entrance------------------------------
@@ -456,18 +559,30 @@ let rec containment (effL:effect) (effR:effect) (delta:context) (varList:string 
   | (Effect (piL, esL), Effect (piR, esR))-> 
       if entailConstrains piL piR == false then (Node(showEntail ^ "   [Contradictory]", []), false)  
       else 
+      (*Existential*)
+        if existialRHS esL esR == true then
+          let instanceFromLeft = getInstansVal esL in 
+          (*print_string (List.fold_left (fun acc a  -> acc ^ string_of_int a ^ "\n") ""  instanceFromLeft );*)
+          let instantiateRHS = instantiateEff piR esR instanceFromLeft in 
+          let resultL = map (fun rhs ->  (containment (Effect (piL, esL)) rhs delta varList)) instantiateRHS in
+          let trees = map (fun tuple -> getFst tuple ) resultL in
+          let results = map (fun tuple -> getSnd tuple ) resultL in
+          (*must be all the sub trees success && *)
+          let result = List.fold_right ( || ) results false in  
+          (Node(showEntail ^ "   [EXISTENTIAL]", trees ), result) 
 
-        if (comparePure piR FALSE == true ) then (Node(showEntail ^ "   [DISPROVE]", []), false)
-        else if (nullable piL esL) == true && (nullable piR esR) == false 
       (*[DISPROVE]*)
+        else if (comparePure piR FALSE == true ) then (Node(showEntail ^ "   [DISPROVE]", []), false)
+      (*[REFUTATION]*)
+        else if (nullable piL esL) == true && (nullable piR esR) == false 
         then (Node(showEntail ^ "   [REFUTATION]", []), false) 
-        else if (isEmp normalFormR) == true  
       (*[Frame]*)
+        else if (isEmp normalFormR) == true  
         then  (Node(showEntail^"   [Frame-Prove]" ^" with R = "^(showES esL ), []),true) 
-        else if (reoccur piL esL piR esR delta 1) == true  
       (*[Reoccur]*)
+        else if (reoccur piL esL piR esR delta 1) == true  
         then (Node(showEntail ^ "   [Reoccur-Prove]", []), true) 
-                            
+      (*Unfold*)                    
       else 
         (match esL with
         (*LHSEX*)

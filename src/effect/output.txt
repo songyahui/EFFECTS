@@ -1,20 +1,21 @@
 ====================================
-5>0/\((Ready.((Send^5).Done))^w) |- TRUE/\((Ready.((Send^5).Done))^w)
+(TRUE/\(5>0\/5=0))/\(emp.(((Ready.(Send^5)).Done)^w)) |- TRUE/\(((Ready.(Send^n)).Done)^w)
 [Result] Succeed
 
-* 5>0/\((Ready.((Send^5).Done))^w) |- TRUE/\((Ready.((Send^5).Done))^w)
-* └── 5>0/\((Ready.((Send^5).Done))^w) |- TRUE/\((Ready.((Send^5).Done))^w)   [Unfold with Fst = Ready]
-*     └── 5>0/\((Send^5).(Done.((Ready.((Send^5).Done))^w))) |- TRUE/\((Send^5).(Done.((Ready.((Send^5).Done))^w)))
-*         └── 5>0/\((Send^5).(Done.((Ready.((Send^5).Done))^w))) |- TRUE/\((Send^5).(Done.((Ready.((Send^5).Done))^w)))   [Unfold with Fst = Send]
-*             └── 5>0/\((Send^4).(Done.((Ready.((Send^5).Done))^w))) |- 5>0/\((Send^4).(Done.((Ready.((Send^5).Done))^w)))
-*                 └── 5>0/\((Send^4).(Done.((Ready.((Send^5).Done))^w))) |- 5>0/\((Send^4).(Done.((Ready.((Send^5).Done))^w)))   [Unfold with Fst = Send]
-*                     └── (4>0/\5>0)/\((Send^3).(Done.((Ready.((Send^5).Done))^w))) |- (4>0/\5>0)/\((Send^3).(Done.((Ready.((Send^5).Done))^w)))
-*                         └── (4>0/\5>0)/\((Send^3).(Done.((Ready.((Send^5).Done))^w))) |- (4>0/\5>0)/\((Send^3).(Done.((Ready.((Send^5).Done))^w)))   [Unfold with Fst = Send]
-*                             └── (4>0/\(3>0/\5>0))/\((Send^2).(Done.((Ready.((Send^5).Done))^w))) |- (4>0/\(3>0/\5>0))/\((Send^2).(Done.((Ready.((Send^5).Done))^w)))
-*                                 └── (4>0/\(3>0/\5>0))/\((Send^2).(Done.((Ready.((Send^5).Done))^w))) |- (4>0/\(3>0/\5>0))/\((Send^2).(Done.((Ready.((Send^5).Done))^w)))   [Unfold with Fst = Send]
-*                                     └── (4>0/\(3>0/\(2>0/\5>0)))/\((Send^1).(Done.((Ready.((Send^5).Done))^w))) |- (4>0/\(3>0/\(2>0/\5>0)))/\((Send^1).(Done.((Ready.((Send^5).Done))^w)))
-*                                         └── (4>0/\(3>0/\(2>0/\5>0)))/\((Send^1).(Done.((Ready.((Send^5).Done))^w))) |- (4>0/\(3>0/\(2>0/\5>0)))/\((Send^1).(Done.((Ready.((Send^5).Done))^w)))   [Unfold with Fst = Send]
-*                                             └── (4>0/\(3>0/\(2>0/\(1>0/\5>0))))/\(Done.((Ready.((Send^5).Done))^w)) |- (4>0/\(3>0/\(2>0/\(1>0/\5>0))))/\(Done.((Ready.((Send^5).Done))^w))
-*                                                 └── (4>0/\(3>0/\(2>0/\(1>0/\5>0))))/\(Done.((Ready.((Send^5).Done))^w)) |- (4>0/\(3>0/\(2>0/\(1>0/\5>0))))/\(Done.((Ready.((Send^5).Done))^w))   [Unfold with Fst = Done]
-*                                                     └── (4>0/\(3>0/\(2>0/\(1>0/\5>0))))/\((Ready.((Send^5).Done))^w) |- (4>0/\(3>0/\(2>0/\(1>0/\5>0))))/\((Ready.((Send^5).Done))^w)   [Reoccur-Prove]
+* 5>0/\((Ready.((Send^5).Done))^w) |- TRUE/\((Ready.((Send^n).Done))^w)   [EXISTENTIAL]
+* └── 5>0/\((Ready.((Send^5).Done))^w) |- TRUE/\((Ready.((Send^5).Done))^w)
+*     └── 5>0/\((Ready.((Send^5).Done))^w) |- TRUE/\((Ready.((Send^5).Done))^w)   [Unfold with Fst = Ready]
+*         └── 5>0/\((Send^5).(Done.((Ready.((Send^5).Done))^w))) |- TRUE/\((Send^5).(Done.((Ready.((Send^5).Done))^w)))
+*             └── 5>0/\((Send^5).(Done.((Ready.((Send^5).Done))^w))) |- TRUE/\((Send^5).(Done.((Ready.((Send^5).Done))^w)))   [Unfold with Fst = Send]
+*                 └── 5>0/\((Send^4).(Done.((Ready.((Send^5).Done))^w))) |- 5>0/\((Send^4).(Done.((Ready.((Send^5).Done))^w)))
+*                     └── 5>0/\((Send^4).(Done.((Ready.((Send^5).Done))^w))) |- 5>0/\((Send^4).(Done.((Ready.((Send^5).Done))^w)))   [Unfold with Fst = Send]
+*                         └── (4>0/\5>0)/\((Send^3).(Done.((Ready.((Send^5).Done))^w))) |- (4>0/\5>0)/\((Send^3).(Done.((Ready.((Send^5).Done))^w)))
+*                             └── (4>0/\5>0)/\((Send^3).(Done.((Ready.((Send^5).Done))^w))) |- (4>0/\5>0)/\((Send^3).(Done.((Ready.((Send^5).Done))^w)))   [Unfold with Fst = Send]
+*                                 └── (4>0/\(3>0/\5>0))/\((Send^2).(Done.((Ready.((Send^5).Done))^w))) |- (4>0/\(3>0/\5>0))/\((Send^2).(Done.((Ready.((Send^5).Done))^w)))
+*                                     └── (4>0/\(3>0/\5>0))/\((Send^2).(Done.((Ready.((Send^5).Done))^w))) |- (4>0/\(3>0/\5>0))/\((Send^2).(Done.((Ready.((Send^5).Done))^w)))   [Unfold with Fst = Send]
+*                                         └── (4>0/\(3>0/\(2>0/\5>0)))/\((Send^1).(Done.((Ready.((Send^5).Done))^w))) |- (4>0/\(3>0/\(2>0/\5>0)))/\((Send^1).(Done.((Ready.((Send^5).Done))^w)))
+*                                             └── (4>0/\(3>0/\(2>0/\5>0)))/\((Send^1).(Done.((Ready.((Send^5).Done))^w))) |- (4>0/\(3>0/\(2>0/\5>0)))/\((Send^1).(Done.((Ready.((Send^5).Done))^w)))   [Unfold with Fst = Send]
+*                                                 └── (4>0/\(3>0/\(2>0/\(1>0/\5>0))))/\(Done.((Ready.((Send^5).Done))^w)) |- (4>0/\(3>0/\(2>0/\(1>0/\5>0))))/\(Done.((Ready.((Send^5).Done))^w))
+*                                                     └── (4>0/\(3>0/\(2>0/\(1>0/\5>0))))/\(Done.((Ready.((Send^5).Done))^w)) |- (4>0/\(3>0/\(2>0/\(1>0/\5>0))))/\(Done.((Ready.((Send^5).Done))^w))   [Unfold with Fst = Done]
+*                                                         └── (4>0/\(3>0/\(2>0/\(1>0/\5>0))))/\((Ready.((Send^5).Done))^w) |- (4>0/\(3>0/\(2>0/\(1>0/\5>0))))/\((Ready.((Send^5).Done))^w)   [Reoccur-Prove]
 
