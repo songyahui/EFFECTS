@@ -647,22 +647,22 @@ let rec containment (effL:effect) (effR:effect) (delta:context) (varList:string 
                 )
             | Plus  (Var t, num) -> 
             (*[LHSSUB]*)
-                        (*let newVar = getAfreeVar varList in *)
-                        let lhs = substituteEffStar normalFormL  (Plus  (Var t, num))  in
-                        let rhs = substituteEffStar normalFormR  (Plus  (Var t, num))  in
+                        let newVar = getAfreeVar varList in 
+                        let lhs = substituteEff normalFormL  (Plus  (Var t, num))  (Var newVar) in
+                        let rhs = substituteEff normalFormR  (Plus  (Var t, num))  (Var newVar) in
                         (*let cnod = PureOr (Eq (Var newVar, 0), Gt (Var newVar, 0)) in 
                         let lhs' = addConstrain lhs cnod in 
                         let rhs' = addConstrain rhs cnod in 
                         let (tree, re) = containment lhs' rhs' delta (newVar::varList)in
                         let (tree, re) = containment lhs rhs delta (newVar::varList)in*)
-                        let (tree, re) = containment lhs rhs delta (varList)in
+                        let (tree, re) = containment lhs rhs delta (newVar:: varList)in
                         (Node (showEntailmentEff normalFormL normalFormR ,[tree] ), re)
             | Minus (Var t, num) -> 
             (*[LHSSUB]*)
-                        (*let newVar = getAfreeVar varList in *)
-                        let lhs = substituteEffStar normalFormL  (Minus  (Var t, num)) in
-                        let rhs = substituteEffStar normalFormR  (Minus  (Var t, num)) in
-                        let (tree, re) = containment lhs rhs delta (varList)in
+                        let newVar = getAfreeVar varList in 
+                        let lhs = substituteEff normalFormL  (Minus  (Var t, num)) (Var newVar) in
+                        let rhs = substituteEff normalFormR  (Minus  (Var t, num)) (Var newVar) in
+                        let (tree, re) = containment lhs rhs delta (newVar::varList)in
                         (Node (showEntailmentEff normalFormL normalFormR ,[tree] ), re)
             | Number n -> unfold delta piL esL piR esR
             | _ -> print_endline (showEntailmentEff normalFormL normalFormR);
@@ -687,16 +687,16 @@ let rec containment (effL:effect) (effR:effect) (delta:context) (varList:string 
                         | false -> (*UNFOLD*) unfold delta piL esL piR esR
                         )
               | Plus  (Var t, num) -> 
-                        (*let newVar = getAfreeVar varList in *)
-                        let lhs = substituteEffStar normalFormL  (Plus  (Var t, num))  in
-                        let rhs = substituteEffStar normalFormR  (Plus  (Var t, num)) in
-                        let (tree, re) = containment lhs rhs delta (varList)in
+                        let newVar = getAfreeVar varList in 
+                        let lhs = substituteEff normalFormL  (Plus  (Var t, num)) (Var newVar) in
+                        let rhs = substituteEff normalFormR  (Plus  (Var t, num)) (Var newVar) in
+                        let (tree, re) = containment lhs rhs delta (newVar::varList)in
                         (Node (showEntailmentEff normalFormL normalFormR ,[tree] ), re)
               | Minus (Var t, num) -> 
-                        (*let newVar = getAfreeVar varList in *)
-                        let lhs = substituteEffStar normalFormL  (Minus  (Var t, num)) in
-                        let rhs = substituteEffStar normalFormR  (Minus  (Var t, num)) in
-                        let (tree, re) = containment lhs rhs delta (varList)in
+                        let newVar = getAfreeVar varList in 
+                        let lhs = substituteEff normalFormL  (Minus  (Var t, num)) (Var newVar) in
+                        let rhs = substituteEff normalFormR  (Minus  (Var t, num)) (Var newVar) in
+                        let (tree, re) = containment lhs rhs delta (newVar::varList)in
                         (Node (showEntailmentEff normalFormL normalFormR ,[tree] ), re)
               | Number n -> unfold delta piL esL piR esR
               | _ -> print_endline (showEntailmentEff normalFormL normalFormR);
@@ -725,18 +725,18 @@ let rec containment (effL:effect) (effR:effect) (delta:context) (varList:string 
                 | Plus  (Var t, num) -> 
                         if quantified_in_LHS esL t then unfold delta piL esL piR esR
                         else 
-                        (*let newVar = getAfreeVar varList in *)
-                        let lhs = substituteEffStar normalFormL  (Plus  (Var t, num))  in
-                        let rhs = substituteEffStar normalFormR  (Plus  (Var t, num))  in
-                        let (tree, re) = containment lhs rhs delta (varList)in
+                        let newVar = getAfreeVar varList in
+                        let lhs = substituteEff normalFormL  (Plus  (Var t, num)) (Var newVar) in
+                        let rhs = substituteEff normalFormR  (Plus  (Var t, num)) (Var newVar) in
+                        let (tree, re) = containment lhs rhs delta (newVar::varList)in
                         (Node (showEntailmentEff normalFormL normalFormR ,[tree] ), re)
                 | Minus (Var t, num) -> 
                         if quantified_in_LHS esL t then unfold delta piL esL piR esR
                         else 
-                        (*let newVar = getAfreeVar varList in *)
-                        let lhs = substituteEffStar normalFormL  (Minus  (Var t, num))  in
-                        let rhs = substituteEffStar normalFormR  (Minus  (Var t, num)) in
-                        let (tree, re) = containment lhs rhs delta (varList)in
+                        let newVar = getAfreeVar varList in 
+                        let lhs = substituteEff normalFormL  (Minus  (Var t, num)) (Var newVar) in
+                        let rhs = substituteEff normalFormR  (Minus  (Var t, num)) (Var newVar) in
+                        let (tree, re) = containment lhs rhs delta (newVar::varList)in
                         (Node (showEntailmentEff normalFormL normalFormR ,[tree] ), re)
                 | Number n -> unfold delta piL esL piR esR
                 | _ -> print_endline (showEntailmentEff normalFormL normalFormR);
@@ -763,18 +763,18 @@ let rec containment (effL:effect) (effR:effect) (delta:context) (varList:string 
                 | Plus  (Var t, num) -> 
                         if quantified_in_LHS esL t then unfold delta piL esL piR esR
                         else 
-                        (*let newVar = getAfreeVar varList in *)
-                        let lhs = substituteEffStar normalFormL  (Plus  (Var t, num)) in
-                        let rhs = substituteEffStar normalFormR  (Plus  (Var t, num))  in
-                        let (tree, re) = containment lhs rhs delta (varList)in
+                        let newVar = getAfreeVar varList in 
+                        let lhs = substituteEff normalFormL  (Plus  (Var t, num)) (Var newVar)  in
+                        let rhs = substituteEff normalFormR  (Plus  (Var t, num))  (Var newVar) in
+                        let (tree, re) = containment lhs rhs delta (newVar::varList)in
                         (Node (showEntailmentEff normalFormL normalFormR ,[tree] ), re)
                 | Minus (Var t, num) -> 
                         if quantified_in_LHS esL t then unfold delta piL esL piR esR
                         else 
-                        (*let newVar = getAfreeVar varList in *)
-                        let lhs = substituteEffStar normalFormL  (Minus  (Var t, num))  in
-                        let rhs = substituteEffStar normalFormR  (Minus  (Var t, num))  in
-                        let (tree, re) = containment lhs rhs delta (varList)in
+                        let newVar = getAfreeVar varList in 
+                        let lhs = substituteEff normalFormL  (Minus  (Var t, num)) (Var newVar)  in
+                        let rhs = substituteEff normalFormR  (Minus  (Var t, num)) (Var newVar)  in
+                        let (tree, re) = containment lhs rhs delta (newVar::varList)in
                         (Node (showEntailmentEff normalFormL normalFormR ,[tree] ), re)
                 | Number n -> unfold delta piL esL piR esR
                 | _ -> print_endline (showEntailmentEff normalFormL normalFormR);
@@ -973,64 +973,4 @@ let rec runTestcases (suites :entailment list) =
     runTestcases xs
     ;;
 
-(*let runsutes = runTestcases testcases;;
-
-  
-let deday = 
-  let tick = (Event "Tick") in 
-  let lightup = (Event "LightUp") in 
-  let eff1 = Effect (Gt (Var "t" ,-1), Cons (Ttimes (tick, Var "t"), lightup)) in 
-
-  let eff1_1 = Cons (Ttimes (tick, (Minus(Var "t",1))), lightup) in 
-  let effIF = Effect (Eq (Var "t" ,0), lightup) in
-  let elseF1 = Effect (PureOr(Gt (Var "t" ,0),Lt (Var "t" ,0)), Cons(tick, eff1_1)) in
-  let elseF2 = Effect(PureOr(Gt (Var "t" ,0),Lt (Var "t" ,0)) , Cons (tick,Omega (tick))) in 
-  let effELSE = Disj (elseF1 , elseF2) in
-  let eff0 = Disj(effIF, effELSE) in
-  let effect_delay = Disj (eff1, elseF2) in
-  
-  let lhs = eff0 in 
-  let rhs = effect_delay in
-  
-  printReport lhs rhs ;;
-*)
-
-  (*
-  1, parser
-  2, website
-  2, comparasion
-  *)
-
-
-
-(*
-
-ocamllex lexer.mll
-menhir parser.mly
-ocamlc -c ast.mli
-ocamlc -c parser.mli
-ocamlc -c parser.ml
-ocamlc -c lexer.ml
-ocamlc -c Askz3.ml
-ocamlc -c Rewriting.ml
-ocamlc -o trs parser.cmo lexer.cmo Askz3.cmo Rewriting.cmo
-
-sudo ocamllex lexer.mll
-sudo menhir parser.mly
-sudo ocamlc -c ast.mli
-sudo ocamlc -c parser.mli
-sudo ocamlc -c parser.ml
-sudo ocamlc -c lexer.ml
-sudo ocamlc -c Askz3.ml
-sudo ocamlc -c Rewriting.ml
-sudo ocamlc -o trs parser.cmo lexer.cmo Askz3.cmo Rewriting.cmo
-
-ocamlfind ocamlopt -o trs -cclib -lstdc++ -thread -package z3 -linkpkg Tree.ml Askz3.ml Rewriting.ml parser.ml lexer.ml EffectParse.ml
-
-1. containment, entilment, term rewriting system.
-2. not complete.
-
-prove reoccur, 2 times, 1 time?
-subsititution. 
-
-*)
+(*have some problem on exitantial now*)
