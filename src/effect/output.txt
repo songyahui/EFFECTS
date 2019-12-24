@@ -10,19 +10,30 @@
 * │   │       └── n=0/\Done |- n=0/\Done   [Unfold with Fst = Done]
 * │   │           └── n=0/\emp |- n=0/\emp   [Frame-Prove] with R = emp
 * │   └── n=0/\Done |- n<0/\(Send^w)   [Contradictory]
-* └── (((~(n=0))/\n-1>0)/\(Send.((Send^n-1).Done)))\/(((~(n=0))/\n-1<0)/\(Send.(Send^w))) |- ((n>0/\((Send^n).Done))\/(n=0/\Done))\/(n<0/\(Send^w)) [LHSOR] 
-*     ├── (n-1>0/\(~(n=0)))/\(Send.((Send^n-1).Done)) |- ((n>0/\((Send^n).Done))\/(n=0/\Done))\/(n<0/\(Send^w)) [RHSOR] 
-*     │   ├── (n-1>0/\(~(n=0)))/\(Send.((Send^n-1).Done)) |- (n>0/\((Send^n).Done))\/(n=0/\Done) [RHSOR] 
-*     │   │   ├── ((~(n=0))/\n-1>0)/\(Send.((Send^n-1).Done)) |- n>0/\((Send^n).Done)
-*     │   │   │   └── ((~(n=0))/\n-1>0)/\(Send.((Send^n-1).Done)) |- n>0/\((Send^n).Done)   [Unfold with Fst = Send]
-*     │   │   │       └── ((~(n=0))/\n-1>0)/\((Send^n-1).Done) |- n>0/\((Send^n-1).Done)
-*     │   │   │           └── ((~(n=0))/\n-1>0)/\((Send^*).Done) |- n>0/\((Send^*).Done)
-*     │   │   │               ├── ((~(n=0))/\n-1>0)/\((Send^*).Done) |- n>0/\((Send^*).Done)   [Unfold with Fst = Send]
-*     │   │   │               │   └── ((~(n=0))/\n-1>0)/\((Send^*).Done) |- n>0/\((Send^*).Done)   [Reoccur-Prove]
-*     │   │   │               └── ((~(n=0))/\n-1>0)/\((Send^*).Done) |- n>0/\((Send^*).Done)   [Unfold with Fst = Done]
-*     │   │   │                   └── ((~(n=0))/\n-1>0)/\emp |- n>0/\emp   [Frame-Prove] with R = emp
-*     │   │   └── (n-1>0/\(~(n=0)))/\(Send.((Send^n-1).Done)) |- n=0/\Done   [Contradictory]
-*     │   └── (n-1>0/\(~(n=0)))/\(Send.((Send^n-1).Done)) |- n<0/\(Send^w)   [Contradictory]
+* └── ((((~(n=0))/\n-1>0)/\(Send.((Send^n-1).Done)))\/(((~(n=0))/\n-1=0)/\(Send.Done)))\/(((~(n=0))/\n-1<0)/\(Send.(Send^w))) |- ((n>0/\((Send^n).Done))\/(n=0/\Done))\/(n<0/\(Send^w)) [LHSOR] 
+*     ├── ((n-1>0/\(~(n=0)))/\(Send.((Send^n-1).Done)))\/((n-1=0/\(~(n=0)))/\(Send.Done)) |- ((n>0/\((Send^n).Done))\/(n=0/\Done))\/(n<0/\(Send^w)) [LHSOR] 
+*     │   ├── ((~(n=0))/\n-1>0)/\(Send.((Send^n-1).Done)) |- ((n>0/\((Send^n).Done))\/(n=0/\Done))\/(n<0/\(Send^w)) [RHSOR] 
+*     │   │   ├── ((~(n=0))/\n-1>0)/\(Send.((Send^n-1).Done)) |- (n>0/\((Send^n).Done))\/(n=0/\Done) [RHSOR] 
+*     │   │   │   ├── (n-1>0/\(~(n=0)))/\(Send.((Send^n-1).Done)) |- n>0/\((Send^n).Done)
+*     │   │   │   │   └── (n-1>0/\(~(n=0)))/\(Send.((Send^n-1).Done)) |- n>0/\((Send^n).Done)   [Unfold with Fst = Send]
+*     │   │   │   │       └── (n-1>0/\(~(n=0)))/\((Send^n-1).Done) |- n>0/\((Send^n-1).Done)
+*     │   │   │   │           └── (n-1>0/\(~(n=0)))/\((Send^*).Done) |- n>0/\((Send^*).Done)
+*     │   │   │   │               ├── (n-1>0/\(~(n=0)))/\((Send^*).Done) |- n>0/\((Send^*).Done)   [Unfold with Fst = Send]
+*     │   │   │   │               │   └── (n-1>0/\(~(n=0)))/\((Send^*).Done) |- n>0/\((Send^*).Done)   [Reoccur-Prove]
+*     │   │   │   │               └── (n-1>0/\(~(n=0)))/\((Send^*).Done) |- n>0/\((Send^*).Done)   [Unfold with Fst = Done]
+*     │   │   │   │                   └── (n-1>0/\(~(n=0)))/\emp |- n>0/\emp   [Frame-Prove] with R = emp
+*     │   │   │   └── ((~(n=0))/\n-1>0)/\(Send.((Send^n-1).Done)) |- n=0/\Done   [Contradictory]
+*     │   │   └── ((~(n=0))/\n-1>0)/\(Send.((Send^n-1).Done)) |- n<0/\(Send^w)   [Contradictory]
+*     │   └── ((~(n=0))/\n-1=0)/\(Send.Done) |- ((n>0/\((Send^n).Done))\/(n=0/\Done))\/(n<0/\(Send^w)) [RHSOR] 
+*     │       ├── ((~(n=0))/\n-1=0)/\(Send.Done) |- (n>0/\((Send^n).Done))\/(n=0/\Done) [RHSOR] 
+*     │       │   ├── (n-1=0/\(~(n=0)))/\(Send.Done) |- n>0/\((Send^n).Done)
+*     │       │   │   └── (n-1=0/\(~(n=0)))/\(Send.Done) |- n>0/\((Send^n).Done)   [Unfold with Fst = Send]
+*     │       │   │       └── (n-1=0/\(~(n=0)))/\Done |- n>0/\((Send^n-1).Done)
+*     │       │   │           └── (n-1=0/\(~(n=0)))/\Done |- n>0/\((Send^*).Done)
+*     │       │   │               └── (n-1=0/\(~(n=0)))/\Done |- n>0/\((Send^*).Done)   [Unfold with Fst = Done]
+*     │       │   │                   └── (n-1=0/\(~(n=0)))/\emp |- n>0/\emp   [Frame-Prove] with R = emp
+*     │       │   └── ((~(n=0))/\n-1=0)/\(Send.Done) |- n=0/\Done   [Contradictory]
+*     │       └── ((~(n=0))/\n-1=0)/\(Send.Done) |- n<0/\(Send^w)   [Contradictory]
 *     └── (n-1<0/\(~(n=0)))/\(Send.(Send^w)) |- ((n>0/\((Send^n).Done))\/(n=0/\Done))\/(n<0/\(Send^w)) [RHSOR] 
 *         ├── (n-1<0/\(~(n=0)))/\(Send.(Send^w)) |- (n>0/\((Send^n).Done))\/(n=0/\Done) [RHSOR] 
 *         │   ├── (n-1<0/\(~(n=0)))/\(Send.(Send^w)) |- n>0/\((Send^n).Done)   [Contradictory]
