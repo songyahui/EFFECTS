@@ -17,12 +17,34 @@ chmod 755 compile
 
 # Server:
 
-rm -f /home/project/public_html/Effect/cgi-bin/code
+sudo rm -r EFFECTS/
 
-sudo rm -r code
+mkdir EFFECTS
 
-sudo cp -r  ~yahui/hg/EFFECTS/* /home/project/public_html/Effect/cgi-bin/EFFECTS
+sudo cp -r  ~yahui/EFFECTS/* /home/project/public_html/Effect/cgi-bin/EFFECTS
 
-chown yahui:yahui /
+sudo chown yahui:yahui -R /home/project/public_html/Effect/cgi-bin/EFFECTS
+
+cd EFFECTS
+
+./compile
+
+sudo cp trs ../
+
+sudo cp verify ../
+
+cd ..
+
+sudo chown www-data:www-data trs 
+
+sudo chown www-data:www-data verify
+
+
+
+
+
+
+
+
 
 
