@@ -11,6 +11,8 @@ chmod 755 compile
 
 ./compile
 
+git ls-files | xargs wc -l
+
 # Example:
 
 ./trs src/effect/ex1.ee src/effect/output.txt > src/effect/output.txt 2>&1
