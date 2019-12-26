@@ -569,30 +569,39 @@ let rec containment (effL:effect) (effR:effect) (delta:context) (varList:string 
     let derivR = derivative piR esR ev in
     let deltaNew = append del [(piL, esL, piR, esR)] in
     let (tree, result) = containment derivL derivR deltaNew varList in
-    (Node (showEntailmentEff (normalEffect (Effect(piL, esL))) (normalEffect(Effect(piR, esR))) ^ "   [Unfold with Fst = "^  ev ^ "]",[tree] ), result)
+    (Node (showEntailmentEff ( (Effect(piL, esL))) ((Effect(piR, esR))) ^ "   [Unfold with Fst = "^  ev ^ "]",[tree] ), result)
   in
   (*Unfold function which calls unfoldSingle*)
   let unfold del piL esL piR esR= 
     let fstL = fst piL esL in 
-    let resultL = map (fun ev ->  (unfoldSingle ev piL esL piR esR del)) fstL in
-    let trees = map (fun tuple -> getFst tuple ) resultL in
-    let results = map (fun tuple -> getSnd tuple ) resultL in
-    (*must be all the sub trees success && *)
-    let result = List.fold_right ( && ) results true in  
-    (Node (showEntailmentEff (normalEffect (Effect(piL, esL))) (normalEffect(Effect(piR, esR))) ,trees ), result)    
-  in 
+    let rec chceckResultAND li acc =
+      (match li with 
+        [] -> (true, acc) 
+      | ev::fs -> 
+          let (tree, re) = unfoldSingle ev piL esL piR esR del in 
+          if re == false then (false , tree::acc)
+          else chceckResultAND fs (tree::acc)
+      )
+    in 
+    let (resultFinal, trees) = chceckResultAND fstL [] in 
+    (Node (showEntailmentEff ( (Effect(piL, esL))) ((Effect(piR, esR))) ,trees ), resultFinal)    
   
+  in 
   match (normalFormL, normalFormR) with
     (Disj (effL1, effL2), _) -> 
     (*[LHSOR]*)
       let (tree1, re1 ) = (containment effL1 effR delta varList) in
-      let (tree2, re2 ) = (containment effL2 effR delta varList) in
-      (Node (showEntailmentEff normalFormL normalFormR ^ showRule LHSOR, [tree1; tree2] ), re1 && re2)
+      if re1 == false then (Node (showEntailmentEff normalFormL normalFormR ^ showRule LHSOR, [tree1] ),  false)
+      else 
+        let (tree2, re2 ) = (containment effL2 effR delta varList) in
+        (Node (showEntailmentEff normalFormL normalFormR ^ showRule LHSOR, [tree1; tree2] ), re2)
   | (_, Disj (effR1, effR2)) -> 
     (*[RHSOR]*)
       let (tree1, re1 ) = (containment effL effR1 delta varList) in
-      let (tree2, re2 ) = (containment effL effR2 delta varList) in
-      (Node (showEntailmentEff normalFormL normalFormR ^ showRule RHSOR, [tree1; tree2] ), re1 || re2)
+      if re1 == true then (Node (showEntailmentEff normalFormL normalFormR ^ showRule RHSOR, [tree1] ), true)
+      else 
+        let (tree2, re2 ) = (containment effL effR2 delta varList) in
+        (Node (showEntailmentEff normalFormL normalFormR ^ showRule RHSOR, [tree1; tree2] ), re2)
   | (Effect (piL, esL), Effect (piR, esR))-> 
       if entailConstrains piL piR == false then (Node(showEntail ^ "   [Contradictory]", []), false)  
       else 
@@ -601,12 +610,19 @@ let rec containment (effL:effect) (effR:effect) (delta:context) (varList:string 
           let instanceFromLeft = getInstansVal esL in 
           (*print_string (List.fold_left (fun acc a  -> acc ^ string_of_int a ^ "\n") ""  instanceFromLeft );*)
           let instantiateRHS = instantiateEff piR esR instanceFromLeft in 
-          let resultL = map (fun rhs ->  (containment (Effect (piL, esL)) rhs delta varList)) instantiateRHS in
-          let trees = map (fun tuple -> getFst tuple ) resultL in
-          let results = map (fun tuple -> getSnd tuple ) resultL in
-          (*must be all the sub trees success && *)
-          let result = List.fold_right ( || ) results false in  
-          (Node(showEntail ^ "   [EXISTENTIAL]", trees ), result) 
+
+          let rec chceckResultOR li acc =
+            (match li with 
+              [] -> (false , acc) 
+            | rhs::rhss -> 
+                let (tree, re) = containment (Effect (piL, esL)) rhs delta varList in 
+                if re == true then (true , tree::acc)
+                else chceckResultOR rhss (tree::acc)
+            )
+          in 
+          let (resultFinal, trees) = chceckResultOR instantiateRHS [] in
+          (Node(showEntail ^ "   [EXISTENTIAL]", trees ), resultFinal) 
+
 
       (*[DISPROVE]*)
         else if (comparePure piR FALSE == true ) then (Node(showEntail ^ "   [DISPROVE]", []), false)

@@ -149,8 +149,11 @@ let checkPrecondition (state:effect) (pre:effect) : bool =
   (*check containment*)
   let varList = (*append*) (getAllVarFromEff reverseState) (*(getAllVarFromEff reversePre) *)in  
   let (result_tree, result) =  Rewriting.containment reverseState reversePre [] varList in 
+  if result == false then 
   let printTree = printTree ~line_prefix:"* " ~get_name ~get_children result_tree in
   print_string ("=============================\n"^printTree );
+  result;
+  else 
   result;;
 
 let condToPure (expr :expression) :pure = 
