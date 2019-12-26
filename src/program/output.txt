@@ -4,7 +4,7 @@
 [Real Effect: (TRUE/\(5>0\/5=0))/\(emp.(((Ready.(Send^5)).Done)^w))]
 [Postcondition: TRUE/\(((Ready.(Send^n)).Done)^w)]
 [Result: true]
-[Verification Time: 0.029109]
+[Verification Time: 0.029356]
 
 * 5>0/\((Ready.((Send^5).Done))^w) |- TRUE/\((Ready.((Send^n).Done))^w)   [EXISTENTIAL]
 * └── 5>0/\((Ready.((Send^5).Done))^w) |- TRUE/\((Ready.((Send^5).Done))^w)
@@ -29,7 +29,7 @@
 [Real Effect: (((TRUE/\(n>0\/n=0))/\(n>0\/n=0))/\(((emp.Ready).((Send^n).Done)).(((Ready.(Send^n)).Done)^w)))\/(((TRUE/\n<0)/\(n>0\/n=0))/\(((emp.Ready).(Send^w)).(((Ready.(Send^n)).Done)^w)))]
 [Postcondition: (n>0\/n=0)/\(((Ready.(Send^n)).Done)^w)]
 [Result: true]
-[Verification Time: 0.088274]
+[Verification Time: 0.083936]
 
 * (n>0/\(Ready.((Send^n).(Done.((Ready.((Send^n).Done))^w)))))\/(n=0/\(Ready.(Done.((Ready.Done)^w)))) |- (n>0/\((Ready.((Send^n).Done))^w))\/(n=0/\((Ready.Done)^w)) [LHSOR] 
 * ├── n>0/\(Ready.((Send^n).(Done.((Ready.((Send^n).Done))^w)))) |- (n>0/\((Ready.((Send^n).Done))^w))\/(n=0/\((Ready.Done)^w)) [RHSOR] 
@@ -57,7 +57,7 @@
 [Real Effect: ((TRUE/\n=0)/\(emp.Done))\/((((TRUE/\(~(n=0)))/\(n-1>0\/n-1=0))/\((emp.Send).((Send^n-1).Done)))\/(((TRUE/\(~(n=0)))/\n-1<0)/\((emp.Send).(Send^w))))]
 [Postcondition: ((n>0\/n=0)/\((Send^n).Done))\/(n<0/\(Send^w))]
 [Result: true]
-[Verification Time: 0.146673]
+[Verification Time: 0.142579]
 
 * (n=0/\Done)\/((((n-1>0/\(~(n=0)))/\(Send.((Send^n-1).Done)))\/((n-1=0/\(~(n=0)))/\(Send.Done)))\/((n-1<0/\(~(n=0)))/\(Send.(Send^w)))) |- ((n>0/\((Send^n).Done))\/(n=0/\Done))\/(n<0/\(Send^w)) [LHSOR] 
 * ├── n=0/\Done |- ((n>0/\((Send^n).Done))\/(n=0/\Done))\/(n<0/\(Send^w)) [RHSOR] 

@@ -151,8 +151,7 @@ let checkPrecondition (state:effect) (pre:effect) : bool =
   let (result_tree, result) =  Rewriting.containment reverseState reversePre [] varList in 
   if result == false then 
   let printTree = printTree ~line_prefix:"* " ~get_name ~get_children result_tree in
-  print_string ("=============================\n"^printTree );
-  result;
+  raise(Foo ("=============================\n"^printTree) );
   else 
   result;;
 
@@ -192,7 +191,8 @@ let rec verifier (caller:string) (expr:expression) (state_H:effect) (state_C:eff
             let subPost = substituteEffWithAgrs post exprList list_parm in 
             let his_cur =  (concatEffEff state_H state_C) in 
             if checkPrecondition (his_cur) subPre == true then 
-              (print_string ("[Precondition holds] when " ^caller ^" is calling " ^ mn ^"\n\n");
+              (
+                (*print_string ("[Precondition holds] when " ^caller ^" is calling " ^ mn ^"\n\n");*)
               let newState = ( (concatEffEff ( state_C) ( subPost))) in
               newState)
             else 
@@ -213,7 +213,7 @@ let rec verification (dec:declare) (prog: program): string =
     let postcon = "[Postcondition: "^ (showEffect ( post)) ^ "]\n" in 
     let acc =  (verifier mn expression (pre) (Effect (TRUE, Emp)) prog) in 
     let accumulated = "[Real Effect: " ^(showEffect ( acc )) ^ "]\n" in 
-    print_string((showEntailmentEff acc post) ^ "\n") ;
+    (*print_string((showEntailmentEff acc post) ^ "\n") ;*)
     
     let varList = (*append*) (getAllVarFromEff acc) (*(getAllVarFromEff post)*) in  
     let (result_tree, result) =  Rewriting.containment acc ( post) [] varList in 
