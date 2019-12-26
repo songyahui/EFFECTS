@@ -204,6 +204,7 @@ let rec verifier (caller:string) (expr:expression) (state_H:effect) (state_C:eff
     ;;
 
 let rec verification (dec:declare) (prog: program): string = 
+  let startTimeStamp = Sys.time() in
   match dec with 
     Include str -> ""
   | Method (Meth (t, mn , list_parm, PrePost (pre, post), expression)) -> 
@@ -217,8 +218,9 @@ let rec verification (dec:declare) (prog: program): string =
     let varList = (*append*) (getAllVarFromEff acc) (*(getAllVarFromEff post)*) in  
     let (result_tree, result) =  Rewriting.containment acc ( post) [] varList in 
     let result = "[Result: "^ string_of_bool result ^"]\n" in 
+    let verification_time = "[Verification Time: " ^ string_of_float (Sys.time() -. startTimeStamp) ^ "]\n" in
     let printTree = printTree ~line_prefix:"* " ~get_name ~get_children result_tree in
-    "=======================\n"^ head ^ precon ^ accumulated ^ postcon ^ result ^ "\n" ^ printTree ^ "\n"
+    "=======================\n"^ head ^ precon ^ accumulated ^ postcon ^ result ^verification_time^ "\n" ^ printTree ^ "\n" 
     
  ;;
 

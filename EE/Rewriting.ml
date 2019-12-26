@@ -729,8 +729,10 @@ let rec containment (effL:effect) (effR:effect) (delta:context) (varList:string 
                             let leftNonZero = addConstrain normalFormL nonZeroCase in
                             let rightNonZero = addConstrain normalFormR nonZeroCase in
                             let (tree1, re1 ) = (containment leftZero rightZero delta varList) in
-                            let (tree2, re2 ) = (containment leftNonZero rightNonZero delta varList) in
-                            (Node (showEntailmentEff effL effR ,[tree1; tree2] ), re1 || re2)
+                            if re1 == true then (Node (showEntailmentEff effL effR ,[tree1] ), true) 
+                            else 
+                              let (tree2, re2 ) = (containment leftNonZero rightNonZero delta varList) in
+                              (Node (showEntailmentEff effL effR ,[tree1; tree2] ), re2)
                         | false -> (*UNFOLD*)unfold delta piL esL piR esR
                         )
                 | Plus  (Var t, num) -> 
@@ -767,8 +769,10 @@ let rec containment (effL:effect) (effR:effect) (delta:context) (varList:string 
                             let leftNonZero = addConstrain normalFormL nonZeroCase in
                             let rightNonZero = addConstrain normalFormR nonZeroCase in
                             let (tree1, re1 ) = (containment leftZero rightZero delta varList) in
+                            if re1 == true then (Node (showEntailmentEff normalFormL normalFormR , [tree1] ), true)
+                            else 
                             let (tree2, re2 ) =  (containment leftNonZero rightNonZero delta varList) in 
-                            (Node (showEntailmentEff normalFormL normalFormR , [tree1; tree2] ), re1 || re2)
+                            (Node (showEntailmentEff normalFormL normalFormR , [tree1; tree2] ), re2)
                         | false -> (*UNFOLD*)unfold delta piL esL piR esR
                         )
                 | Plus  (Var t, num) -> 
