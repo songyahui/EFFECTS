@@ -47,6 +47,8 @@ sudo chown www-data:www-data verify
 
 ----------------------
 
+cd ../src/
+
 sudo cp ../cgi-bin/EFFECTS/src/effect/* effect/
 
 sudo chown www-data:www-data -R effect/
