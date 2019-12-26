@@ -29,6 +29,10 @@ sudo chown yahui:yahui -R /home/project/public_html/Effect/cgi-bin/EFFECTS
 
 cd EFFECTS
 
+chmod 755 clean
+
+chmod 755 compile
+
 ./compile
 
 sudo cp trs ../
@@ -40,6 +44,12 @@ cd ..
 sudo chown www-data:www-data trs 
 
 sudo chown www-data:www-data verify
+
+----------------------
+
+sudo cp ../cgi-bin/EFFECTS/src/effect/* effect/
+
+sudo chown www-data:www-data -R effect/
 
 
 
