@@ -147,7 +147,7 @@ let checkPrecondition (state:effect) (pre:effect) : bool =
   let reverseState =  (reverseEff state) in
   let reversePre =  (reverseEff pre) in 
   (*check containment*)
-  let varList = append (getAllVarFromEff reverseState) (getAllVarFromEff reversePre) in  
+  let varList = (*append*) (getAllVarFromEff reverseState) (*(getAllVarFromEff reversePre) *)in  
   let (result_tree, result) =  Rewriting.containment reverseState reversePre [] varList in 
   let printTree = printTree ~line_prefix:"* " ~get_name ~get_children result_tree in
   print_string ("=============================\n"^printTree );
@@ -211,7 +211,7 @@ let rec verification (dec:declare) (prog: program): string =
     let accumulated = "[Real Effect: " ^(showEffect ( acc )) ^ "]\n" in 
     print_string((showEntailmentEff acc post) ^ "\n") ;
     
-    let varList = append (getAllVarFromEff acc) (getAllVarFromEff post) in  
+    let varList = (*append*) (getAllVarFromEff acc) (*(getAllVarFromEff post)*) in  
     let (result_tree, result) =  Rewriting.containment acc ( post) [] varList in 
     let result = "[Result: "^ string_of_bool result ^"]\n" in 
     let printTree = printTree ~line_prefix:"* " ~get_name ~get_children result_tree in

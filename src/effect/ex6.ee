@@ -1,2 +1,2 @@
-TRUE/\Tick.(Tick^t-1) |- TRUE/\(Tick^t)
+(t>0)/\Tick.(Tick^t-1) |- (t>0)/\(Tick^t)
 

@@ -1,6 +1,24 @@
 ====================================
-TRUE/\(Tick^w) |- TRUE/\(Tick^t)
-[Result] Fail
+(~(n=0))/\(Send.((_^*).Ready)) |- TRUE/\((_^*).Ready)
+[Result] Succeed
 
-* TRUE/\(Tick^w) |- TRUE/\(Tick^t)   [EXISTENTIAL]
+* (~(n=0))/\(Send.((_^*).Ready)) |- TRUE/\((_^*).Ready)
+* └── (~(n=0))/\(Send.((_^*).Ready)) |- TRUE/\((_^*).Ready)   [Unfold with Fst = Send]
+*     └── (~(n=0))/\((_^*).Ready) |- TRUE/\((_^*).Ready)
+*         ├── (~(n=0))/\((_^*).Ready) |- TRUE/\((_^*).Ready)   [Unfold with Fst = _]
+*         │   └── ((~(n=0))/\((_^*).Ready))\/((~(n=0))/\emp) |- (TRUE/\((_^*).Ready))\/(TRUE/\emp) [LHSOR] 
+*         │       ├── (~(n=0))/\((_^*).Ready) |- (TRUE/\((_^*).Ready))\/(TRUE/\emp) [RHSOR] 
+*         │       │   ├── (~(n=0))/\((_^*).Ready) |- TRUE/\((_^*).Ready)   [Reoccur-Prove]
+*         │       │   └── (~(n=0))/\((_^*).Ready) |- TRUE/\emp   [Frame-Prove] with R = ((_^*).Ready)
+*         │       └── (~(n=0))/\emp |- (TRUE/\((_^*).Ready))\/(TRUE/\emp) [RHSOR] 
+*         │           ├── (~(n=0))/\emp |- TRUE/\((_^*).Ready)   [REFUTATION]
+*         │           └── (~(n=0))/\emp |- TRUE/\emp   [Frame-Prove] with R = emp
+*         └── (~(n=0))/\((_^*).Ready) |- TRUE/\((_^*).Ready)   [Unfold with Fst = Ready]
+*             └── ((~(n=0))/\((_^*).Ready))\/((~(n=0))/\emp) |- (TRUE/\((_^*).Ready))\/(TRUE/\emp) [LHSOR] 
+*                 ├── (~(n=0))/\((_^*).Ready) |- (TRUE/\((_^*).Ready))\/(TRUE/\emp) [RHSOR] 
+*                 │   ├── (~(n=0))/\((_^*).Ready) |- TRUE/\((_^*).Ready)   [Reoccur-Prove]
+*                 │   └── (~(n=0))/\((_^*).Ready) |- TRUE/\emp   [Frame-Prove] with R = ((_^*).Ready)
+*                 └── (~(n=0))/\emp |- (TRUE/\((_^*).Ready))\/(TRUE/\emp) [RHSOR] 
+*                     ├── (~(n=0))/\emp |- TRUE/\((_^*).Ready)   [REFUTATION]
+*                     └── (~(n=0))/\emp |- TRUE/\emp   [Frame-Prove] with R = emp
 

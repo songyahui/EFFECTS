@@ -466,7 +466,7 @@ let rec getFirstVar (es :es): string option =
     | _ -> None
 ;;
 
-let existialRHS piL esL esR:bool = 
+let existialRHS piL esL esR varList :bool = 
   let rec checkExistTerm t s = 
     match t with 
       Var str -> String.compare s str == 0
@@ -499,7 +499,7 @@ let existialRHS piL esL esR:bool =
     None -> false
   | Some (str) -> 
   (*print_string (str^"\n");*)
-  not (checkExist esL str || checkEXISTinPure piL str)
+  (not (checkExist esL str || checkEXISTinPure piL str)) && not (List.mem str varList)
   ;;
 
 let getInstansVal esL: int list = 
@@ -597,7 +597,7 @@ let rec containment (effL:effect) (effR:effect) (delta:context) (varList:string 
       if entailConstrains piL piR == false then (Node(showEntail ^ "   [Contradictory]", []), false)  
       else 
       (*Existential*)
-        if existialRHS piL esL esR == true then
+        if existialRHS piL esL esR varList == true then
           let instanceFromLeft = getInstansVal esL in 
           (*print_string (List.fold_left (fun acc a  -> acc ^ string_of_int a ^ "\n") ""  instanceFromLeft );*)
           let instantiateRHS = instantiateEff piR esR instanceFromLeft in 
@@ -650,11 +650,6 @@ let rec containment (effL:effect) (effR:effect) (delta:context) (varList:string 
                         let newVar = getAfreeVar varList in 
                         let lhs = substituteEff normalFormL  (Plus  (Var t, num))  (Var newVar) in
                         let rhs = substituteEff normalFormR  (Plus  (Var t, num))  (Var newVar) in
-                        (*let cnod = PureOr (Eq (Var newVar, 0), Gt (Var newVar, 0)) in 
-                        let lhs' = addConstrain lhs cnod in 
-                        let rhs' = addConstrain rhs cnod in 
-                        let (tree, re) = containment lhs' rhs' delta (newVar::varList)in
-                        let (tree, re) = containment lhs rhs delta (newVar::varList)in*)
                         let (tree, re) = containment lhs rhs delta (newVar:: varList)in
                         (Node (showEntailmentEff normalFormL normalFormR ,[tree] ), re)
             | Minus (Var t, num) -> 
@@ -973,4 +968,3 @@ let rec runTestcases (suites :entailment list) =
     runTestcases xs
     ;;
 
-(*have some problem on exitantial now*)
