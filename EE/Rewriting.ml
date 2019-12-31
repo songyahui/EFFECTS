@@ -573,7 +573,14 @@ let rec containment (effL:effect) (effR:effect) (delta:context) (varList:string 
   in
   (*Unfold function which calls unfoldSingle*)
   let unfold del piL esL piR esR= 
-    let fstL = fst piL esL in 
+    let rec remove_dups lst= 
+      (match lst with
+      | [] -> []
+      | h::t -> h::(remove_dups (List.filter (fun x -> x<>h) t))
+      )
+      in
+    let fstL = remove_dups (fst piL esL )in 
+
     let rec chceckResultAND li acc staacc:(bool *binary_tree list* int )=
       (match li with 
         [] -> (true, acc, staacc) 

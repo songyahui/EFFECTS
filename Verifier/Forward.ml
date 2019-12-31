@@ -143,17 +143,19 @@ let substituteEffWithAgrs (eff:effect) (realArgs: expression list) (formal: (_ty
   in subArgOnebyOne eff pairs;;
 
 
-let checkPrecondition (state:effect) (pre:effect) : bool = 
+let checkPrecondition (state:effect) (pre:effect)  = 
   let reverseState =  (reverseEff state) in
   let reversePre =  (reverseEff pre) in 
   (*check containment*)
   let varList = (*append*) (getAllVarFromEff reverseState) (*(getAllVarFromEff reversePre) *)in  
   let (result_tree, result, states) =  Rewriting.containment reverseState reversePre [] varList in 
-  if result == false then 
+  (*if result == false then 
   let printTree = printTree ~line_prefix:"* " ~get_name ~get_children result_tree in
-  raise(Foo ("=============================\n"^printTree) );
+  print_string printTree;
+  raise(Foo ("=============================\n") );
   else 
-  result;;
+  *)
+  (result, result_tree);;
 
 let condToPure (expr :expression) :pure = 
   match expr with 
@@ -190,13 +192,16 @@ let rec verifier (caller:string) (expr:expression) (state_H:effect) (state_C:eff
             let subPre = substituteEffWithAgrs pre exprList list_parm in 
             let subPost = substituteEffWithAgrs post exprList list_parm in 
             let his_cur =  (concatEffEff state_H state_C) in 
-            if checkPrecondition (his_cur) subPre == true then 
+            let (result, tree) = checkPrecondition (his_cur) subPre in 
+            (*print_string ((printTree ~line_prefix:"* " ~get_name ~get_children tree));*)
+            
+            if result == true then 
               (
                 (*print_string ("[Precondition holds] when " ^caller ^" is calling " ^ mn ^"\n\n");*)
               let newState = ( (concatEffEff ( state_C) ( subPost))) in
               newState)
             else 
-            raise (Foo ("PreCondition does not hold when " ^ caller^" is calling: "^ name ^"!\n"^printReport (reverseEff his_cur) (reverseEff pre)))
+            raise (Foo ("PreCondition does not hold when " ^ caller^" is calling: "^ name ^"!\n"))
       
       )
     )
@@ -256,7 +261,7 @@ let () =
       let oc = open_out outputfile in    (* 新建或修改文件,返回通道 *)
       let startTimeStamp = Sys.time() in
       fprintf oc "%s\n" verification_re;   (* 写一些东西 *)
-      print_string (string_of_float(Sys.time() -. startTimeStamp)^"\n" );
+      (*print_string (string_of_float(Sys.time() -. startTimeStamp)^"\n" );*)
       close_out oc;                (* 写入并关闭通道 *)
       flush stdout;                (* 现在写入默认设备 *)
       close_in ic                  (* 关闭输入通道 *) 
