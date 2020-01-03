@@ -45,6 +45,8 @@ sudo chown www-data:www-data trs
 
 sudo chown www-data:www-data verify
 
+yahui:repo
+
 ----------------------
 
 cd ../src/
