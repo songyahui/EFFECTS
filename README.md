@@ -1,3 +1,6 @@
+# DEMO Flatform
+http://loris-5.d2.comp.nus.edu.sg/Effect/index.html?ex=send&type=c&options=sess
+
 # EFFECTS
 Automated verification tool for temporal properties
 
