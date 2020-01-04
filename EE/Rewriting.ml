@@ -286,15 +286,25 @@ let rec compareEff eff1 eff2 =
   | _ -> false
   ;;
 
+
+let rec reoccurHelp piL esL piR esR (del:context) = 
+  match del with 
+  | [] -> false 
+  | (pi1, es1, pi2, es2) :: rest -> 
+    if (compareEff (Effect(piL, esL)) (Effect(pi1, es1)) && compareEff (Effect(piR, esR))  (Effect(pi2, es2))) 
+    then true
+
+    else reoccurHelp piL esL piR esR rest (*REOCCUR*) 
+  ;;
   
 
-let rec reoccur piL esL piR esR delta = 
+let rec reoccur piL esL piR esR (delta:context list) = 
+
   match delta with 
   | [] -> false
-  | (pi1, es1, pi2, es2) :: rest -> 
-      if (compareEff (Effect(piL, esL)) (Effect(pi1, es1)) && compareEff (Effect(piR, esR))  (Effect(pi2, es2))) 
-      then true
-
+  | [x] -> false
+  | del:: rest -> 
+      if (reoccurHelp piL esL piR esR del) == true then true 
       else reoccur piL esL piR esR rest (*REOCCUR*) 
   ;;
 
@@ -552,6 +562,24 @@ let instantiateEff (pi:pure) (es:es) (instances: int list): effect list =
     map (fun n -> Effect (pi, substituteESWithVal es str n) ) instances 
   ;;
 
+let rec getProductHypo (eff1:effect) (eff2:effect) : context = 
+  let eff1n = normalEffect eff1 in 
+  let eff2n = normalEffect eff2 in 
+  match eff1n with 
+    Effect (pi1, es1) -> 
+        (match eff2n with 
+          Effect (pi2, es2) -> [(pi1, es1, pi2, es2)] 
+          | Disj (eff2InL, eff2InR) -> append (getProductHypo eff1 eff2InL) (getProductHypo eff1 eff2InR) 
+        )
+  | Disj (eff1InL, eff1InR) -> append (getProductHypo eff1InL eff2) (getProductHypo eff1InR eff2) 
+;;
+
+let getNewHypos (fstL:string list) (piL:pure) (esL:es) (piR:pure) (esR:es) : context = 
+  let effPair  = map (fun ev -> ( (derivative piL esL ev), (derivative piR esR ev))) fstL in 
+  let pi_EsPair = flatten (map (fun (eff1, eff2) -> getProductHypo eff1 eff2 ) effPair) in 
+  pi_EsPair
+  ;;
+
 
 (*-------------------------------------------------------------
 --------------------Main Entrance------------------------------
@@ -560,16 +588,15 @@ This decision procedure returns a derivation tree and a boolean
 value indicating the validility of the effect entailment
 -------------------------------------------------------------*)
 
-let rec containment (effL:effect) (effR:effect) (delta:context) (varList:string list): (binary_tree * bool * int) = 
+let rec containment (effL:effect) (effR:effect) (delta:context list) (varList:string list): (binary_tree * bool * int) = 
   let normalFormL = normalEffect effL in 
   let normalFormR = normalEffect effR in
   let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentEff normalFormL normalFormR in 
   (*print_string(showEntail ^"\n");*)
-  let unfoldSingle ev piL esL piR esR del = 
+  let unfoldSingle ev piL esL piR esR (del:context list) = 
     let derivL = derivative piL esL ev in
     let derivR = derivative piR esR ev in
-    let deltaNew = append del [(piL, esL, piR, esR)] in
-    let (tree, result, states) = containment derivL derivR deltaNew varList in
+    let (tree, result, states) = containment derivL derivR del varList in
     (Node (showEntailmentEff ( (Effect(piL, esL))) ((Effect(piR, esR))) ^ "   [Unfold with Fst = "^  ev ^ "]",[tree] ), result, states+1)
   in
   (*Unfold function which calls unfoldSingle*)
@@ -582,11 +609,15 @@ let rec containment (effL:effect) (effR:effect) (delta:context) (varList:string 
       in
     let fstL = remove_dups (fst piL esL )in 
 
+    let hypos = getNewHypos fstL piL esL piR esR in 
+    print_string (showContext hypos);
+    print_string ("********\n");
+    let deltaNew:(context list) = append del [hypos] in
     let rec chceckResultAND li acc staacc:(bool *binary_tree list* int )=
       (match li with 
         [] -> (true, acc, staacc) 
       | ev::fs -> 
-          let (tree, re, states) = unfoldSingle ev piL esL piR esR del in 
+          let (tree, re, states) = unfoldSingle ev piL esL piR esR deltaNew in 
           if re == false then (false , tree::acc, staacc+states)
           else chceckResultAND fs (tree::acc) (staacc+states)
       )
@@ -890,8 +921,11 @@ let createS_1 es = Ttimes (es, Minus (Var "s", 1) );;
 
 
 let printReport lhs rhs:string =
+  let delta = getProductHypo lhs rhs in 
+  print_string (showContext delta);
+  print_string ("********\n");
   let varList = append (getAllVarFromEff lhs) (getAllVarFromEff rhs) in  
-  let (tree, re, states) = containment  lhs rhs [] varList in
+  let (tree, re, states) = containment  lhs rhs [delta] varList in
   let result = printTree ~line_prefix:"* " ~get_name ~get_children tree in
   let states = "[Explored "^ string_of_int (states+1) ^ " States]\n" in 
   let buffur = ( "===================================="^"\n" ^(showEntailmentEff lhs rhs)^"\n[Result] " ^(if re then "Succeed\n" else "Fail\n") ^ states ^"\n\n"^ result)
