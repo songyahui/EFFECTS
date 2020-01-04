@@ -610,8 +610,6 @@ let rec containment (effL:effect) (effR:effect) (delta:context list) (varList:st
     let fstL = remove_dups (fst piL esL )in 
 
     let hypos = getNewHypos fstL piL esL piR esR in 
-    print_string (showContext hypos);
-    print_string ("********\n");
     let deltaNew:(context list) = append del [hypos] in
     let rec chceckResultAND li acc staacc:(bool *binary_tree list* int )=
       (match li with 
@@ -922,8 +920,6 @@ let createS_1 es = Ttimes (es, Minus (Var "s", 1) );;
 
 let printReport lhs rhs:string =
   let delta = getProductHypo lhs rhs in 
-  print_string (showContext delta);
-  print_string ("********\n");
   let varList = append (getAllVarFromEff lhs) (getAllVarFromEff rhs) in  
   let (tree, re, states) = containment  lhs rhs [delta] varList in
   let result = printTree ~line_prefix:"* " ~get_name ~get_children tree in
