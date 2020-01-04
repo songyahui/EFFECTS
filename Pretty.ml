@@ -95,7 +95,7 @@ let rec showES (es:es):string =
   | Emp -> "emp"
   | Event ev -> ev 
   | Cons (es1, es2) -> "("^(showES es1) ^ "." ^ (showES es2)^")"
-  | ESOr (es1, es2) -> "("^(showES es1) ^ "+" ^ (showES es2)^")"
+  | ESOr (es1, es2) -> "("^(showES es1) ^ "|" ^ (showES es2)^")"
   | Ttimes (es, t) -> "("^(showES es) ^ "^" ^ (showTerms t)^")"
   | Omega es -> "("^(showES es) ^ "^" ^  "w" ^")"
   | Underline -> "_"

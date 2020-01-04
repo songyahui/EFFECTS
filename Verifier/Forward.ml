@@ -259,7 +259,7 @@ let () =
       print_string testprintProg;*)
       let verification_re = List.fold_right (fun dec acc -> acc ^ (verification dec prog)) prog ""  in
       let oc = open_out outputfile in    (* 新建或修改文件,返回通道 *)
-      let startTimeStamp = Sys.time() in
+      (*      let startTimeStamp = Sys.time() in*)
       fprintf oc "%s\n" verification_re;   (* 写一些东西 *)
       (*print_string (string_of_float(Sys.time() -. startTimeStamp)^"\n" );*)
       close_out oc;                (* 写入并关闭通道 *)

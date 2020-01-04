@@ -259,7 +259,8 @@ let rec compareES es1 es2 =
   match (es1, es2) with 
     (Bot, Bot) -> true
   | (Emp, Emp) -> true
-  | (Event s1, Event s2) -> s1 == s2
+  | (Event s1, Event s2) -> 
+    String.compare s1 s2 == 0
   | (Cons (es1L, es1R), Cons (es2L, es2R)) -> (compareES es1L es2L) && (compareES es1R es2R)
   | (ESOr (es1L, es1R), ESOr (es2L, es2R)) -> 
       let one = ((compareES es1L es2L) && (compareES es1R es2R)) in
@@ -285,16 +286,22 @@ let rec compareEff eff1 eff2 =
   | _ -> false
   ;;
 
-let rec reoccur piL esL piR esR delta num = 
-  if num == 0 then true
-  else
+  
+
+let rec reoccur piL esL piR esR delta = 
+  
+  print_string (showEntailmentEff (Effect (piL, esL)) (Effect (piR, esR)));
+  print_string ("\n*******************\n");
+  print_string (showContext delta);
+  print_string ("\n------------------- \n");
+
   match delta with 
   | [] -> false
   | (pi1, es1, pi2, es2) :: rest -> 
       if (compareEff (Effect(piL, esL)) (Effect(pi1, es1)) && compareEff (Effect(piR, esR))  (Effect(pi2, es2))) 
-      then reoccur piL esL piR esR rest (num-1)
+      then true
 
-      else reoccur piL esL piR esR rest num (*REOCCUR*) 
+      else reoccur piL esL piR esR rest (*REOCCUR*) 
   ;;
 
 
@@ -601,7 +608,7 @@ let rec containment (effL:effect) (effR:effect) (delta:context) (varList:string 
       if re1 == false then (Node (showEntailmentEff normalFormL normalFormR ^ showRule LHSOR, [tree1] ),  false, states1)
       else 
         let (tree2, re2 , states2) = (containment effL2 effR delta varList) in
-        (Node (showEntailmentEff normalFormL normalFormR ^ showRule LHSOR, [tree1; tree2] ), re2, states1+states2)
+        (Node (showEntailmentEff normalFormL normalFormR ^ showRule LHSOR, [tree1; tree2] ), re2, states1+states2+1)
   | (_, Disj (effR1, effR2)) -> 
     (*[RHSOR]*)
       let (tree1, re1, states1 ) = (containment effL effR1 delta varList) in
@@ -640,7 +647,7 @@ let rec containment (effL:effect) (effR:effect) (delta:context) (varList:string 
         else if (isEmp normalFormR) == true  
         then  (Node(showEntail^"   [Frame-Prove]" ^" with R = "^(showES esL ) , []),true, 0) 
       (*[Reoccur]*)
-        else if (reoccur piL esL piR esR delta 1) == true  
+        else if (reoccur piL esL piR esR delta) == true  
         then (Node(showEntail ^ "   [Reoccur-Prove] "  , []), true, 0) 
       (*Unfold*)                    
       else 
