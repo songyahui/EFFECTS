@@ -289,12 +289,6 @@ let rec compareEff eff1 eff2 =
   
 
 let rec reoccur piL esL piR esR delta = 
-  
-  print_string (showEntailmentEff (Effect (piL, esL)) (Effect (piR, esR)));
-  print_string ("\n*******************\n");
-  print_string (showContext delta);
-  print_string ("\n------------------- \n");
-
   match delta with 
   | [] -> false
   | (pi1, es1, pi2, es2) :: rest -> 
