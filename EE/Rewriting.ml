@@ -299,7 +299,6 @@ let rec reoccurHelp piL esL piR esR (del:context) =
   
 
 let rec reoccur piL esL piR esR (delta:context list) = 
-
   match delta with 
   | [] -> false
   | [x] -> false
@@ -308,6 +307,55 @@ let rec reoccur piL esL piR esR (delta:context list) =
       else reoccur piL esL piR esR rest (*REOCCUR*) 
   ;;
 
+let rec dropLastDelta (delta:context list):context list =
+  match  delta with 
+  | [] -> [] 
+  | [x] -> []
+  | x :: xs -> x :: (dropLastDelta xs )
+  ;;
+
+  (*
+type hypoGraph = HypoNode of pure * es 
+               | HypoPar of pure * es * hypoGraph list
+
+  
+
+let rec constructHypoGraph (delta:context) (li: hypoGraph list): hypoGraph list  =
+  let addHypoInGraphList (li': hypoGraph list) (p1, es1, p2, es2) : hypoGraph list  =
+    match li' with 
+    | [] -> [HypoPar (p1, es1, [HypoNode (p2, es2)])]
+    | x::xs -> addHypoInGraph (p1, es1, p2, es2)
+  in 
+  match delta with 
+  | [] -> li 
+  | x :: xs -> 
+    let newLi = addHypoInGraphList li x in 
+    constructHypoGraph xs newLi
+  ;;
+*)
+let rec transitivityHelper piL esL piR esR (del:context) :bool = 
+  let rec helper (del':context ) piL' esL' = 
+    match del' with 
+      [] -> None 
+    | (pi1, es1, pi2, es2) :: rest -> 
+      if (compareEff (Effect(piL', esL')) (Effect(pi1, es1))) then Some (pi2, es2)
+      else helper rest piL' esL'
+  in
+  match helper del piL esL with 
+    None -> false 
+  | Some (pi2, es2) -> 
+      (match reoccurHelp pi2 es2 piR esR del with
+        true ->  true 
+      | false -> transitivityHelper pi2 es2 piR esR del
+      )
+
+let rec transitivity piL esL piR esR (del:context list) :bool = 
+  let realHypo = flatten (dropLastDelta del) in  
+  (*let graph = constructHypoGraph realHypo [] in 
+  false*)
+  transitivityHelper piL esL piR esR realHypo
+  ;;
+  
 
 
 let entailConstrains pi1 pi2 = 
@@ -670,8 +718,11 @@ let rec containment (effL:effect) (effR:effect) (delta:context list) (varList:st
         else if (isEmp normalFormR) == true  
         then  (Node(showEntail^"   [Frame-Prove]" ^" with R = "^(showES esL ) , []),true, 0) 
       (*[Reoccur]*)
-        else if (reoccur piL esL piR esR delta) == true  
+        else if (reoccur piL esL piR esR delta) == true 
         then (Node(showEntail ^ "   [Reoccur-Prove] "  , []), true, 0) 
+      (*Transitivity*)
+        else if (transitivity piL esL piR esR delta )== true 
+        then (Node(showEntail ^ "   [Reoccur-Transitive] "  , []), true, 0) 
       (*Unfold*)                    
       else 
         (match esL with
