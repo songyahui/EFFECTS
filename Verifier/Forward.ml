@@ -151,7 +151,7 @@ let checkPrecondition (state:effect) (pre:effect)  =
   let tree = Node (showEntailmentEff reverseState reversePre, [result_tree]) in
 
   if result == false then 
-  let printTree = printTree ~line_prefix:"* " ~get_name ~get_children result_tree in
+  let printTree = printTree ~line_prefix:"* " ~get_name ~get_children tree in
   print_string printTree;
   (result, tree)
 

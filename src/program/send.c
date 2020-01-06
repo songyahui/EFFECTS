@@ -33,6 +33,6 @@ int main ()
     ensure TRUE/\((Ready.(Send^n).Done)^w)
     */
 {
-    server (0);
+    server (-1);
 }
 
