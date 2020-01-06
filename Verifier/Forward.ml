@@ -147,14 +147,14 @@ let checkPrecondition (state:effect) (pre:effect)  =
   let reverseState =  (reverseEff state) in
   let reversePre =  (reverseEff pre) in 
   (*check containment*)
-  let varList = (*append*) (getAllVarFromEff reverseState) (*(getAllVarFromEff reversePre) *)in  
-  let (result_tree, result, states) =  Rewriting.containment reverseState reversePre [] varList in 
-  (*if result == false then 
+  let (result_tree, result, states) =  Rewriting.printReportHelper reverseState reversePre  in 
+  if result == false then 
   let printTree = printTree ~line_prefix:"* " ~get_name ~get_children result_tree in
   print_string printTree;
-  raise(Foo ("=============================\n") );
+  (result, result_tree)
+
   else 
-  *)
+  
   (result, result_tree);;
 
 let condToPure (expr :expression) :pure = 
@@ -192,6 +192,7 @@ let rec verifier (caller:string) (expr:expression) (state_H:effect) (state_C:eff
             let subPre = substituteEffWithAgrs pre exprList list_parm in 
             let subPost = substituteEffWithAgrs post exprList list_parm in 
             let his_cur =  (concatEffEff state_H state_C) in 
+
             let (result, tree) = checkPrecondition (his_cur) subPre in 
             (*print_string ((printTree ~line_prefix:"* " ~get_name ~get_children tree));*)
             
@@ -201,7 +202,9 @@ let rec verifier (caller:string) (expr:expression) (state_H:effect) (state_C:eff
               let newState = ( (concatEffEff ( state_C) ( subPost))) in
               newState)
             else 
-            raise (Foo ("PreCondition does not hold when " ^ caller^" is calling: "^ name ^"!\n"))
+            
+            raise (Foo ("PreCondition does not hold when " ^ caller^" is calling: "^ name ^"!"))
+            
       
       )
     )

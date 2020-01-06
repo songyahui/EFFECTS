@@ -969,10 +969,18 @@ let createT_1 es = Ttimes (es, Minus (Var "t", 1) );;
 let createS_1 es = Ttimes (es, Minus (Var "s", 1) );;
 
 
-let printReport lhs rhs:string =
+let printReportHelper lhs rhs = 
   let delta = getProductHypo lhs rhs in 
   let varList = append (getAllVarFromEff lhs) (getAllVarFromEff rhs) in  
-  let (tree, re, states) = containment  lhs rhs [delta] varList in
+  let (tree, re, states) =  containment  lhs rhs [delta] varList in
+  let tree' = Node (showEntailmentEff lhs rhs, [tree]) in
+  (tree', re, states)
+  ;;
+
+
+let printReport lhs rhs:string =
+  
+  let (tree, re, states) =  printReportHelper lhs rhs in
   let result = printTree ~line_prefix:"* " ~get_name ~get_children tree in
   let states = "[Explored "^ string_of_int (states+1) ^ " States]\n" in 
   let buffur = ( "===================================="^"\n" ^(showEntailmentEff lhs rhs)^"\n[Result] " ^(if re then "Succeed\n" else "Fail\n") ^ states ^"\n\n"^ result)
