@@ -24,9 +24,9 @@ type es = Bot
 (*Arithimetic pure formulae*)
 type pure = TRUE
           | FALSE
-          | Gt of terms * int
-          | Lt of terms * int
-          | Eq of terms * int
+          | Gt of terms * terms
+          | Lt of terms * terms
+          | Eq of terms * terms
           | PureOr of pure * pure
           | PureAnd of pure * pure
           | Neg of pure

@@ -97,9 +97,9 @@ pure:
 | FALSE {FALSE}
 | NEGATION LPAR a = pure RPAR {Neg a}
 | LPAR r = pure RPAR { r }
-| a = term GT b = INTE {Gt (a, b)}
-| a = term LT b = INTE {Lt (a, b)}
-| a = term EQ b = INTE {Eq (a, b)}
+| a = term GT b = term {Gt (a, b)}
+| a = term LT b = term {Lt (a, b)}
+| a = term EQ b = term {Eq (a, b)}
 | a = pure CONJ b = pure {PureAnd (a, b)}
 | a = pure DISJ b = pure {PureOr (a, b)}
 

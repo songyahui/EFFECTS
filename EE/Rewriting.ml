@@ -37,9 +37,9 @@ let rec comparePure (pi1:pure) (pi2:pure):bool =
   match (pi1 , pi2) with 
     (TRUE, TRUE) -> true
   | (FALSE, FALSE) -> true 
-  | (Gt (t1, n1), Gt (t2, n2)) -> stricTcompareTerm t1 t2 && n1 == n2
-  | (Lt (t1, n1), Lt (t2, n2)) -> stricTcompareTerm t1 t2 && n1 == n2
-  | (Eq (t1, n1), Eq (t2, n2)) -> stricTcompareTerm t1 t2 && n1 == n2
+  | (Gt (t1, t11), Gt (t2, t22)) -> stricTcompareTerm t1 t2 && stricTcompareTerm t11  t22
+  | (Lt (t1, t11), Lt (t2, t22)) -> stricTcompareTerm t1 t2 && stricTcompareTerm t11  t22
+  | (Eq (t1, t11), Eq (t2, t22)) -> stricTcompareTerm t1 t2 && stricTcompareTerm t11  t22
   | (PureOr (p1, p2), PureOr (p3, p4)) ->
       (comparePure p1 p3 && comparePure p2 p4) || (comparePure p1 p4 && comparePure p2 p3)
   | (PureAnd (p1, p2), PureAnd (p3, p4)) ->
@@ -61,7 +61,7 @@ let rec nullable (pi :pure) (es:es) : bool=
   | Event ev -> false 
   | Cons (es1 , es2) -> (nullable pi es1) && (nullable pi es2)
   | ESOr (es1 , es2) -> (nullable pi es1) || (nullable pi es2)
-  | Ttimes (es1, t) -> askZ3 (PureAnd (pi, Eq (t,0))) 
+  | Ttimes (es1, t) -> askZ3 (PureAnd (pi, Eq (t, Number 0))) 
   | Omega es1 -> false
   | Underline -> false
   | Kleene es1 -> true
@@ -100,7 +100,7 @@ let rec derivative (p :pure) (es:es) (ev:string): effect =
   | Omega es1 -> appendEff_ES (derivative p es1 ev) es
   | ESOr (es1 , es2) -> Disj (derivative p es1 ev, derivative p es2 ev)
   | Ttimes (es1, t) -> 
-      let pi = PureAnd (Gt (t, 0), p) in
+      let pi = PureAnd (Gt (t, Number 0), p) in
       let efF = derivative pi es1 ev in 
       let esT_minus1 = Ttimes (es1,  Minus (t, 1)) in
       appendEff_ES efF esT_minus1
@@ -177,7 +177,7 @@ let rec normalES es pi =
         Emp -> Emp
       | _ -> 
         let allPi = getAllPi pi [] in 
-        if (existPi (Eq (terms, 0)) allPi) || (compareTerm t (Number 0 )) then Emp else Ttimes (normalInside, t))
+        if (existPi (Eq (terms, Number 0)) allPi) || (compareTerm t (Number 0 )) then Emp else Ttimes (normalInside, t))
         (*else if (existPi (Eq (terms, n)) allPi)) then Emp else Ttimes (normalInside, t))*)
   | Omega es1 -> 
       let normalInside = normalES es1 pi in 
@@ -744,10 +744,10 @@ let rec containment (effL:effect) (effR:effect) (delta:context list) (varList:st
         | Ttimes (esIn, term) -> 
             (match term with 
               Var s -> 
-                (match  entailConstrains piL (Eq (Var s, 0) ) with 
+                (match  entailConstrains piL (Eq (Var s, Number 0) ) with 
                   true -> (*[CASE SPLIT]*) 
-                            let zeroCase = PureAnd (piL, Eq (Var s, 0) ) in 
-                            let nonZeroCase = PureAnd (piL, Gt (Var s, 0) ) in 
+                            let zeroCase = PureAnd (piL, Eq (Var s, Number 0) ) in 
+                            let nonZeroCase = PureAnd (piL, Gt (Var s, Number 0) ) in 
                             let leftZero = addConstrain (Effect(piL, Emp)) zeroCase in
                             let rightZero = addConstrain normalFormR zeroCase in
                             let leftNonZero = addConstrain normalFormL nonZeroCase in
@@ -764,7 +764,7 @@ let rec containment (effL:effect) (effR:effect) (delta:context list) (varList:st
                         let newVar = getAfreeVar varList in 
                         let lhs = substituteEff normalFormL  (Plus  (Var t, num))  (Var newVar) in
                         let rhs = substituteEff normalFormR  (Plus  (Var t, num))  (Var newVar) in
-                        let cons = PureOr (Gt (Var newVar, 0) , Eq (Var newVar, 0) ) in
+                        let cons = PureAnd( Eq (Var newVar, Plus (Var t, num) ), PureOr (Gt (Var newVar, Number 0) , Eq (Var newVar, Number 0) )) in
                         let lhs' = addConstrain lhs cons in 
                         let rhs' = addConstrain rhs cons in 
                         let (tree, re, states) = containment lhs' rhs' delta (newVar::varList)in
@@ -774,7 +774,7 @@ let rec containment (effL:effect) (effR:effect) (delta:context list) (varList:st
                         let newVar = getAfreeVar varList in 
                         let lhs = substituteEff normalFormL  (Minus  (Var t, num)) (Var newVar) in
                         let rhs = substituteEff normalFormR  (Minus  (Var t, num)) (Var newVar) in
-                        let cons = PureOr (Gt (Var newVar, 0) , Eq (Var newVar, 0) ) in
+                        let cons = PureAnd( Eq (Var newVar, Minus (Var t, num) ),PureOr (Gt (Var newVar, Number 0) , Eq (Var newVar, Number 0) ) )in
                         let lhs' = addConstrain lhs cons in 
                         let rhs' = addConstrain rhs cons in 
                         let (tree, re, states) = containment lhs' rhs' delta (newVar::varList)in
@@ -786,10 +786,10 @@ let rec containment (effL:effect) (effR:effect) (delta:context list) (varList:st
         | Cons (Ttimes (esIn, term), restES) -> 
             (match term with 
               Var s -> 
-                (match  entailConstrains piL (Eq (Var s, 0) ) with 
+                (match  entailConstrains piL (Eq (Var s, Number 0) ) with 
                           true -> (*CASE SPLIT*) 
-                            let zeroCase = PureAnd (piL, Eq (Var s, 0) ) in 
-                            let nonZeroCase = PureAnd (piL, Gt (Var s, 0) ) in 
+                            let zeroCase = PureAnd (piL, Eq (Var s, Number 0) ) in 
+                            let nonZeroCase = PureAnd (piL, Gt (Var s, Number 0) ) in 
                             let leftZero = addConstrain (Effect(piL, restES)) zeroCase in
                             let rightZero = addConstrain normalFormR zeroCase in
                             let leftNonZero = addConstrain normalFormL nonZeroCase in
@@ -805,7 +805,7 @@ let rec containment (effL:effect) (effR:effect) (delta:context list) (varList:st
                         let newVar = getAfreeVar varList in 
                         let lhs = substituteEff normalFormL  (Plus  (Var t, num)) (Var newVar) in
                         let rhs = substituteEff normalFormR  (Plus  (Var t, num)) (Var newVar) in
-                        let cons = PureOr (Gt (Var newVar, 0) , Eq (Var newVar, 0) ) in
+                        let cons = PureAnd( Eq (Var newVar, Plus (Var t, num) ), PureOr (Gt (Var newVar, Number 0) , Eq (Var newVar, Number 0) )) in
                         let lhs' = addConstrain lhs cons in 
                         let rhs' = addConstrain rhs cons in 
                         let (tree, re, states) = containment lhs' rhs' delta (newVar::varList)in
@@ -814,7 +814,7 @@ let rec containment (effL:effect) (effR:effect) (delta:context list) (varList:st
                         let newVar = getAfreeVar varList in 
                         let lhs = substituteEff normalFormL  (Minus  (Var t, num)) (Var newVar) in
                         let rhs = substituteEff normalFormR  (Minus  (Var t, num)) (Var newVar) in
-                        let cons = PureOr (Gt (Var newVar, 0) , Eq (Var newVar, 0) ) in
+                        let cons = PureAnd( Eq (Var newVar, Minus (Var t, num) ), PureOr (Gt (Var newVar,Number  0) , Eq (Var newVar, Number 0) )) in
                         let lhs' = addConstrain lhs cons in 
                         let rhs' = addConstrain rhs cons in 
                         let (tree, re, states) = containment lhs' rhs' delta (newVar::varList)in
@@ -830,10 +830,10 @@ let rec containment (effL:effect) (effR:effect) (delta:context list) (varList:st
                   Var s -> 
                         if quantified_in_LHS esL s then unfold delta piL esL piR esR
                         else 
-                        (match  entailConstrains piR (Eq (Var s, 0) ) with 
+                        (match  entailConstrains piR (Eq (Var s, Number 0) ) with 
                           true -> (*CASE SPLIT*) 
-                            let zeroCase = PureAnd (piL, Eq (Var s, 0) ) in 
-                            let nonZeroCase = PureAnd (piL, Gt (Var s, 0) ) in 
+                            let zeroCase = PureAnd (piL, Eq (Var s, Number 0) ) in 
+                            let nonZeroCase = PureAnd (piL, Gt (Var s, Number 0) ) in 
                             let leftZero = addConstrain normalFormL zeroCase in
                             let rightZero = addConstrain (Effect(piR, Emp)) zeroCase in
                             let leftNonZero = addConstrain normalFormL nonZeroCase in
@@ -851,7 +851,7 @@ let rec containment (effL:effect) (effR:effect) (delta:context list) (varList:st
                         let newVar = getAfreeVar varList in
                         let lhs = substituteEff normalFormL  (Plus  (Var t, num)) (Var newVar) in
                         let rhs = substituteEff normalFormR  (Plus  (Var t, num)) (Var newVar) in
-                        let cons = PureOr (Gt (Var newVar, 0) , Eq (Var newVar, 0) ) in
+                        let cons = PureAnd( Eq (Var newVar, Plus (Var t, num) ),PureOr (Gt (Var newVar, Number 0) , Eq (Var newVar, Number 0) )) in
                         let lhs' = addConstrain lhs cons in 
                         let rhs' = addConstrain rhs cons in 
                         let (tree, re, states) = containment lhs' rhs' delta (newVar::varList)in
@@ -862,7 +862,7 @@ let rec containment (effL:effect) (effR:effect) (delta:context list) (varList:st
                         let newVar = getAfreeVar varList in 
                         let lhs = substituteEff normalFormL  (Minus  (Var t, num)) (Var newVar) in
                         let rhs = substituteEff normalFormR  (Minus  (Var t, num)) (Var newVar) in
-                        let cons = PureOr (Gt (Var newVar, 0) , Eq (Var newVar, 0) ) in
+                        let cons = PureAnd( Eq (Var newVar, Minus (Var t, num) ), PureOr (Gt (Var newVar, Number 0) , Eq (Var newVar, Number 0) )) in
                         let lhs' = addConstrain lhs cons in 
                         let rhs' = addConstrain rhs cons in 
                         let (tree, re, states) = containment lhs' rhs' delta (newVar::varList)in
@@ -876,10 +876,10 @@ let rec containment (effL:effect) (effR:effect) (delta:context list) (varList:st
                   Var s -> 
                         if quantified_in_LHS esL s then unfold delta piL esL piR esR
                         else 
-                        (match  entailConstrains piL (Eq (Var s, 0) ) with 
+                        (match  entailConstrains piL (Eq (Var s, Number 0) ) with 
                           true -> (*CASE SPLIT*) 
-                            let zeroCase = PureAnd (piR, Eq (Var s, 0) ) in 
-                            let nonZeroCase = PureAnd (piR, Gt (Var s, 0) ) in 
+                            let zeroCase = PureAnd (piR, Eq (Var s, Number 0) ) in 
+                            let nonZeroCase = PureAnd (piR, Gt (Var s, Number 0) ) in 
                             let leftZero = addConstrain normalFormL zeroCase in
                             let rightZero = addConstrain (Effect(piR, restESR)) zeroCase in
                             let leftNonZero = addConstrain normalFormL nonZeroCase in
@@ -897,7 +897,7 @@ let rec containment (effL:effect) (effR:effect) (delta:context list) (varList:st
                         let newVar = getAfreeVar varList in 
                         let lhs = substituteEff normalFormL  (Plus  (Var t, num)) (Var newVar)  in
                         let rhs = substituteEff normalFormR  (Plus  (Var t, num))  (Var newVar) in
-                        let cons = PureOr (Gt (Var newVar, 0) , Eq (Var newVar, 0) ) in
+                        let cons = PureAnd( Eq (Var newVar, Plus (Var t, num) ), PureOr (Gt (Var newVar, Number 0) , Eq (Var newVar, Number 0) )) in
                         let lhs' = addConstrain lhs cons in 
                         let rhs' = addConstrain rhs cons in 
                         let (tree, re, states) = containment lhs' rhs' delta (newVar::varList)in
@@ -908,7 +908,7 @@ let rec containment (effL:effect) (effR:effect) (delta:context list) (varList:st
                         let newVar = getAfreeVar varList in 
                         let lhs = substituteEff normalFormL  (Minus  (Var t, num)) (Var newVar)  in
                         let rhs = substituteEff normalFormR  (Minus  (Var t, num)) (Var newVar)  in
-                        let cons = PureOr (Gt (Var newVar, 0) , Eq (Var newVar, 0) ) in
+                        let cons = PureAnd( Eq (Var newVar, Minus (Var t, num) ), PureOr (Gt (Var newVar, Number 0) , Eq (Var newVar, Number 0) )) in
                         let lhs' = addConstrain lhs cons in 
                         let rhs' = addConstrain rhs cons in 
                         let (tree, re, states) = containment lhs' rhs' delta (newVar::varList)in
@@ -936,7 +936,7 @@ type entailment =  (effect * effect * expectation)
 let ttest = (Plus ((Var "song"),1));;
 let ttest1 = (Var "t");;
 let estest = ESOr (Cons (Ttimes ((Event "a"), Var "t"),  (Event "a")), Cons ((Event "a"),(Event "b")));;
-let puretest =  Eq (ttest1, 0);;
+let puretest =  Eq (ttest1, Number 0);;
 let testes = Effect (puretest, estest);; 
 let testcontext =  [testes; testes];;
 let testD = derivative puretest estest "a";;
@@ -982,9 +982,7 @@ let createS_1 es = Ttimes (es, Minus (Var "s", 1) );;
 let printReportHelper lhs rhs = 
   let delta = getProductHypo lhs rhs in 
   let varList = append (getAllVarFromEff lhs) (getAllVarFromEff rhs) in  
-  let (tree, re, states) =  containment  lhs rhs [delta] varList in
-  let tree' = Node (showEntailmentEff lhs rhs, [tree]) in
-  (tree', re, states)
+  containment  lhs rhs [delta] varList 
   ;;
 
 
@@ -1000,8 +998,8 @@ let printReport lhs rhs:string =
 let testcases : entailment list= 
   [
 
-  (Effect(Gt (Var "t", 0), Cons (createT (Event "a"),omegaA))
-  ,Effect(Gt (Var "t", 0), Cons (createT (Event "a"),omegaB))
+  (Effect(Gt (Var "t", Number 0), Cons (createT (Event "a"),omegaA))
+  ,Effect(Gt (Var "t", Number 0), Cons (createT (Event "a"),omegaB))
   ,true)
   ;
   (Effect(TRUE, Cons (Cons (Event "a",createT_1 (Event "a")),omegaA))
@@ -1012,8 +1010,8 @@ let testcases : entailment list=
   ,Effect(TRUE, Cons (Ttimes (Cons (Event "a", Event "b"),Var "t"), Event "b"))
   ,true)
   ;
-  (Effect(Gt (Var "t", 0), Cons (Event "b", Ttimes (Cons (Event "a", Event "b"),Var "t")))
-  ,Effect(Gt (Var "t", 0), Cons (Ttimes (Cons (Event "a", Event "b"),Var "t"), Event "b"))
+  (Effect(Gt (Var "t", Number 0), Cons (Event "b", Ttimes (Cons (Event "a", Event "b"),Var "t")))
+  ,Effect(Gt (Var "t", Number 0), Cons (Ttimes (Cons (Event "a", Event "b"),Var "t"), Event "b"))
   ,true)
   ;
   (Effect(TRUE, Event "a")
@@ -1055,7 +1053,7 @@ let testcases : entailment list=
   )
   ;
   (Effect(TRUE, createT a) 
-  ,Effect(Gt(Var "t", 0), createT a)
+  ,Effect(Gt(Var "t", Number 0), createT a)
   ,true
   )
   ;
@@ -1079,18 +1077,18 @@ let testcases : entailment list=
   ,true
   )
   ;
-  (Effect(Gt(Var "t", -1), createT a)
+  (Effect(Gt(Var "t", Number (-1)), createT a)
   ,Effect(TRUE, Cons (Event "a" ,createT_1 a))
   ,true
   )
   ;
-  (Effect(Gt(Var "t", 0), createT a)
+  (Effect(Gt(Var "t", Number 0), createT a)
   ,Effect(TRUE, createT_1 a)
   ,true
   )
   ;
    (*THIS ONE IS WRONG!*)
-  (Effect(Gt(Var "s", 0), Cons (createT a ,createS b))
+  (Effect(Gt(Var "s", Number 0), Cons (createT a ,createS b))
   ,Effect(TRUE, Cons (createT a ,createS_1 b))
   ,true
   )

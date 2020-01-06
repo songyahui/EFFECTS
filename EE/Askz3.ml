@@ -19,15 +19,18 @@ let rec convertPure (pi:pure) (acc:string):string =
   match pi with
     TRUE -> "(< 0 1)"
   | FALSE -> "(> 0 1)"
-  | Gt (term, num) -> 
-      let temp = convertTerm term in
-      acc ^ "(>" ^ temp ^ (string_of_int num) ^")"
-  | Lt (term, num) -> 
-      let temp = convertTerm term in
-      acc ^ "(<" ^ temp ^ (string_of_int num) ^")"
-  | Eq (term, num) -> 
-      let temp = convertTerm term in
-      acc ^ "(=" ^ temp ^ (string_of_int num) ^")"
+  | Gt (t1, t2) -> 
+      let temp1 = convertTerm t1 in
+      let temp2 = convertTerm t2 in
+      acc ^ "(>" ^ temp1 ^ temp2 ^")"
+  | Lt (t1, t2) -> 
+      let temp1 = convertTerm t1 in
+      let temp2 = convertTerm t2 in
+      acc ^ "(<" ^ temp1 ^ temp2 ^")"
+  | Eq (t1, t2) -> 
+      let temp1 = convertTerm t1 in
+      let temp2 = convertTerm t2 in
+      acc ^ "(=" ^ temp1 ^ temp2 ^")"
   | PureAnd (pi1,pi2) -> 
       let temp1 = convertPure pi1 "" in
       let temp2 = convertPure pi2 "" in

@@ -107,9 +107,9 @@ let rec showPure (p:pure):string =
   match p with
     TRUE -> "TRUE"
   | FALSE -> "FALSE"
-  | Gt (t, num) -> (showTerms t) ^ ">" ^ (string_of_int num)
-  | Lt (t, num) -> (showTerms t) ^ "<" ^ (string_of_int num)
-  | Eq (t, num) -> (showTerms t) ^ "=" ^ (string_of_int num)
+  | Gt (t1, t2) -> (showTerms t1) ^ ">" ^ (showTerms t2)
+  | Lt (t1, t2) -> (showTerms t1) ^ "<" ^ (showTerms t2)
+  | Eq (t1, t2) -> (showTerms t1) ^ "=" ^ (showTerms t2)
   | PureOr (p1, p2) -> "("^showPure p1 ^ "\\/" ^ showPure p2^")"
   | PureAnd (p1, p2) -> "("^showPure p1 ^ "/\\" ^ showPure p2^")"
   | Neg p -> "(~" ^ "(" ^ showPure p^"))"

@@ -148,22 +148,24 @@ let checkPrecondition (state:effect) (pre:effect)  =
   let reversePre =  (reverseEff pre) in 
   (*check containment*)
   let (result_tree, result, states) =  Rewriting.printReportHelper reverseState reversePre  in 
+  let tree = Node (showEntailmentEff reverseState reversePre, [result_tree]) in
+
   if result == false then 
   let printTree = printTree ~line_prefix:"* " ~get_name ~get_children result_tree in
   print_string printTree;
-  (result, result_tree)
+  (result, tree)
 
   else 
   
-  (result, result_tree);;
+  (result, tree);;
 
 let condToPure (expr :expression) :pure = 
   match expr with 
-    Cond (Variable v, Integer n, "==")  -> Eq (Var v, n)
-  | Cond (Variable v, Integer n, "<=")  -> PureOr(Eq (Var v, n),Lt (Var v, n))
-  | Cond (Variable v, Integer n, ">=")  -> PureOr(Eq (Var v, n),Gt (Var v, n))
-  | Cond (Variable v, Integer n, ">")  -> Gt (Var v, n)
-  | Cond (Variable v, Integer n, "<")  -> Lt (Var v, n)
+    Cond (Variable v, Integer n, "==")  -> Eq (Var v, Number n)
+  | Cond (Variable v, Integer n, "<=")  -> PureOr(Eq (Var v, Number n),Lt (Var v, Number n))
+  | Cond (Variable v, Integer n, ">=")  -> PureOr(Eq (Var v, Number n),Gt (Var v, Number n))
+  | Cond (Variable v, Integer n, ">")  -> Gt (Var v, Number n)
+  | Cond (Variable v, Integer n, "<")  -> Lt (Var v, Number n)
   | _ -> raise (Foo "exception in condToPure")
   ;;
 
