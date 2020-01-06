@@ -561,24 +561,40 @@ let existialRHS piL esL esR varList :bool =
   (not (checkExist esL str || checkEXISTinPure piL str)) && not (List.mem str varList)
   ;;
 
-let getInstansVal esL: int list = 
-  let rec getAllVal (es :es): int list = 
+let rec remove_dups lst= 
+  match lst with
+      | [] -> []
+      | h::t -> h::(remove_dups (List.filter (fun x -> x<>h) t))
+      ;;
+
+let getInstansVal piL esL: int list = 
+  let rec getValFromTerm term = 
+    match term with 
+      Var str -> []
+    | Number n -> [n] 
+    | Plus (tt, n) -> getValFromTerm tt 
+    | Minus (tt, n) -> getValFromTerm tt 
+  in 
+  let rec getAllValFromES (es :es): int list = 
     match es with 
-      Cons (es1, es2) -> append (getAllVal es1) (getAllVal es2)
-    | ESOr (es1, es2) -> append (getAllVal es1) (getAllVal es2)
-    | Ttimes (esIn, t) -> 
-        let rec getValFromTerm term = 
-          match term with 
-            Var str -> []
-          | Number n -> [n] 
-          | Plus (tt, n) -> getValFromTerm tt 
-          | Minus (tt, n) -> getValFromTerm tt 
-        in getValFromTerm t 
-    | Kleene esIn -> getAllVal esIn
-    | Omega esIn -> getAllVal esIn
+      Cons (es1, es2) -> append (getAllValFromES es1) (getAllValFromES es2)
+    | ESOr (es1, es2) -> append (getAllValFromES es1) (getAllValFromES es2)
+    | Ttimes (esIn, t) -> getValFromTerm t 
+    | Kleene esIn -> getAllValFromES esIn
+    | Omega esIn -> getAllValFromES esIn
     | _ -> []
   in 
-  getAllVal esL
+  let rec getAllValFromPure (pi :pure): int list = 
+    match pi with 
+      Gt (tt, n) -> getValFromTerm tt 
+    | Lt (tt, n) -> getValFromTerm tt 
+    | Eq (tt, n) -> getValFromTerm tt 
+    | PureOr (p1, p2) -> append (getAllValFromPure p1) (getAllValFromPure p2) 
+    | PureAnd (p1, p2) -> append (getAllValFromPure p1) (getAllValFromPure p2) 
+    | Neg p1 -> (getAllValFromPure p1) 
+    | _ -> []
+  in 
+  remove_dups (append (getAllValFromPure piL) (getAllValFromES esL))
   ;;
 
 
@@ -649,12 +665,6 @@ let rec containment (effL:effect) (effR:effect) (delta:context list) (varList:st
   in
   (*Unfold function which calls unfoldSingle*)
   let unfold del piL esL piR esR= 
-    let rec remove_dups lst= 
-      (match lst with
-      | [] -> []
-      | h::t -> h::(remove_dups (List.filter (fun x -> x<>h) t))
-      )
-      in
     let fstL = remove_dups (fst piL esL )in 
 
     let hypos = getNewHypos fstL piL esL piR esR in 
@@ -692,7 +702,7 @@ let rec containment (effL:effect) (effR:effect) (delta:context list) (varList:st
       else 
       (*Existential*)
         if existialRHS piL esL esR varList == true then
-          let instanceFromLeft = getInstansVal esL in 
+          let instanceFromLeft = getInstansVal piL esL in 
           (*print_string (List.fold_left (fun acc a  -> acc ^ string_of_int a ^ "\n") ""  instanceFromLeft );*)
           let instantiateRHS = instantiateEff piR esR instanceFromLeft in 
 
