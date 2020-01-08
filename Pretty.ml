@@ -108,7 +108,7 @@ let rec showESReg (es:es):string =
   match es with
     Event ev -> ev 
   | Cons (es1, es2) -> (showESReg es1) ^ (showESReg es2)
-  | ESOr (es1, es2) -> "("^(showESReg es1) ^ "|" ^ (showESReg es2)^")"
+  | ESOr (es1, es2) -> "("^(showESReg es1) ^ "+" ^ (showESReg es2)^")"
   | Kleene es -> "(" ^ (showESReg es)  ^ "*"^")"
   | _ -> raise (Foo "showESReg exception!")
   ;;
@@ -139,6 +139,8 @@ let showEntailmentEff (eff1:effect)( eff2:effect):string = showEffect eff1 ^ " |
 
 (*To pretty print event sequence entailment*)
 let showEntailmentES (es1:es) (es2:es):string = showES es1 ^ " |- "  ^ showES es2;;
+
+let showEntailmentESReg (es1:es) (es2:es):string = showESReg es1 ^ " |- "  ^ showESReg es2;;
 
 (*To pretty print entialment rules*)
 let showRule (r:rule):string = 

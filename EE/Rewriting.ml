@@ -827,10 +827,10 @@ let createT_1 es = Ttimes (es, Minus (Var "t", 1) );;
 let createS_1 es = Ttimes (es, Minus (Var "s", 1) );;
 
 
-let printReportHelper lhs rhs = 
+let printReportHelper lhs rhs: (binary_tree * bool * int) = 
   let delta = getProductHypo lhs rhs in 
   let varList = append (getAllVarFromEff lhs) (getAllVarFromEff rhs) in  
-  containment  lhs rhs [delta] varList 
+  containment lhs rhs [delta] varList 
   ;;
 
 

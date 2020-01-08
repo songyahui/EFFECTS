@@ -1,31 +1,80 @@
 ====================================
-TRUE/\((A|(A.B)).((C|((B.C).D)).(D^*))) |- TRUE/\((A|(A.B)).((C|((B.C).D)).(D^*)))
+TRUE/\((((A|B).(A|A))|((B|A)^*)).(((A|A)^*)^*)) |- TRUE/\((((A|B).(A|A))|((B|A)^*)).(((A|A)^*)^*))
 [Result] Succeed
-[Explored 11 States]
+[Explored 23 States]
 
 
-* TRUE/\((A|(A.B)).((C|(B.(C.D))).(D^*))) |- TRUE/\((A|(A.B)).((C|(B.(C.D))).(D^*)))
-* └── TRUE/\((A|(A.B)).((C|(B.(C.D))).(D^*))) |- TRUE/\((A|(A.B)).((C|(B.(C.D))).(D^*)))   [Unfold with Fst = A]
-*     └── (TRUE/\((C|(B.(C.D))).(D^*)))\/(TRUE/\(B.((C|(B.(C.D))).(D^*)))) |- (TRUE/\((C|(B.(C.D))).(D^*)))\/(TRUE/\(B.((C|(B.(C.D))).(D^*)))) [LHSOR] 
-*         ├── TRUE/\((C|(B.(C.D))).(D^*)) |- (TRUE/\((C|(B.(C.D))).(D^*)))\/(TRUE/\(B.((C|(B.(C.D))).(D^*)))) [RHSOR] 
-*         │   └── TRUE/\((C|(B.(C.D))).(D^*)) |- TRUE/\((C|(B.(C.D))).(D^*))
-*         │       ├── TRUE/\((C|(B.(C.D))).(D^*)) |- TRUE/\((C|(B.(C.D))).(D^*))   [Unfold with Fst = B]
-*         │       │   └── TRUE/\(C.(D.(D^*))) |- TRUE/\(C.(D.(D^*)))
-*         │       │       └── TRUE/\(C.(D.(D^*))) |- TRUE/\(C.(D.(D^*)))   [Unfold with Fst = C]
-*         │       │           └── TRUE/\(D.(D^*)) |- TRUE/\(D.(D^*))
-*         │       │               └── TRUE/\(D.(D^*)) |- TRUE/\(D.(D^*))   [Unfold with Fst = D]
-*         │       │                   └── TRUE/\(D^*) |- TRUE/\(D^*)   [Reoccur-Prove] 
-*         │       └── TRUE/\((C|(B.(C.D))).(D^*)) |- TRUE/\((C|(B.(C.D))).(D^*))   [Unfold with Fst = C]
-*         │           └── TRUE/\(D^*) |- TRUE/\(D^*)
-*         │               └── TRUE/\(D^*) |- TRUE/\(D^*)   [Unfold with Fst = D]
-*         │                   └── TRUE/\(D^*) |- TRUE/\(D^*)   [Reoccur-Prove] 
-*         └── TRUE/\(B.((C|(B.(C.D))).(D^*))) |- (TRUE/\((C|(B.(C.D))).(D^*)))\/(TRUE/\(B.((C|(B.(C.D))).(D^*)))) [RHSOR] 
-*             ├── TRUE/\(B.((C|(B.(C.D))).(D^*))) |- TRUE/\((C|(B.(C.D))).(D^*))
-*             │   └── TRUE/\(B.((C|(B.(C.D))).(D^*))) |- TRUE/\((C|(B.(C.D))).(D^*))   [Unfold with Fst = B]
-*             │       └── TRUE/\((C|(B.(C.D))).(D^*)) |- TRUE/\(C.(D.(D^*)))
-*             │           └── TRUE/\((C|(B.(C.D))).(D^*)) |- TRUE/\(C.(D.(D^*)))   [Unfold with Fst = C]
-*             │               └── TRUE/\(D^*) |- TRUE/\(D.(D^*))   [REFUTATION] 
-*             └── TRUE/\(B.((C|(B.(C.D))).(D^*))) |- TRUE/\(B.((C|(B.(C.D))).(D^*)))
-*                 └── TRUE/\(B.((C|(B.(C.D))).(D^*))) |- TRUE/\(B.((C|(B.(C.D))).(D^*)))   [Unfold with Fst = B]
-*                     └── TRUE/\((C|(B.(C.D))).(D^*)) |- TRUE/\((C|(B.(C.D))).(D^*))   [Reoccur-Prove] 
+* TRUE/\((((A|B).(A|A))|((B|A)^*)).((A|A)^*)) |- TRUE/\((((A|B).(A|A))|((B|A)^*)).((A|A)^*))
+* ├── TRUE/\((((A|B).(A|A))|((B|A)^*)).((A|A)^*)) |- TRUE/\((((A|B).(A|A))|((B|A)^*)).((A|A)^*))   [Unfold with Fst = B]
+* │   └── (TRUE/\((A|A).((A|A)^*)))\/(TRUE/\(((B|A)^*).((A|A)^*))) |- (TRUE/\((A|A).((A|A)^*)))\/(TRUE/\(((B|A)^*).((A|A)^*))) [LHSOR] 
+* │       ├── TRUE/\((A|A).((A|A)^*)) |- (TRUE/\((A|A).((A|A)^*)))\/(TRUE/\(((B|A)^*).((A|A)^*))) [RHSOR] 
+* │       │   └── TRUE/\((A|A).((A|A)^*)) |- TRUE/\((A|A).((A|A)^*))
+* │       │       └── TRUE/\((A|A).((A|A)^*)) |- TRUE/\((A|A).((A|A)^*))   [Unfold with Fst = A]
+* │       │           └── (TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*)) |- (TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*)) [LHSOR] 
+* │       │               ├── TRUE/\((A|A)^*) |- (TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*)) [RHSOR] 
+* │       │               │   └── TRUE/\((A|A)^*) |- TRUE/\((A|A)^*)   [Reoccur-Prove] 
+* │       │               └── TRUE/\((A|A)^*) |- (TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*)) [RHSOR] 
+* │       │                   └── TRUE/\((A|A)^*) |- TRUE/\((A|A)^*)   [Reoccur-Prove] 
+* │       └── TRUE/\(((B|A)^*).((A|A)^*)) |- (TRUE/\((A|A).((A|A)^*)))\/(TRUE/\(((B|A)^*).((A|A)^*))) [RHSOR] 
+* │           ├── TRUE/\(((B|A)^*).((A|A)^*)) |- TRUE/\((A|A).((A|A)^*))   [REFUTATION] 
+* │           └── TRUE/\(((B|A)^*).((A|A)^*)) |- TRUE/\(((B|A)^*).((A|A)^*))
+* │               ├── TRUE/\(((B|A)^*).((A|A)^*)) |- TRUE/\(((B|A)^*).((A|A)^*))   [Unfold with Fst = A]
+* │               │   └── (TRUE/\(((B|A)^*).((A|A)^*)))\/((TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*))) |- (TRUE/\(((B|A)^*).((A|A)^*)))\/((TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*))) [LHSOR] 
+* │               │       ├── TRUE/\(((B|A)^*).((A|A)^*)) |- (TRUE/\(((B|A)^*).((A|A)^*)))\/((TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*))) [RHSOR] 
+* │               │       │   └── TRUE/\(((B|A)^*).((A|A)^*)) |- TRUE/\(((B|A)^*).((A|A)^*))   [Reoccur-Prove] 
+* │               │       └── (TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*)) |- (TRUE/\(((B|A)^*).((A|A)^*)))\/((TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*))) [LHSOR] 
+* │               │           ├── TRUE/\((A|A)^*) |- (TRUE/\(((B|A)^*).((A|A)^*)))\/((TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*))) [RHSOR] 
+* │               │           │   └── TRUE/\((A|A)^*) |- TRUE/\(((B|A)^*).((A|A)^*))   [Reoccur-Prove] 
+* │               │           └── TRUE/\((A|A)^*) |- (TRUE/\(((B|A)^*).((A|A)^*)))\/((TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*))) [RHSOR] 
+* │               │               └── TRUE/\((A|A)^*) |- TRUE/\(((B|A)^*).((A|A)^*))   [Reoccur-Prove] 
+* │               └── TRUE/\(((B|A)^*).((A|A)^*)) |- TRUE/\(((B|A)^*).((A|A)^*))   [Unfold with Fst = B]
+* │                   └── TRUE/\(((B|A)^*).((A|A)^*)) |- TRUE/\(((B|A)^*).((A|A)^*))   [Reoccur-Prove] 
+* └── TRUE/\((((A|B).(A|A))|((B|A)^*)).((A|A)^*)) |- TRUE/\((((A|B).(A|A))|((B|A)^*)).((A|A)^*))   [Unfold with Fst = A]
+*     └── ((TRUE/\((A|A).((A|A)^*)))\/(TRUE/\(((B|A)^*).((A|A)^*))))\/((TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*))) |- ((TRUE/\((A|A).((A|A)^*)))\/(TRUE/\(((B|A)^*).((A|A)^*))))\/((TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*))) [LHSOR] 
+*         ├── (TRUE/\((A|A).((A|A)^*)))\/(TRUE/\(((B|A)^*).((A|A)^*))) |- ((TRUE/\((A|A).((A|A)^*)))\/(TRUE/\(((B|A)^*).((A|A)^*))))\/((TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*))) [LHSOR] 
+*         │   ├── TRUE/\((A|A).((A|A)^*)) |- ((TRUE/\((A|A).((A|A)^*)))\/(TRUE/\(((B|A)^*).((A|A)^*))))\/((TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*))) [RHSOR] 
+*         │   │   └── TRUE/\((A|A).((A|A)^*)) |- (TRUE/\((A|A).((A|A)^*)))\/(TRUE/\(((B|A)^*).((A|A)^*))) [RHSOR] 
+*         │   │       └── TRUE/\((A|A).((A|A)^*)) |- TRUE/\((A|A).((A|A)^*))
+*         │   │           └── TRUE/\((A|A).((A|A)^*)) |- TRUE/\((A|A).((A|A)^*))   [Unfold with Fst = A]
+*         │   │               └── (TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*)) |- (TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*)) [LHSOR] 
+*         │   │                   ├── TRUE/\((A|A)^*) |- (TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*)) [RHSOR] 
+*         │   │                   │   └── TRUE/\((A|A)^*) |- TRUE/\((A|A)^*)   [Reoccur-Prove] 
+*         │   │                   └── TRUE/\((A|A)^*) |- (TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*)) [RHSOR] 
+*         │   │                       └── TRUE/\((A|A)^*) |- TRUE/\((A|A)^*)   [Reoccur-Prove] 
+*         │   └── TRUE/\(((B|A)^*).((A|A)^*)) |- ((TRUE/\((A|A).((A|A)^*)))\/(TRUE/\(((B|A)^*).((A|A)^*))))\/((TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*))) [RHSOR] 
+*         │       └── TRUE/\(((B|A)^*).((A|A)^*)) |- (TRUE/\((A|A).((A|A)^*)))\/(TRUE/\(((B|A)^*).((A|A)^*))) [RHSOR] 
+*         │           ├── TRUE/\(((B|A)^*).((A|A)^*)) |- TRUE/\((A|A).((A|A)^*))   [REFUTATION] 
+*         │           └── TRUE/\(((B|A)^*).((A|A)^*)) |- TRUE/\(((B|A)^*).((A|A)^*))
+*         │               ├── TRUE/\(((B|A)^*).((A|A)^*)) |- TRUE/\(((B|A)^*).((A|A)^*))   [Unfold with Fst = A]
+*         │               │   └── (TRUE/\(((B|A)^*).((A|A)^*)))\/((TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*))) |- (TRUE/\(((B|A)^*).((A|A)^*)))\/((TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*))) [LHSOR] 
+*         │               │       ├── TRUE/\(((B|A)^*).((A|A)^*)) |- (TRUE/\(((B|A)^*).((A|A)^*)))\/((TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*))) [RHSOR] 
+*         │               │       │   └── TRUE/\(((B|A)^*).((A|A)^*)) |- TRUE/\(((B|A)^*).((A|A)^*))   [Reoccur-Prove] 
+*         │               │       └── (TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*)) |- (TRUE/\(((B|A)^*).((A|A)^*)))\/((TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*))) [LHSOR] 
+*         │               │           ├── TRUE/\((A|A)^*) |- (TRUE/\(((B|A)^*).((A|A)^*)))\/((TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*))) [RHSOR] 
+*         │               │           │   └── TRUE/\((A|A)^*) |- TRUE/\(((B|A)^*).((A|A)^*))   [Reoccur-Prove] 
+*         │               │           └── TRUE/\((A|A)^*) |- (TRUE/\(((B|A)^*).((A|A)^*)))\/((TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*))) [RHSOR] 
+*         │               │               └── TRUE/\((A|A)^*) |- TRUE/\(((B|A)^*).((A|A)^*))   [Reoccur-Prove] 
+*         │               └── TRUE/\(((B|A)^*).((A|A)^*)) |- TRUE/\(((B|A)^*).((A|A)^*))   [Unfold with Fst = B]
+*         │                   └── TRUE/\(((B|A)^*).((A|A)^*)) |- TRUE/\(((B|A)^*).((A|A)^*))   [Reoccur-Prove] 
+*         └── (TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*)) |- ((TRUE/\((A|A).((A|A)^*)))\/(TRUE/\(((B|A)^*).((A|A)^*))))\/((TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*))) [LHSOR] 
+*             ├── TRUE/\((A|A)^*) |- ((TRUE/\((A|A).((A|A)^*)))\/(TRUE/\(((B|A)^*).((A|A)^*))))\/((TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*))) [RHSOR] 
+*             │   └── TRUE/\((A|A)^*) |- (TRUE/\((A|A).((A|A)^*)))\/(TRUE/\(((B|A)^*).((A|A)^*))) [RHSOR] 
+*             │       ├── TRUE/\((A|A)^*) |- TRUE/\((A|A).((A|A)^*))   [REFUTATION] 
+*             │       └── TRUE/\((A|A)^*) |- TRUE/\(((B|A)^*).((A|A)^*))
+*             │           └── TRUE/\((A|A)^*) |- TRUE/\(((B|A)^*).((A|A)^*))   [Unfold with Fst = A]
+*             │               └── (TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*)) |- (TRUE/\(((B|A)^*).((A|A)^*)))\/((TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*))) [LHSOR] 
+*             │                   ├── TRUE/\((A|A)^*) |- (TRUE/\(((B|A)^*).((A|A)^*)))\/((TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*))) [RHSOR] 
+*             │                   │   └── TRUE/\((A|A)^*) |- TRUE/\(((B|A)^*).((A|A)^*))   [Reoccur-Prove] 
+*             │                   └── TRUE/\((A|A)^*) |- (TRUE/\(((B|A)^*).((A|A)^*)))\/((TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*))) [RHSOR] 
+*             │                       └── TRUE/\((A|A)^*) |- TRUE/\(((B|A)^*).((A|A)^*))   [Reoccur-Prove] 
+*             └── TRUE/\((A|A)^*) |- ((TRUE/\((A|A).((A|A)^*)))\/(TRUE/\(((B|A)^*).((A|A)^*))))\/((TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*))) [RHSOR] 
+*                 └── TRUE/\((A|A)^*) |- (TRUE/\((A|A).((A|A)^*)))\/(TRUE/\(((B|A)^*).((A|A)^*))) [RHSOR] 
+*                     ├── TRUE/\((A|A)^*) |- TRUE/\((A|A).((A|A)^*))   [REFUTATION] 
+*                     └── TRUE/\((A|A)^*) |- TRUE/\(((B|A)^*).((A|A)^*))
+*                         └── TRUE/\((A|A)^*) |- TRUE/\(((B|A)^*).((A|A)^*))   [Unfold with Fst = A]
+*                             └── (TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*)) |- (TRUE/\(((B|A)^*).((A|A)^*)))\/((TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*))) [LHSOR] 
+*                                 ├── TRUE/\((A|A)^*) |- (TRUE/\(((B|A)^*).((A|A)^*)))\/((TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*))) [RHSOR] 
+*                                 │   └── TRUE/\((A|A)^*) |- TRUE/\(((B|A)^*).((A|A)^*))   [Reoccur-Prove] 
+*                                 └── TRUE/\((A|A)^*) |- (TRUE/\(((B|A)^*).((A|A)^*)))\/((TRUE/\((A|A)^*))\/(TRUE/\((A|A)^*))) [RHSOR] 
+*                                     └── TRUE/\((A|A)^*) |- TRUE/\(((B|A)^*).((A|A)^*))   [Reoccur-Prove] 
 
