@@ -1,0 +1,1 @@
+ocamlc -o gen Askz3.cmo Pretty.cmo Testing/regexGen.ml
