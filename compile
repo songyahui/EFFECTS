@@ -17,7 +17,6 @@ ocamlc -c -o trs.cmo EE/trs.ml
 ocamlc -o trs parser.cmo lexer.cmo Askz3.cmo Pretty.cmo Rewriting.cmo trs.cmo
 ocamlc -o verify parser.cmo lexer.cmo Askz3.cmo Pretty.cmo Rewriting.cmo Forward.cmo 
 
+ocamlc -c -o Antimirov.cmo EE/Antimirov.ml
 ocamlc -c -o regexGen.cmo Testing/regexGen.ml
-ocamlc -o gen parser.cmo lexer.cmo Askz3.cmo Pretty.cmo Rewriting.cmo regexGen.cmo
-
-
+ocamlc -o gen parser.cmo lexer.cmo Askz3.cmo Pretty.cmo Antimirov.cmo regexGen.cmo

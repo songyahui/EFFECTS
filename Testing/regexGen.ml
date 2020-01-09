@@ -3,7 +3,7 @@ open Ast
 open Pretty
 open Printf
 open List
-open Rewriting
+open Antimirov
 
 type op = OpCon | OpStar | OpUinon
 
@@ -14,11 +14,11 @@ let showOp (o:op) :string =
   | OpUinon-> "OpUinon\n"
   ;;
 
-let alphabet = ["A"; "B"; "c"; "d"; "e"; "f"; "g"; "h"; "I"; "J"; "K"; "L"; "M"; "N"]
+let alphabet = ["a"; "b"; "c"; "d"; "e"; "f"; "g"; "h"; "I"; "J"; "K"; "L"; "M"; "N"]
 
-let height = 3;;
+let height = 4;;
 let sigma = 2;;
-let sampleNum = 1;;
+let sampleNum = 3;;
 
 let getRandomeOp (num:int):op = 
   match num with 
@@ -55,7 +55,7 @@ let rec regexGen (h:int) (s:int) : es =
 ;;
 
 let cartesian l l' = 
-  List.concat (List.map (fun e -> List.map (fun e' -> (e,e')) l') l)
+  List.concat (List.map (fun e -> List.map (fun e' -> (e, e')) l') l)
 ;;
 
 let getFst (a, b) = a ;;
@@ -63,17 +63,18 @@ let getFst (a, b) = a ;;
 
 
 let main =
+  (*
   print_string ("song\n");
-  let line = "TRUE /\\ ((A^*).(B^*).(B.B^*)^*) |- TRUE /\\ ((A^*).(B^*).(B.B^*)^*) \n" in
+  let line = " \n" in
   let EE (Effect (p1,lhs), Effect (p2,rhs)) = Parser.ee Lexer.token (Lexing.from_string line) in
   (*let result = printReport (Effect (p1,lhs)) (Effect (p2,rhs)) in *)
   let result = string_of_bool (getFst (Rewriting.antimirov (Effect (p1,lhs)) (Effect (p2,rhs)) [])) in 
   print_string(result);;
-  (**)
+  *)
 
   
   
-  (*let outputfile = (Sys.getcwd ()^ "/" ^ "Testing/regex.dat") in
+  let outputfile = (Sys.getcwd ()^ "/" ^ "Testing/regex.dat") in
   
   let rec genES (num:int) (acc:es list): es list= 
     if num = 0 then acc
@@ -89,8 +90,8 @@ let main =
     fprintf oc "%s" dataset;   (* 写一些东西 *)
     close_out oc;
   
-  let results = List.map (fun (lhs, rhs) -> (Rewriting.antimirov lhs rhs [])) pairs in 
+  let results = List.map (fun (lhs, rhs) -> (Antimirov.antimirov lhs rhs [])) pairs in 
 
-  print_string (List.fold_left (fun acc a -> acc ^ string_of_bool a ^"\n") "" results);;
+  print_string (List.fold_left (fun acc (a,b) -> acc ^ string_of_bool a ^"\n") "" results);;
     
-    *)
+    
