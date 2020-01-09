@@ -16,9 +16,9 @@ let showOp (o:op) :string =
 
 let alphabet = ["a"; "b"; "c"; "d"; "e"; "f"; "g"; "h"; "I"; "J"; "K"; "L"; "M"; "N"]
 
-let height = 4;;
+let height = 6;;
 let sigma = 2;;
-let sampleNum = 3;;
+let sampleNum = 4;;
 
 let getRandomeOp (num:int):op = 
   match num with 
@@ -89,9 +89,11 @@ let main =
   let oc = open_out outputfile in    (* 新建或修改文件,返回通道 *)
     fprintf oc "%s" dataset;   (* 写一些东西 *)
     close_out oc;
-  
+  let startTimeStamp = Sys.time() in
   let results = List.map (fun (lhs, rhs) -> (Antimirov.antimirov lhs rhs [])) pairs in 
-
+  let endTime = Sys.time() in 
+  print_string ((string_of_float((endTime -. startTimeStamp) *. (float_of_int 1000)/. ((float_of_int sampleNum) *. float_of_int sampleNum)))^"\n" );
+  
   print_string (List.fold_left (fun acc (a,b) -> acc ^ string_of_bool a ^"\n") "" results);;
     
     

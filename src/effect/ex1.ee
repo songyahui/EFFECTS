@@ -1,1 +1,1 @@
-TRUE /\ ((A|A)^*).((A|B)^*) |- TRUE /\ ((A|A)^*).((A|B)^*)
+TRUE /\ Tick |- TRUE /\ Tick
