@@ -499,6 +499,60 @@ This decision procedure returns a derivation tree and a boolean
 value indicating the validility of the effect entailment
 -------------------------------------------------------------*)
 
+let rec antimirovNullable (es:es) : bool=
+  match es with
+  | Emp -> true
+  | Event ev -> false 
+  | Cons (es1 , es2) -> (antimirovNullable es1) && (antimirovNullable es2)
+  | ESOr (es1 , es2) -> (antimirovNullable es1) || (antimirovNullable es2)
+  | Kleene es1 -> true
+  | _ -> raise (Foo "exception antimirovNullable")
+;;
+    
+let rec antimirovFst  (es:es): event list = 
+  match es with
+  | Emp -> []
+  | Event ev ->  [ev]
+  | Cons (es1 , es2) ->  if antimirovNullable es1 then append (antimirovFst es1) (antimirovFst es2) else antimirovFst es1
+  | ESOr (es1, es2) -> append (antimirovFst es1) (antimirovFst es2)
+  | Kleene es1 -> antimirovFst es1
+  | _-> raise (Foo "exception antimirovFst")
+;;
+
+
+
+let rec antimirovDerivative (es:es) (ev:string): es =
+  match es with
+    Emp -> Bot
+  | Event ev1 -> 
+      if (String.compare ev "_") == 0 then  Emp
+      else if (String.compare ev1 ev) == 0 then Emp else Bot
+  | ESOr (es1 , es2) -> ESOr (antimirovDerivative es1 ev, antimirovDerivative es2 ev)
+  | Cons (es1 , es2) -> 
+      if antimirovNullable es1 
+      then let esF = antimirovDerivative es1 ev in 
+          let esL = Cons (esF, es2) in 
+          let esR = antimirovDerivative es2 ev in 
+          ESOr (esL, esR)
+      else let esF = antimirovDerivative es1 ev in 
+          Cons (esF, es2)    
+  | Kleene es1 -> Cons  (antimirovDerivative es1 ev, es)
+  |  _-> raise (Foo "exception antimirovDerivative")
+
+;;
+
+
+
+
+
+let isBot (es:es):bool = 
+  match es with 
+    Bot -> true 
+  | _ ->  false 
+;;
+
+
+
 let rec containment (effL:effect) (effR:effect) (delta:context list) (varList:string list): (binary_tree * bool * int) = 
   let normalFormL = normalEffect effL in 
   let normalFormR = normalEffect effR in

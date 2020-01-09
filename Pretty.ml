@@ -106,7 +106,9 @@ let rec showES (es:es):string =
 
 let rec showESReg (es:es):string = 
   match es with
-    Event ev -> ev 
+  | Bot -> "false"
+  | Emp -> ""
+  | Event ev -> ev 
   | Cons (es1, es2) -> (showESReg es1) ^ (showESReg es2)
   | ESOr (es1, es2) -> "("^(showESReg es1) ^ "+" ^ (showESReg es2)^")"
   | Kleene es -> "(" ^ (showESReg es)  ^ "*"^")"

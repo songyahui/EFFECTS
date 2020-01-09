@@ -14,11 +14,11 @@ let showOp (o:op) :string =
   | OpUinon-> "OpUinon\n"
   ;;
 
-let alphabet = ["a"; "b"; "c"; "d"; "e"; "f"; "g"; "h"; "I"; "J"; "K"; "L"; "M"; "N"]
+let alphabet = ["A"; "B"; "c"; "d"; "e"; "f"; "g"; "h"; "I"; "J"; "K"; "L"; "M"; "N"]
 
 let height = 4;;
 let sigma = 2;;
-let sampleNum = 2;;
+let sampleNum = 1;;
 
 let getRandomeOp (num:int):op = 
   match num with 
@@ -72,16 +72,14 @@ let main =
   in 
   let ess = genES sampleNum  [] in
   let pairs = cartesian ess ess in 
-  print_string (List.fold_left (fun acc (lhs, rhs) -> acc ^ showEntailmentESReg lhs rhs ^"\n") "" pairs);
-  
-  let results = List.map (fun (lhs, rhs) -> getSecond (Rewriting.printReportHelper (Effect(TRUE, lhs)) (Effect(TRUE, rhs)))) pairs in 
-  print_string (string_of_int (List.length results));
-  
-  print_string (List.fold_left (fun acc a -> acc ^ string_of_bool a ^"\n") "" results);;
-  
-  
-  (*let dataset = List.fold_left (fun acc a -> acc ^ (showES(*Reg*) (normalES a TRUE) ^"\n")) "" ess in 
+  let dataset = List.fold_left (fun acc (lhs, rhs) -> acc ^ showEntailmentES lhs rhs ^"\n") "" pairs in 
   let oc = open_out outputfile in    (* 新建或修改文件,返回通道 *)
     fprintf oc "%s" dataset;   (* 写一些东西 *)
-    close_out oc;;  
-    *)
+    close_out oc;
+  
+  let results = List.map (fun (lhs, rhs) -> (Rewriting.antimirov lhs rhs [])) pairs in 
+  print_string (string_of_int (List.length results)^"\n");
+  
+  print_string (List.fold_left (fun acc a -> acc ^ string_of_bool a ^"\n") "" results);;
+    
+    
