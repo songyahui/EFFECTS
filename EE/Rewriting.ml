@@ -143,6 +143,8 @@ let rec reoccurHelp piL esL piR esR (del:context) =
 
     else reoccurHelp piL esL piR esR rest (*REOCCUR*) 
   ;;
+
+
   
 
 let rec reoccur piL esL piR esR (delta:context list) = 
@@ -544,12 +546,59 @@ let rec antimirovDerivative (es:es) (ev:string): es =
 
 
 
-
 let isBot (es:es):bool = 
   match es with 
     Bot -> true 
   | _ ->  false 
 ;;
+
+let rec reoccurHelpANTIMIROV esL esR (del: (es*es) list) = 
+  match del with 
+  | [] -> false 
+  | (es1, es2) :: rest -> 
+    if (compareES esL es1 && compareES esR es2 )
+    then true
+    else reoccurHelpANTIMIROV esL esR rest (*REOCCUR*) 
+  ;;
+
+let rec antimirov (esL:es) (esR:es) (evn: (es*es) list): bool = 
+  let normalFormL = normalES esL TRUE in 
+  let normalFormR = normalES esR TRUE in
+  if isBot normalFormR then false 
+  else if (nullable TRUE normalFormL) == true && (nullable TRUE normalFormL) == false 
+  then false
+  else if (reoccurHelpANTIMIROV normalFormL normalFormR evn) == true then true
+  else 
+
+
+  let unfoldSingle (ev:event) (esL:es) (esR:es) (del:(es*es)  list):bool = 
+    let derivL = antimirovDerivative esL ev in
+    let derivR = antimirovDerivative esR ev in
+    antimirov derivL derivR del 
+  in
+  (*Unfold function which calls unfoldSingle*)
+  let antimirovUnfold (del: (es*es) list) (esL:es) (esR:es) :bool= 
+    let fstL = remove_dups (antimirovFst esL )in 
+
+    (*let hypos = getNewHypos fstL piL esL piR esR in *)
+    let deltaNew:((es*es) list) = append del [(normalFormL, normalFormR)] in
+    let rec chceckResultAND li: bool=
+      (match li with 
+        [] -> true
+      | ev::fs -> 
+          let re = unfoldSingle ev esL esR deltaNew in 
+          if re == false then false
+          else chceckResultAND fs 
+      )
+    in 
+    chceckResultAND fstL 
+  in 
+  match (normalFormL, normalFormR) with 
+    (ESOr (es1, es2), _) -> antimirov  es1 normalFormR evn && antimirov es2 normalFormR evn
+  | (_, ESOr (es1, es2)) -> antimirov normalFormL es1 evn || antimirov normalFormL es2 evn
+  | _ -> antimirovUnfold evn normalFormL normalFormR
+  ;;
+
 
 
 
@@ -557,7 +606,7 @@ let rec containment (effL:effect) (effR:effect) (delta:context list) (varList:st
   let normalFormL = normalEffect effL in 
   let normalFormR = normalEffect effR in
   let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentEff normalFormL normalFormR in 
-  (*print_string(showEntail ^"\n");*)
+  print_string(showEntail ^"\n");
   let unfoldSingle ev piL esL piR esR (del:context list) = 
     let derivL = derivative piL esL ev in
     let derivR = derivative piR esR ev in
