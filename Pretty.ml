@@ -303,7 +303,7 @@ let rec normalTerms (t:terms):terms  =
   | Plus (Number n1, n2) -> Number (n1 + n2)
   | _ -> t 
   ;;
-
+ 
 
 let rec normalES es pi = 
   match es with

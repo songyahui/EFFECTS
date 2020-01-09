@@ -16,9 +16,9 @@ let showOp (o:op) :string =
 
 let alphabet = ["A"; "B"; "c"; "d"; "e"; "f"; "g"; "h"; "I"; "J"; "K"; "L"; "M"; "N"]
 
-let height = 4;;
+let height = 3;;
 let sigma = 2;;
-let sampleNum = 3;;
+let sampleNum = 1;;
 
 let getRandomeOp (num:int):op = 
   match num with 
@@ -58,10 +58,22 @@ let cartesian l l' =
   List.concat (List.map (fun e -> List.map (fun e' -> (e,e')) l') l)
 ;;
 
-let getSecond (a, b, c) = b ;;
+let getFst (a, b) = a ;;
+
+
 
 let main =
-  let outputfile = (Sys.getcwd ()^ "/" ^ "Testing/regex.dat") in
+  print_string ("song\n");
+  let line = "TRUE /\\ ((A^*).(B^*).(B.B^*)^*) |- TRUE /\\ ((A^*).(B^*).(B.B^*)^*) \n" in
+  let EE (Effect (p1,lhs), Effect (p2,rhs)) = Parser.ee Lexer.token (Lexing.from_string line) in
+  (*let result = printReport (Effect (p1,lhs)) (Effect (p2,rhs)) in *)
+  let result = string_of_bool (getFst (Rewriting.antimirov (Effect (p1,lhs)) (Effect (p2,rhs)) [])) in 
+  print_string(result);;
+  (**)
+
+  
+  
+  (*let outputfile = (Sys.getcwd ()^ "/" ^ "Testing/regex.dat") in
   
   let rec genES (num:int) (acc:es list): es list= 
     if num = 0 then acc
@@ -79,6 +91,6 @@ let main =
   
   let results = List.map (fun (lhs, rhs) -> (Rewriting.antimirov lhs rhs [])) pairs in 
 
-  print_string (List.fold_left (fun acc a -> acc ^ string_of_bool a ^"\n") "" results);
-  
+  print_string (List.fold_left (fun acc a -> acc ^ string_of_bool a ^"\n") "" results);;
     
+    *)

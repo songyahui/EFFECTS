@@ -501,105 +501,153 @@ This decision procedure returns a derivation tree and a boolean
 value indicating the validility of the effect entailment
 -------------------------------------------------------------*)
 
+
+
 let rec antimirovNullable (es:es) : bool=
   match es with
-  | Emp -> true
+    Emp -> true
   | Event ev -> false 
   | Cons (es1 , es2) -> (antimirovNullable es1) && (antimirovNullable es2)
   | ESOr (es1 , es2) -> (antimirovNullable es1) || (antimirovNullable es2)
   | Kleene es1 -> true
-  | _ -> raise (Foo "exception antimirovNullable")
+  | _ -> raise (Foo "antimirovNullable exeption\n")
 ;;
-    
-let rec antimirovFst  (es:es): event list = 
+
+let rec antimirovFst (es:es): event list = 
   match es with
-  | Emp -> []
+    Emp -> []
   | Event ev ->  [ev]
   | Cons (es1 , es2) ->  if antimirovNullable es1 then append (antimirovFst es1) (antimirovFst es2) else antimirovFst es1
   | ESOr (es1, es2) -> append (antimirovFst es1) (antimirovFst es2)
   | Kleene es1 -> antimirovFst es1
-  | _-> raise (Foo "exception antimirovFst")
 ;;
 
-
+let rec antimirovNormalES es:es  =
+  match es with
+    Bot -> es
+  | Emp -> es
+  | Event ev -> es
+  | Cons (Cons (esIn1, esIn2), es2)-> antimirovNormalES (Cons (esIn1, Cons (esIn2, es2))) 
+  | Cons (es1, es2) -> 
+      let normalES1 = antimirovNormalES es1 in
+      let normalES2 = antimirovNormalES es2 in
+      (match (normalES1, normalES2) with 
+        (Emp, _) -> normalES2
+      | (_, Emp) -> normalES1
+      | (Bot, _) -> Bot
+      | (Omega _, _ ) -> normalES1
+      | (normal_es1, normal_es2) -> Cons (normal_es1, normal_es2)
+      ;)
+  | ESOr (es1, es2) -> 
+      (match (antimirovNormalES es1, antimirovNormalES es2) with 
+        (Bot, Bot) -> Bot
+      | (Bot, norml_es2) -> norml_es2
+      | (norml_es1, Bot) -> norml_es1
+      | (norml_es1, norml_es2) -> ESOr (norml_es1, norml_es2)
+      ;)
+  | Kleene es1 -> 
+      let normalInside = antimirovNormalES es1 in 
+      (match normalInside with
+        Emp -> Emp
+      | Kleene esIn1 ->  Kleene (antimirovNormalES esIn1)
+      | _ ->  Kleene normalInside)
+  | _ -> raise (Foo "antimirovNormalES exeption\n")
+  ;;
 
 let rec antimirovDerivative (es:es) (ev:string): es =
   match es with
     Emp -> Bot
   | Event ev1 -> 
-      if (String.compare ev "_") == 0 then  Emp
-      else if (String.compare ev1 ev) == 0 then Emp else Bot
+      if (String.compare ev1 ev) == 0 then Emp else Bot
   | ESOr (es1 , es2) -> ESOr (antimirovDerivative es1 ev, antimirovDerivative es2 ev)
   | Cons (es1 , es2) -> 
       if antimirovNullable es1 
-      then let esF = antimirovDerivative es1 ev in 
-          let esL = Cons (esF, es2) in 
-          let esR = antimirovDerivative es2 ev in 
-          ESOr (esL, esR)
-      else let esF = antimirovDerivative es1 ev in 
-          Cons (esF, es2)    
+      then let efF = antimirovDerivative es1 ev in 
+          let effL = Cons (efF, es2) in 
+          let effR = antimirovDerivative es2 ev in 
+          ESOr (effL, effR)
+      else let efF = antimirovDerivative es1 ev in 
+          Cons (efF, es2)    
   | Kleene es1 -> Cons  (antimirovDerivative es1 ev, es)
-  |  _-> raise (Foo "exception antimirovDerivative")
+  | _ -> raise (Foo "antimirovDerivative exeption\n")
 
 ;;
 
-
-
-
-let isBot (es:es):bool = 
-  match es with 
-    Bot -> true 
-  | _ ->  false 
+let rec antimirovGetProductHypo (eff1:es) (eff2:es) : context = 
+  let eff1n = antimirovNormalES eff1 in 
+  let eff2n = antimirovNormalES eff2 in 
+  match eff1n with 
+    Effect (pi1, es1) -> 
+        (match eff2n with 
+          Effect (pi2, es2) -> [(pi1, es1, pi2, es2)] 
+          | Disj (eff2InL, eff2InR) -> append (getProductHypo eff1 eff2InL) (getProductHypo eff1 eff2InR) 
+        )
+    Cons (eff1InL, eff1InR) -> append (antimirovGetProductHypo eff1InL eff2) (antimirovGetProductHypo eff1InR eff2) 
+  | _ -> [(TRUE, es1, TRUE, es2)] 
 ;;
 
-let rec reoccurHelpANTIMIROV esL esR (del: (es*es) list) = 
-  match del with 
-  | [] -> false 
-  | (es1, es2) :: rest -> 
-    if (compareES esL es1 && compareES esR es2 )
-    then true
-    else reoccurHelpANTIMIROV esL esR rest (*REOCCUR*) 
+let antimirovGetNewHypos (fstL:string list)  (esL:es)  (esR:es) : context = 
+  let effPair  = map (fun ev -> ( (antimirovDerivative esL ev), (antimirovDerivative esR ev))) fstL in 
+  let pi_EsPair = flatten (map (fun (eff1, eff2) -> antimirovGetProductHypo eff1 eff2 ) effPair) in 
+  pi_EsPair
   ;;
 
-let rec antimirov (esL:es) (esR:es) (evn: (es*es) list): bool = 
-  let normalFormL = normalES esL TRUE in 
-  let normalFormR = normalES esR TRUE in
-  if isBot normalFormR then false 
-  else if (nullable TRUE normalFormL) == true && (nullable TRUE normalFormL) == false 
-  then false
-  else if (reoccurHelpANTIMIROV normalFormL normalFormR evn) == true then true
-  else 
-
-
-  let unfoldSingle (ev:event) (esL:es) (esR:es) (del:(es*es)  list):bool = 
+    
+let rec antimirov (essL:es) (essR:es) (delta:context list): (bool * int) = 
+  let normalFormL = antimirovNormalES essL in 
+  let normalFormR = antimirovNormalES essR in
+  let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentES normalFormL normalFormR in 
+  let unfoldSingle ev esL esR (del:context list) = 
     let derivL = antimirovDerivative esL ev in
     let derivR = antimirovDerivative esR ev in
-    antimirov derivL derivR del 
+    let (result, states) = antimirov derivL derivR del in
+    (result, states+1)
   in
   (*Unfold function which calls unfoldSingle*)
-  let antimirovUnfold (del: (es*es) list) (esL:es) (esR:es) :bool= 
+  let unfold del esL esR= 
     let fstL = remove_dups (antimirovFst esL )in 
 
-    (*let hypos = getNewHypos fstL piL esL piR esR in *)
-    let deltaNew:((es*es) list) = append del [(normalFormL, normalFormR)] in
-    let rec chceckResultAND li: bool=
+    let hypos = getNewHypos fstL  esL piR esR in 
+    let deltaNew:(context list) = append del [hypos] in
+    let rec chceckResultAND li staacc:(bool * int )=
       (match li with 
-        [] -> true
+        [] -> (true, staacc) 
       | ev::fs -> 
-          let re = unfoldSingle ev esL esR deltaNew in 
-          if re == false then false
-          else chceckResultAND fs 
+          let (re, states) = unfoldSingle ev esL piR esR deltaNew in 
+          if re == false then (false , staacc+states)
+          else chceckResultAND fs  (staacc+states)
       )
     in 
-    chceckResultAND fstL 
+    let (resultFinal, states) = chceckResultAND fstL  0 in 
+    ( resultFinal, states)    
+  
   in 
-  match (normalFormL, normalFormR) with 
-    (ESOr (es1, es2), _) -> antimirov  es1 normalFormR evn && antimirov es2 normalFormR evn
-  | (_, ESOr (es1, es2)) -> antimirov normalFormL es1 evn || antimirov normalFormL es2 evn
-  | _ -> antimirovUnfold evn normalFormL normalFormR
+  match (normalFormL, normalFormR) with
+    (Disj (effL1, effL2), _) -> 
+    (*[LHSOR]*)
+      let (re1, states1 ) = (antimirov effL1 normalFormR delta) in
+      if re1 == false then (false, states1)
+      else 
+        let (re2 , states2) = (antimirov effL2 normalFormR delta) in
+        (re2, states1+states2+1)
+  | (_, Disj (effR1, effR2)) -> 
+    (*[RHSOR]*)
+      let (re1, states1 ) = (antimirov normalFormL effR1 delta) in
+      if re1 == true then ( true, states1)
+      else 
+        let (re2 , states2) = (antimirov normalFormL effR2 delta) in
+        (re2, states1+states2)
+  | (Effect (piL, esL), Effect (piR, esR))-> 
+       if (comparePure piR FALSE == true ) then (false, 0)
+      (*[REFUTATION]*)
+        else if (nullable piL esL) == true && (nullable piR esR) == false 
+        then ( false, 0) 
+      (*[Reoccur]*)
+        else if (reoccur piL esL piR esR delta) == true 
+        then ( true, 0) 
+      (*Unfold*)                    
+      else unfold delta piL esL piR esR
   ;;
-
-
 
 
 let rec containment (effL:effect) (effR:effect) (delta:context list) (varList:string list): (binary_tree * bool * int) = 
