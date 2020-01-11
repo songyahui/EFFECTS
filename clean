@@ -10,3 +10,4 @@ rm parser.mli
 rm trs
 rm verify
 rm gen
+rm out

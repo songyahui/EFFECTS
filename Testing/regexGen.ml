@@ -16,9 +16,9 @@ let showOp (o:op) :string =
 
 let alphabet = ["a"; "b"; "c"; "d"; "e"; "f"; "g"; "h"; "I"; "J"; "K"; "L"; "M"; "N"]
 
-let height = 6;;
-let sigma = 2;;
-let sampleNum = 4;;
+let height = 5;;
+let sigma = 3;;
+let sampleNum = 2;;
 
 let getRandomeOp (num:int):op = 
   match num with 
