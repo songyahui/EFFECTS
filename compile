@@ -33,5 +33,5 @@ ocamlc -c  -o regex.cmo Lib/regex.ml
 ocamlc -c -o nfa_dot.cmi Lib/nfa_dot.mli 
 ocamlc -c -o nfa_dot.cmo Lib/nfa_dot.ml 
 
-ocamlc -c -o regNfa regex.cmo nfa_dot.cmo dfa.cmo nfa.cmo Lib/regNfa.ml 
-ocamlc -o out nfa.cmo dfa.cmo regex.cmo nfa_dot.cmo regNfa.cmo 
+ocamlc -c -o RegToNfa regex.cmo nfa_dot.cmo dfa.cmo nfa.cmo Lib/RegToNfa.ml 
+ocamlc -o out nfa.cmo dfa.cmo regex.cmo nfa_dot.cmo RegToNfa.cmo 

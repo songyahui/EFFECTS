@@ -154,7 +154,7 @@ let flatten_transitions : StateSet.t CharSetMap.t -> StateSet.t CharMap.t =
       cm
       CharMap.empty
 
-let compile r =
+let compile r:nfa =
   (** Give every character set in 'r' a unique identifier *)
   let r = annotate r in
 
