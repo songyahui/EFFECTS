@@ -21,9 +21,9 @@ let parse_re r =
 
 
 let antichain lhs rhs: (bool*int) =
+   
    let nfaA = Regex.compile (parse_re lhs) in
    let nfaB = Regex.compile (parse_re rhs) in
-   Nfa.antichain_in nfaA nfaB [] 
    
    (*
    let digraphA = Nfa_dot.digraph_of_nfa nfaA in
@@ -32,7 +32,10 @@ let antichain lhs rhs: (bool*int) =
    Format.printf "%a@." Nfa_dot.format_digraph digraphB;
    *)
 
-   ;;
+   Nfa.antichain_in nfaA nfaB [] ;;
+   
+
+   
   (*
   let r = ref None in
   let collect s =

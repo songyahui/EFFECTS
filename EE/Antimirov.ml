@@ -118,14 +118,21 @@ let rec remove_dup lst=
       ;;
 
 
-
+let rec splitCons (es:es) : es list = 
+  match es with 
+    Cons (es1, es2) -> append (splitCons es1) (splitCons es2)
+  | _ -> [es]
+  ;;
 
 
 let rec aReoccur esL esR (del:evn) = 
   match del with 
   | [] -> false 
   | (es1, es2) :: rest -> 
-    if (aCompareES esL es1 && aCompareES esR  es2) then true
+    let tempH = splitCons es2 in 
+    let temp = splitCons esR in 
+    let superset = List.fold_left (fun acc a -> acc && List.mem a temp  ) true tempH in
+    if (aCompareES esL es1 && superset) then true
     else aReoccur esL esR rest (*REOCCUR*) 
   ;;
 
@@ -133,7 +140,7 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) =
   let normalFormL = aNormalES lhs in 
   let normalFormR = aNormalES rhs in
   (*let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentES normalFormL normalFormR in 
-  *)
+  print_string (showEntail^"\n\n");*)
   let unfoldSingle ev esL esR (del:evn) = 
     let derivL = aDerivative esL ev in
     let derivR = aDerivative esR ev in
@@ -158,9 +165,16 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) =
     (resultFinal, states)    
   
   in 
-  if (isBot normalFormL) then (false, 0)
+  if (isBot normalFormR) then 
+  (
+  (false, 1)
+  )
   (*[REFUTATION]*)
-  else if (aNullable normalFormL) == true && (aNullable normalFormR) == false then ( false, 1) 
+  else if (aNullable normalFormL) == true && (aNullable normalFormR) == false then 
+  (
+    
+    ( false, 1) 
+  )
       (*[Reoccur]*)
   else if (aReoccur normalFormL normalFormR evn) == true then ( true, 1) 
       (*Unfold*)                    
@@ -173,15 +187,8 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) =
       else 
         let (re2 , states2) = (antimirov effL2 normalFormR evn) in
         (re2, states1+states2+1)
-  | (_, ESOr (effR1, effR2)) -> 
-  (*[RHSOR]*)
-    let (re1, states1 ) = (antimirov normalFormL effR1 evn) in
-    if re1 == true then ( true, states1)
-    else 
-      let (re2 , states2) = (antimirov normalFormL effR2 evn) in
-      (re2, states1+states2)
   | _ -> 
-  (*print_string (showEntail^"\n\n");*)
+  
   
   unfold evn normalFormL normalFormR
   (*

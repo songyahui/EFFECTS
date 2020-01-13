@@ -111,7 +111,7 @@ let rec showESReg (es:es):string =
   | Event ev -> ev 
   | Cons (es1, es2) -> (showESReg es1) ^ (showESReg es2)
   | ESOr (es1, es2) -> "("^(showESReg es1) ^ "|" ^ (showESReg es2)^")"
-  | Kleene es -> "(" ^ (showESReg es)  ^ "*"^")"
+  | Kleene es -> "(" ^"(" ^ (showESReg es) ^")" ^ "*"^")"
   | _ -> raise (Foo "showESReg exception!")
   ;;
 
