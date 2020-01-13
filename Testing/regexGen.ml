@@ -4,6 +4,7 @@ open Pretty
 open Printf
 open List
 open Antimirov
+open RegToNfa
 
 type op = OpCon | OpStar | OpUinon
 
@@ -14,11 +15,11 @@ let showOp (o:op) :string =
   | OpUinon-> "OpUinon\n"
   ;;
 
-let alphabet = ["a"; "b"; "c"; "d"; "e"; "f"; "g"; "h"; "I"; "J"; "K"; "L"; "M"; "N"]
+let alphabet = ["A"; "B"; "C"; "d"; "e"; "f"; "g"; "h"; "I"; "J"; "K"; "L"; "M"; "N"]
 
-let height = 5;;
-let sigma = 3;;
-let sampleNum = 2;;
+let height = 2;;
+let sigma = 2;;
+let sampleNum = 1;;
 
 let getRandomeOp (num:int):op = 
   match num with 
@@ -64,15 +65,12 @@ let getFst (a, b) = a ;;
 
 let main =
   (*
-  print_string ("song\n");
-  let line = " \n" in
+  let line = "\n" in
   let EE (Effect (p1,lhs), Effect (p2,rhs)) = Parser.ee Lexer.token (Lexing.from_string line) in
   (*let result = printReport (Effect (p1,lhs)) (Effect (p2,rhs)) in *)
-  let result = string_of_bool (getFst (Rewriting.antimirov (Effect (p1,lhs)) (Effect (p2,rhs)) [])) in 
-  print_string(result);;
+  let (a,b) = Antimirov.antimirov lhs rhs [] in 
+  print_string(string_of_bool a ^":"^string_of_int b);;
   *)
-
-  
   
   let outputfile = (Sys.getcwd ()^ "/" ^ "Testing/regex.dat") in
   
@@ -85,15 +83,17 @@ let main =
   in 
   let ess = genES sampleNum  [] in
   let pairs = cartesian ess ess in 
-  let dataset = List.fold_left (fun acc (lhs, rhs) -> acc ^ showEntailmentESReg lhs rhs ^"\n") "" pairs in 
+  let dataset' = List.fold_left (fun acc (lhs, rhs) -> acc ^ showEntailmentESReg lhs rhs ^"\n") "" pairs in 
+  let dataset = List.fold_left (fun acc (lhs, rhs) -> acc ^ showEntailmentES lhs rhs ^"\n") "" pairs in 
   let oc = open_out outputfile in    (* 新建或修改文件,返回通道 *)
-    fprintf oc "%s" dataset;   (* 写一些东西 *)
+    fprintf oc "%s" (dataset'^"\n"^dataset);   (* 写一些东西 *)
     close_out oc;
   let startTimeStamp = Sys.time() in
   let results = List.map (fun (lhs, rhs) -> (Antimirov.antimirov lhs rhs [])) pairs in 
   let endTime = Sys.time() in 
+  List.map (fun (lhs, rhs) -> RegToNfa.antichain (showESReg lhs) (showESReg rhs)) pairs;
+  print_string ("=========Antimirov========="^"\n");
   print_string ((string_of_float((endTime -. startTimeStamp) *. (float_of_int 1000)/. ((float_of_int sampleNum) *. float_of_int sampleNum)))^"\n" );
   
-  print_string (List.fold_left (fun acc (a,b) -> acc ^ string_of_bool a ^"\n") "" results);;
-    
+  print_string (List.fold_left (fun acc (a,b) -> acc ^ string_of_bool a ^":"^string_of_int b ^"\n") "" results);;
     

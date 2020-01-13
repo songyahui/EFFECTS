@@ -39,29 +39,33 @@ let accept nfa inp =
   in step nfa.start inp
 
 
-let rec antichain (nfaA:nfa) (nfaB:nfa) processed :bool = 
-  if StateSet.is_empty nfaA.start then true 
-  else if List.exists (fun ps -> StateSet.subset ps (nfaB.start)) processed then true 
+let rec antichain_in (nfaA:nfa) (nfaB:nfa) processed :(bool*int) = 
+  if StateSet.is_empty nfaA.start then (true, 0) 
+  else if List.exists (fun ps -> StateSet.subset ps (nfaB.start)) processed then 
+    (
+    print_string(string_of_int (StateSet.cardinal nfaA.start)^" lalalalal \n");
+    (true, StateSet.cardinal nfaA.start) 
+    )
   else 
   let accpLHS = StateSet.(not (is_empty (inter nfaA.start nfaA.finals))) in
   let rejectRHS = StateSet.(is_empty (inter nfaB.start nfaB.finals)) in
   (*let next = StateSet.iter (fun a -> (a, nfaB.start)) nfaA in*)
-  if accpLHS  && rejectRHS then false
+  if accpLHS  && rejectRHS then (false, 1)
   else 
-    let nextA_a = nextss (nfaA.start) 'a' nfaA in 
-    let nextB_a = nextss (nfaB.start) 'a' nfaB in 
+    let nextA_a = nextss (nfaA.start) 'A' nfaA in 
+    let nextB_a = nextss (nfaB.start) 'A' nfaB in 
     let nfaA' = {start = nextA_a; finals = nfaA.finals; next = nfaA.next} in 
     let nfaB' = {start = nextB_a; finals = nfaB.finals; next = nfaB.next} in 
-    let nextA_b = nextss (nfaA.start) 'b' nfaA in 
-    let nextB_b = nextss (nfaB.start) 'b' nfaB in 
+    let nextA_b = nextss (nfaA.start) 'B' nfaA in 
+    let nextB_b = nextss (nfaB.start) 'B' nfaB in 
     let nfaA'' = {start = nextA_b; finals = nfaA.finals; next = nfaA.next} in 
     let nfaB'' = {start = nextB_b; finals = nfaB.finals; next = nfaB.next} in 
 
-    let a_trans = antichain nfaA' nfaB' (nfaB.start :: processed) in 
-    let b_trans = antichain nfaA'' nfaB'' (nfaB.start :: processed) in 
+    let (a_trans, state1) = antichain_in nfaA' nfaB' (nfaB.start :: processed) in 
+    let (b_trans, state2) = antichain_in nfaA'' nfaB'' (nfaB.start :: processed) in 
 
-    print_string((string_of_bool a_trans)^" ++ " ^(string_of_bool b_trans) ^"\n");
+    print_string(string_of_int (state1) ^ "+" ^ string_of_int(state2)^"\n");
 
 
-    a_trans && b_trans
+    (a_trans && b_trans, state1 + state2)
   ;; 

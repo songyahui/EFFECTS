@@ -19,17 +19,18 @@ let parse_re r =
   try Regex.parse r
   with Regex.Parse_error s -> die "Invalid regular expression: %S\n" s
 
-let () =
-  print_string ("\n");
-  let lhs = "(((c|c)cb*)|((ba|aa)*))(((bc*)|((b|b)|(b*)))|(((a|a)*)|((b*)*)))" in 
-  let rhs = "(((c|c)cb*)|((ba|aa)*))(((bc*)|((b|b)|(b*)))|(((a|a)*)|((b*)*)))" in 
-  let nfaA = Regex.compile (parse_re lhs) in
-  let nfaB = Regex.compile (parse_re rhs) in
+
+let antichain lhs rhs: unit =
+   print_string("=========Antichain=========\n");
+   let nfaA = Regex.compile (parse_re lhs) in
+   let nfaB = Regex.compile (parse_re rhs) in
   (*print_string (string_of_bool (Nfa.accept nfa ['a';'c']));*) 
   (*StateSet.iter (fun a  -> print_string (Int32.to_string a) ) nfa.finals*)
-  print_string(string_of_bool (Nfa.antichain nfaA nfaB [])^"\n")
-  
-  ;;
+   let (a, b) = Nfa.antichain_in nfaA nfaB [] in 
+   let digraph = Nfa_dot.digraph_of_nfa nfaA in
+      Format.printf "%a@." Nfa_dot.format_digraph digraph;
+   print_string(string_of_bool (a)^"\n"^string_of_int (b)^"\n")
+   ;;
   (*
   let r = ref None in
   let collect s =
