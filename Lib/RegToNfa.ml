@@ -20,16 +20,18 @@ let parse_re r =
   with Regex.Parse_error s -> die "Invalid regular expression: %S\n" s
 
 
-let antichain lhs rhs: unit =
-   print_string("=========Antichain=========\n");
+let antichain lhs rhs: (bool*int) =
    let nfaA = Regex.compile (parse_re lhs) in
    let nfaB = Regex.compile (parse_re rhs) in
-  (*print_string (string_of_bool (Nfa.accept nfa ['a';'c']));*) 
-  (*StateSet.iter (fun a  -> print_string (Int32.to_string a) ) nfa.finals*)
-   let (a, b) = Nfa.antichain_in nfaA nfaB [] in 
-   let digraph = Nfa_dot.digraph_of_nfa nfaA in
-      Format.printf "%a@." Nfa_dot.format_digraph digraph;
-   print_string(string_of_bool (a)^"\n"^string_of_int (b)^"\n")
+   Nfa.antichain_in nfaA nfaB [] 
+   
+   (*
+   let digraphA = Nfa_dot.digraph_of_nfa nfaA in
+   let digraphB = Nfa_dot.digraph_of_nfa nfaB in
+   Format.printf "%a@." Nfa_dot.format_digraph digraphA;
+   Format.printf "%a@." Nfa_dot.format_digraph digraphB;
+   *)
+
    ;;
   (*
   let r = ref None in

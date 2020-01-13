@@ -42,10 +42,7 @@ let accept nfa inp =
 let rec antichain_in (nfaA:nfa) (nfaB:nfa) processed :(bool*int) = 
   if StateSet.is_empty nfaA.start then (true, 0) 
   else if List.exists (fun ps -> StateSet.subset ps (nfaB.start)) processed then 
-    (
-    print_string(string_of_int (StateSet.cardinal nfaA.start)^" lalalalal \n");
     (true, StateSet.cardinal nfaA.start) 
-    )
   else 
   let accpLHS = StateSet.(not (is_empty (inter nfaA.start nfaA.finals))) in
   let rejectRHS = StateSet.(is_empty (inter nfaB.start nfaB.finals)) in
@@ -56,6 +53,7 @@ let rec antichain_in (nfaA:nfa) (nfaB:nfa) processed :(bool*int) =
     let nextB_a = nextss (nfaB.start) 'A' nfaB in 
     let nfaA' = {start = nextA_a; finals = nfaA.finals; next = nfaA.next} in 
     let nfaB' = {start = nextB_a; finals = nfaB.finals; next = nfaB.next} in 
+    
     let nextA_b = nextss (nfaA.start) 'B' nfaA in 
     let nextB_b = nextss (nfaB.start) 'B' nfaB in 
     let nfaA'' = {start = nextA_b; finals = nfaA.finals; next = nfaA.next} in 
@@ -64,8 +62,6 @@ let rec antichain_in (nfaA:nfa) (nfaB:nfa) processed :(bool*int) =
     let (a_trans, state1) = antichain_in nfaA' nfaB' (nfaB.start :: processed) in 
     let (b_trans, state2) = antichain_in nfaA'' nfaB'' (nfaB.start :: processed) in 
 
-    print_string(string_of_int (state1) ^ "+" ^ string_of_int(state2)^"\n");
-
-
-    (a_trans && b_trans, state1 + state2)
+    (*print_string(string_of_int (state1) ^ "+" ^ string_of_int(state2)^"\n");*)
+    (a_trans, state1+state2+1)
   ;; 

@@ -19,4 +19,6 @@ val accept : nfa -> char list -> bool
 (** [accept nfa l] is [true] iff the nfa [nfa] accepts the
     character sequence [l] *)
 
+val nextss: StateSet.t -> char -> nfa -> StateSet.t
+
 val antichain_in: nfa -> nfa -> StateSet.t list -> (bool * int) 

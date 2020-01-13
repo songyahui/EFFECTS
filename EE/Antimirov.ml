@@ -117,6 +117,10 @@ let rec remove_dup lst=
       | h::t -> h::(remove_dup (List.filter (fun x -> x<>h) t))
       ;;
 
+
+
+
+
 let rec aReoccur esL esR (del:evn) = 
   match del with 
   | [] -> false 
@@ -140,7 +144,6 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) =
   let unfold del esL esR= 
     let fstL = remove_dup (aFst esL )in 
     (*print_string ("\n" ^List.fold_left (fun acc a -> acc ^ "-"^ a) "" fstL^"\n");*)
-    
     let deltaNew:(evn) = append del [(esL, esR)] in
     let rec chceckResultAND li staacc:(bool * int )=
       (match li with 
@@ -157,9 +160,9 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) =
   in 
   if (isBot normalFormL) then (false, 0)
   (*[REFUTATION]*)
-  else if (aNullable normalFormL) == true && (aNullable normalFormR) == false then ( false, 0) 
+  else if (aNullable normalFormL) == true && (aNullable normalFormR) == false then ( false, 1) 
       (*[Reoccur]*)
-  else if (aReoccur normalFormL normalFormR evn) == true then ( true, 0) 
+  else if (aReoccur normalFormL normalFormR evn) == true then ( true, 1) 
       (*Unfold*)                    
   else 
   match (normalFormL, normalFormR) with
