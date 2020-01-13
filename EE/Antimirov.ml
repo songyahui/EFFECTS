@@ -139,8 +139,8 @@ let rec aReoccur esL esR (del:evn) =
 let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) = 
   let normalFormL = aNormalES lhs in 
   let normalFormR = aNormalES rhs in
-  (*let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentES normalFormL normalFormR in 
-  print_string (showEntail^"\n\n");*)
+  let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentES normalFormL normalFormR in 
+  print_string (showEntail^"\n\n");
   let unfoldSingle ev esL esR (del:evn) = 
     let derivL = aDerivative esL ev in
     let derivR = aDerivative esR ev in

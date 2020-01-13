@@ -95,9 +95,11 @@ let main =
   print_string("=========Antichain=========\n");
   print_string ("Avg Time: "^(string_of_float((endTime0 -. startTimeStamp0) *. (float_of_int 1000)/. ((float_of_int sampleNum) *. float_of_int sampleNum)))^"\n" );
   let totalPstates = List.fold_left (fun acc (a,b) -> acc + b) 0 results0 in 
+
   print_string ("Avg PStates: "^(string_of_float(float_of_int(totalPstates) /. ((float_of_int sampleNum) *. float_of_int sampleNum)))^"\n" );
+  (*
   print_string (List.fold_left (fun acc (a,b) -> acc ^"["^ string_of_bool a ^":"^string_of_int b ^"]\n") "" results0);
-  
+  *)  
 
   let startTimeStamp = Sys.time() in
   let results = List.map (fun (lhs, rhs) -> (Antimirov.antimirov lhs rhs [])) pairs in 
@@ -107,7 +109,9 @@ let main =
   print_string ("Avg Time: "^(string_of_float((endTime -. startTimeStamp) *. (float_of_int 1000)/. ((float_of_int sampleNum) *. float_of_int sampleNum)))^"\n" );
   let totalInclusion = List.fold_left (fun acc (a,b) -> acc + b) 0 results in 
   print_string ("Avg Hypos: "^(string_of_float(float_of_int(totalInclusion) /. ((float_of_int sampleNum) *. float_of_int sampleNum)))^"\n" );
+  (*
   print_string (List.fold_left (fun acc (a,b) -> acc ^"["^ string_of_bool a ^":"^string_of_int b ^"]\n") "" results);
+  *)
   let temp = List.map2 (fun (a,b) (c,d) -> a==c ) results0 results in 
 
   print_string ("\n****\n"^ string_of_bool (List.fold_left(fun acc a -> acc && a) true temp)^"\n");
