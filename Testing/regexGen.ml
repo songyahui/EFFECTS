@@ -17,9 +17,9 @@ let showOp (o:op) :string =
 
 let alphabet = ["A"; "B"; "C"; "d"; "e"; "f"; "g"; "h"; "I"; "J"; "K"; "L"; "M"; "N"]
 
-let height = 3;;
+let height = 2;;
 let sigma = 2;;
-let sampleNum = 3;;
+let sampleNum = 2;;
 
 let getRandomeOp (num:int):op = 
   match num with 
@@ -90,7 +90,12 @@ let main =
     close_out oc;
 
   let startTimeStamp0 = Sys.time() in
-  let results0 = List.map (fun (lhs, rhs) -> RegToNfa.antichain (showESReg lhs) (showESReg rhs)) pairs in 
+  let results0 = List.map (fun (lhs, rhs) -> 
+    let re = RegToNfa.antichain (showESReg lhs) (showESReg rhs)  in 
+    (*print_string (string_of_bool (getFst re)); *)
+    re
+  )
+  pairs in 
   let endTime0 = Sys.time() in 
   print_string("=========Antichain=========\n");
   print_string ("Avg Time: "^(string_of_float((endTime0 -. startTimeStamp0) *. (float_of_int 1000)/. ((float_of_int sampleNum) *. float_of_int sampleNum)))^"\n" );
@@ -113,11 +118,15 @@ let main =
   print_string (List.fold_left (fun acc (a,b) -> acc ^"["^ string_of_bool a ^":"^string_of_int b ^"]\n") "" results);
   *)
   let temp = List.map2 (fun (a,b) (c,d) -> a==c ) results0 results in 
-
-  print_string ("\n****\n"^ string_of_bool (List.fold_left(fun acc a -> acc && a) true temp)^"\n");
-
-
   
+  let pass = List.filter (fun (a,b) -> a == true ) results0 in 
+  let fail = List.filter (fun (a,b) -> a == false ) results0 in 
+  print_string ("\n**** Report ****\nHold: "^ string_of_int (List.length pass) ^", Fail: "^ string_of_int (List.length fail));
+  
+  print_string ("\nIncomolete: "^ string_of_int (List.fold_left(fun acc a -> if a then acc else acc + 1) 0 temp)^"\n");
+
+
+
   
 
 

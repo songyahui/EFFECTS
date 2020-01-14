@@ -40,6 +40,11 @@ let accept nfa inp =
 
 
 let rec antichain_in (nfaA:nfa) (nfaB:nfa) (processed:(StateSet.t * StateSet.t) list) :(bool*int) = 
+  
+  (*
+  if (List.length processed >100) then (false, 100) 
+  else 
+  *)
   if StateSet.is_empty nfaA.start then (true, 0) 
   else if StateSet.is_empty nfaB.start then (false, 1) 
   else if List.exists (fun (s, ps) -> (StateSet.subset (nfaA.start) s) && (StateSet.subset ps (nfaB.start))) processed then 
@@ -66,3 +71,16 @@ let rec antichain_in (nfaA:nfa) (nfaB:nfa) (processed:(StateSet.t * StateSet.t) 
     (*print_string(string_of_int (state1) ^ "+" ^ string_of_int(state2)^"\n");*)
     (a_trans && b_trans, state1+state2+1)
   ;; 
+
+
+let getTotalStates (nfa:nfa) : int = 
+  let rec helper cur (acc:StateSet.t) : StateSet.t  =
+    let nextA = nextss cur 'A' nfa in
+    let nextB = nextss cur 'B' nfa in
+    let newAcc = StateSet.union acc (StateSet.union nextA nextB ) in 
+    if StateSet.compare newAcc acc == 0 then acc
+    else helper (StateSet.union nextA nextB) newAcc
+  in 
+  let states = helper nfa.start nfa.start in 
+  StateSet.cardinal states;;
+  

@@ -118,6 +118,7 @@ let rec remove_dup lst=
       ;;
 
 
+
 let rec splitCons (es:es) : es list = 
   match es with 
     Cons (es1, es2) -> append (splitCons es1) (splitCons es2)
@@ -136,11 +137,26 @@ let rec aReoccur esL esR (del:evn) =
     else aReoccur esL esR rest (*REOCCUR*) 
   ;;
 
+
+(*
+let rec aReoccur esL esR (del:evn) = 
+  match del with 
+  | [] -> false 
+  | (es1, es2) :: rest -> 
+    if (aCompareES esL es1 && aCompareES esR  es2) then true
+    else aReoccur esL esR rest (*REOCCUR*) 
+  ;;
+*)
 let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) = 
+  (*
+  if (List.length evn >500) then (false, 500) 
+  else 
+  *)
   let normalFormL = aNormalES lhs in 
   let normalFormR = aNormalES rhs in
-  let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentES normalFormL normalFormR in 
+  (*let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentES normalFormL normalFormR in 
   print_string (showEntail^"\n\n");
+  *)
   let unfoldSingle ev esL esR (del:evn) = 
     let derivL = aDerivative esL ev in
     let derivR = aDerivative esR ev in
@@ -167,12 +183,13 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) =
   in 
   if (isBot normalFormR) then 
   (
+    (*print_string ("here1\n");*)
   (false, 1)
   )
   (*[REFUTATION]*)
   else if (aNullable normalFormL) == true && (aNullable normalFormR) == false then 
   (
-    
+    (*print_string ("here2\n");*)
     ( false, 1) 
   )
       (*[Reoccur]*)
@@ -187,6 +204,13 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) =
       else 
         let (re2 , states2) = (antimirov effL2 normalFormR evn) in
         (re2, states1+states2+1)
+  | (_, ESOr (effR1, effR2)) -> 
+  (*[RHSOR]*)
+    let (re1, states1 ) = (antimirov normalFormL effR1 evn) in
+    if re1 == true then ( true, states1)
+    else 
+      let (re2 , states2) = (antimirov normalFormL effR2 evn) in
+      (re2, states1+states2)
   | _ -> 
   
   

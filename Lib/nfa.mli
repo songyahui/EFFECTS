@@ -22,3 +22,5 @@ val accept : nfa -> char list -> bool
 val nextss: StateSet.t -> char -> nfa -> StateSet.t
 
 val antichain_in: nfa -> nfa -> (StateSet.t * StateSet.t) list -> (bool * int) 
+
+val getTotalStates : nfa -> int 
