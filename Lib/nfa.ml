@@ -48,7 +48,7 @@ let rec antichain_in (nfaA:nfa) (nfaB:nfa) (processed:(StateSet.t * StateSet.t) 
   if StateSet.is_empty nfaA.start then (true, 0) 
   else if StateSet.is_empty nfaB.start then (false, 1) 
   else if List.exists (fun (s, ps) -> (StateSet.subset (nfaA.start) s) && (StateSet.subset ps (nfaB.start))) processed then 
-    (true, StateSet.cardinal nfaA.start) 
+    (true, 1) 
   else 
   let accpLHS = StateSet.(not (is_empty (inter nfaA.start nfaA.finals))) in
   let rejectRHS = StateSet.(is_empty (inter nfaB.start nfaB.finals)) in

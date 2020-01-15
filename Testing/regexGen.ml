@@ -17,9 +17,9 @@ let showOp (o:op) :string =
 
 let alphabet = ["A"; "B"; "C"; "d"; "e"; "f"; "g"; "h"; "I"; "J"; "K"; "L"; "M"; "N"]
 
-let height = 4;;
+let height = 2;;
 let sigma = 2;;
-let sampleNum = 3;;
+let sampleNum = 100;;
 
 let getRandomeOp (num:int):op = 
   match num with 
@@ -138,7 +138,10 @@ let main =
 
 
 
-  print_string ("\n**** Report ****\nHold: "^ string_of_int (List.length pass) ^", Fail: "^ string_of_int (List.length fail));
+  print_string ("\n**** Report ****\n"^
+    "Height: "^ string_of_int height ^
+    "\nPairs: "^ string_of_int (sampleNum*sampleNum) ^
+    "\nHold: "^ string_of_int (List.length pass) ^", Fail: "^ string_of_int (List.length fail));
   
   print_string ("\nIncomplete: "^ string_of_int (List.fold_left(fun acc a -> if a then acc else acc + 1) 0 temp)^"\n");
 

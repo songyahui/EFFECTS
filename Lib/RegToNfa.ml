@@ -22,9 +22,11 @@ let parse_re r =
 
 let antichain lhs rhs: (bool*int) =
 
+
+
    let nfaA = Regex.compile (parse_re lhs) in
    let nfaB = Regex.compile (parse_re rhs) in
-   
+
    (*
    let digraphA = Nfa_dot.digraph_of_nfa nfaA in
    let digraphB = Nfa_dot.digraph_of_nfa nfaB in

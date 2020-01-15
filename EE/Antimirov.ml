@@ -63,6 +63,13 @@ let rec splitCons (es:es) : es list =
   | _ -> [es]
   ;;
 
+let rec checkexist lst super: bool = 
+  match lst with
+  | [] -> true
+  | x::rest  -> if List.mem x super then checkexist rest super
+  else false 
+  ;;
+
 
 let rec aReoccur esL esR (del:evn) = 
   match del with 
@@ -70,11 +77,15 @@ let rec aReoccur esL esR (del:evn) =
   | (es1, es2) :: rest -> 
     let tempHL = splitCons es1 in 
     let tempL = splitCons esL in 
-    let subsetL = List.fold_left (fun acc a -> acc && List.mem a tempHL  ) true tempL in
+
+    let subsetL = checkexist tempL tempHL in 
+      (*List.fold_left (fun acc a -> acc && List.mem a tempHL  ) true tempL in*)
     
     let tempHR = splitCons es2 in 
     let tempR = splitCons esR in 
-    let supersetR = List.fold_left (fun acc a -> acc && List.mem a tempR  ) true tempHR in
+
+    let supersetR = checkexist tempHR tempR in 
+      (*List.fold_left (fun acc a -> acc && List.mem a tempR  ) true tempHR in*)
     
     if (subsetL && supersetR) then true
     else aReoccur esL esR rest (*REOCCUR*) 
@@ -223,13 +234,30 @@ let rec aReoccur esL esR (del:evn) =
   ;;
 *)
 
+let rec connectDisj (esL:es list) :es = 
+  match esL with 
+    [] -> Bot
+  | x::xs -> ESOr (x, connectDisj xs )
+  ;;
+
 let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) = 
   (*
   if (List.length evn >500) then (false, 500) 
   else 
-  *)
+
+
+  print_string (string_of_int (List.length evn) ^"\n");
+  if ( (List.length evn) > 10) then (false, 1)
+  else 
+    *)
   let normalFormL = aNormalES lhs in 
   let normalFormR = aNormalES rhs in
+
+  let lhs' = remove_dup (splitCons normalFormL) in 
+  let rhs' = remove_dup (splitCons normalFormR) in 
+
+  let normalFormL = aNormalES (connectDisj lhs') in 
+  let normalFormR = aNormalES (connectDisj rhs') in 
   (*
   let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentES normalFormL normalFormR in 
   print_string (showEntail^"\n\n");
@@ -289,7 +317,6 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) =
 
   unfold evn normalFormL normalFormR
   ;;
-
 
 
 let antimirov_shell (lhs:string) (rhs:string) : (bool * int) = 
