@@ -16,15 +16,15 @@
 %left DISJ
 %left CONJ
 
-%start prog ee
+%start prog ee es_p
 %type <Ast.entilment> ee
 %type <Ast.program> prog
-
+%type <Ast.es> es_p
 %%
 
 ee: r = entailment EOF { r }
 
-
+es_p: r = es EOF { r }
 
 type_: 
 | INTT {INT}

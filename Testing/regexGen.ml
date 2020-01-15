@@ -17,7 +17,7 @@ let showOp (o:op) :string =
 
 let alphabet = ["A"; "B"; "C"; "d"; "e"; "f"; "g"; "h"; "I"; "J"; "K"; "L"; "M"; "N"]
 
-let height = 2;;
+let height = 5;;
 let sigma = 2;;
 let sampleNum = 2;;
 
@@ -61,10 +61,21 @@ let cartesian l l' =
 
 let getFst (a, b) = a ;;
 
-
+let rec genES (num:int) (acc:es list): es list= 
+  if num = 0 then acc
+  else 
+  (let one =  regexGen height sigma in 
+  genES (num - 1) (append acc [one] );
+  ) (**)
+;;
 
 let main =
-  (*
+  (*let ess = genES sampleNum  [] in
+  let states = List.map (fun a -> RegToNfa.getStates (showESReg a)) ess in 
+  print_string ("[");
+  List.fold_left (fun acc a ->  print_string(string_of_int a ^",")) () states ;
+  print_string ("]");
+
   let line = "\n" in
   let EE (Effect (p1,lhs), Effect (p2,rhs)) = Parser.ee Lexer.token (Lexing.from_string line) in
   (*let result = printReport (Effect (p1,lhs)) (Effect (p2,rhs)) in *)
@@ -72,23 +83,20 @@ let main =
   print_string(string_of_bool a ^":"^string_of_int b);;
   *)
   
+  
   let outputfile = (Sys.getcwd ()^ "/" ^ "Testing/regex.dat") in
   
-  let rec genES (num:int) (acc:es list): es list= 
-    if num = 0 then acc
-    else 
-    (let one =  regexGen height sigma in 
-    genES (num - 1) (append acc [one] );
-    ) (**)
-  in 
+  
   let ess = genES sampleNum  [] in
   let pairs = cartesian ess ess (*[(Cons(Event "B", Cons(Event "B", Kleene(Event "B"))),Cons (Kleene(Event "B"), Cons(Event "B",Event "B") ))] *)in 
+  
   let dataset' = List.fold_left (fun acc (lhs, rhs) -> acc ^ showEntailmentESReg lhs rhs ^"\n") "" pairs in 
   let dataset = List.fold_left (fun acc (lhs, rhs) -> acc ^ showEntailmentES lhs rhs ^"\n") "" pairs in 
   let oc = open_out outputfile in    (* 新建或修改文件,返回通道 *)
     fprintf oc "%s" (dataset'^"\n"^dataset);   (* 写一些东西 *)
     close_out oc;
 
+    
   let startTimeStamp0 = Sys.time() in
   let results0 = List.map (fun (lhs, rhs) -> 
     let re = RegToNfa.antichain (showESReg lhs) (showESReg rhs)  in 
@@ -97,17 +105,12 @@ let main =
   )
   pairs in 
   let endTime0 = Sys.time() in 
-  print_string("=========Antichain=========\n");
-  print_string ("Avg Time: "^(string_of_float((endTime0 -. startTimeStamp0) *. (float_of_int 1000)/. ((float_of_int sampleNum) *. float_of_int sampleNum)))^"\n" );
-  let totalPstates = List.fold_left (fun acc (a,b) -> acc + b) 0 results0 in 
+   
 
-  print_string ("Avg PStates: "^(string_of_float(float_of_int(totalPstates) /. ((float_of_int sampleNum) *. float_of_int sampleNum)))^"\n" );
-  (*
-  print_string (List.fold_left (fun acc (a,b) -> acc ^"["^ string_of_bool a ^":"^string_of_int b ^"]\n") "" results0);
-  *)  
+  let pairs_temp = List.map (fun (a, b) -> ((showES a), (showES b))) pairs  in 
 
   let startTimeStamp = Sys.time() in
-  let results = List.map (fun (lhs, rhs) -> (Antimirov.antimirov lhs rhs [])) pairs in 
+  let results = List.map (fun (lhs, rhs) -> (Antimirov.antimirov_shell lhs rhs )) pairs_temp in 
   let endTime = Sys.time() in 
   
   print_string ("=========Antimirov========="^"\n");
@@ -121,12 +124,25 @@ let main =
   
   let pass = List.filter (fun (a,b) -> a == true ) results0 in 
   let fail = List.filter (fun (a,b) -> a == false ) results0 in 
+
+  print_string("=========Antichain=========\n");
+  print_string ("Avg Time: "^(string_of_float((endTime0 -. startTimeStamp0) *. (float_of_int 1000)/. ((float_of_int sampleNum) *. float_of_int sampleNum)))^"\n" );
+  let totalPstates = List.fold_left (fun acc (a,b) -> acc + b) 0 results0 in 
+
+  print_string ("Avg PStates: "^(string_of_float(float_of_int(totalPstates) /. ((float_of_int sampleNum) *. float_of_int sampleNum)))^"\n" );
+  (*
+  print_string (List.fold_left (fun acc (a,b) -> acc ^"["^ string_of_bool a ^":"^string_of_int b ^"]\n") "" results0);
+ *)
+
+
+
   print_string ("\n**** Report ****\nHold: "^ string_of_int (List.length pass) ^", Fail: "^ string_of_int (List.length fail));
   
-  print_string ("\nIncomolete: "^ string_of_int (List.fold_left(fun acc a -> if a then acc else acc + 1) 0 temp)^"\n");
+  print_string ("\nIncomplete: "^ string_of_int (List.fold_left(fun acc a -> if a then acc else acc + 1) 0 temp)^"\n");
 
 
 
   
 
 
+ 

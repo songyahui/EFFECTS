@@ -21,7 +21,7 @@ let parse_re r =
 
 
 let antichain lhs rhs: (bool*int) =
-   
+
    let nfaA = Regex.compile (parse_re lhs) in
    let nfaB = Regex.compile (parse_re rhs) in
    
@@ -33,6 +33,11 @@ let antichain lhs rhs: (bool*int) =
    *)
 
    Nfa.antichain_in nfaA nfaB [] ;;
+
+let getStates r:int = 
+   let nfaA = Regex.compile (parse_re r) in
+   Nfa.getTotalStates nfaA
+   ;;
    
 
    
