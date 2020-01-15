@@ -30,7 +30,7 @@ let rec aNullable (es:es) : bool=
   | Cons (es1 , es2) -> (aNullable es1) && (aNullable es2)
   | ESOr (es1 , es2) -> (aNullable es1) || (aNullable es2)
   | Kleene es1 -> true
-  | _ -> raise (Foo "aNullable exeption\n")
+  | _ -> raise (Foo "aNullable exeption")
 ;;
 
 let rec aFst (es:es): event list = 
@@ -40,7 +40,7 @@ let rec aFst (es:es): event list =
   | Cons (es1 , es2) ->  if aNullable es1 then append (aFst es1) (aFst es2) else aFst es1
   | ESOr (es1, es2) -> append (aFst es1) (aFst es2)
   | Kleene es1 -> aFst es1
-  | _ -> raise (Foo "aFst exeption\n")
+  | _ -> raise (Foo "aFst exeption")
 ;;
 
 let isBot (es:es) :bool= 
@@ -68,10 +68,15 @@ let rec aReoccur esL esR (del:evn) =
   match del with 
   | [] -> false 
   | (es1, es2) :: rest -> 
-    let tempH = splitCons es2 in 
-    let temp = splitCons esR in 
-    let superset = List.fold_left (fun acc a -> acc && List.mem a temp  ) true tempH in
-    if (aCompareES esL es1 && superset) then true
+    let tempHL = splitCons es1 in 
+    let tempL = splitCons esL in 
+    let subsetL = List.fold_left (fun acc a -> acc && List.mem a tempHL  ) true tempL in
+    
+    let tempHR = splitCons es2 in 
+    let tempR = splitCons esR in 
+    let supersetR = List.fold_left (fun acc a -> acc && List.mem a tempR  ) true tempHR in
+    
+    if (subsetL && supersetR) then true
     else aReoccur esL esR rest (*REOCCUR*) 
   ;;
 
@@ -148,7 +153,12 @@ let rec aNormalES es:es  =
     Bot -> es
   | Emp -> es
   | Event ev -> es
+
+
   | Cons (Cons (esIn1, esIn2), es2)-> aNormalES (Cons (esIn1, Cons (esIn2, es2))) 
+  | Cons (ESOr (or1, or2), es2) -> aNormalES (ESOr (aNormalES (Cons (or1, es2)), aNormalES (Cons (or2, es2)))) 
+  | Cons (es1, ESOr (or1, or2)) -> aNormalES (ESOr (aNormalES (Cons (es1, or1)), aNormalES (Cons (es1, or2)))) 
+
   | Cons (es1, es2) -> 
       let normalES1 = aNormalES es1 in
       let normalES2 = aNormalES es2 in
@@ -157,9 +167,7 @@ let rec aNormalES es:es  =
       | (_, Emp) -> normalES1
       | (Bot, _) -> Bot
       | (Omega _, _ ) -> normalES1
-      (*| (ESOr (or1, or2), es2) -> ESOr (aNormalES (Cons (or1, es2)), aNormalES (Cons (or2, es2))) 
-      | (es1, ESOr (or1, or2)) -> ESOr (aNormalES (Cons (es1, or1)), aNormalES (Cons (es1, or2))) 
-      *)
+
       | (Kleene (esIn1), Kleene (esIn2)) -> 
           if aCompareES esIn1 esIn2 == true then normalES2
           else Cons (normalES1, normalES2)
@@ -222,18 +230,20 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) =
   *)
   let normalFormL = aNormalES lhs in 
   let normalFormR = aNormalES rhs in
-  
-  
-  
+  (*
+  let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentES normalFormL normalFormR in 
+  print_string (showEntail^"\n\n");
+ *)
   let unfoldSingle ev esL esR (del:evn) = 
     let derivL = aDerivative esL ev in
     let derivR = aDerivative esR ev in
     let (result, states) = antimirov derivL derivR del in
-    (result, states+1)
+    (result, states)
   in
   (*Unfold function which calls unfoldSingle*)
   let unfold del esL esR= 
     let fstL = remove_dup (aFst esL )in 
+
     (*print_string ("\n" ^List.fold_left (fun acc a -> acc ^ "-"^ a) "" fstL^"\n");*)
     let deltaNew:(evn) = append del [(esL, esR)] in
     let rec chceckResultAND li staacc:(bool * int )=
@@ -246,24 +256,18 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) =
       )
     in 
     let (resultFinal, states) = chceckResultAND fstL  0 in 
-    (resultFinal, states)    
+    (resultFinal, states+1)    
   
   in 
-  if (isBot normalFormR) then 
-  (
-    (*print_string ("here1\n");*)
-  (false, 1)
-  )
+  if (isBot normalFormL) then (true, 0)
   (*[REFUTATION]*)
-  else if (aNullable normalFormL) == true && (aNullable normalFormR) == false then 
-  (
-    (*print_string ("here2\n");*)
-    ( false, 1) 
-  )
+  else if (isBot normalFormR) then (false, 1)
+  else if (aNullable normalFormL) == true && (aNullable normalFormR) == false then ( false, 1) 
       (*[Reoccur]*)
   else if (aReoccur normalFormL normalFormR evn) == true then ( true, 1) 
       (*Unfold*)                    
   else 
+  (*
   match (normalFormL, normalFormR) with
     (ESOr (effL1, effL2), _) -> 
     (*[LHSOR]*)
@@ -271,28 +275,26 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) =
       if re1 == false then (false, states1)
       else 
         let (re2 , states2) = (antimirov effL2 normalFormR evn) in
-        (re2, states1+states2+1)
-  (*| (_, ESOr (effR1, effR2)) -> 
+        (re2, states1+states2)
+  | (_, ESOr (effR1, effR2)) -> 
   (*[RHSOR]*)
     let (re1, states1 ) = (antimirov normalFormL effR1 evn) in
     if re1 == true then ( true, states1)
     else 
       let (re2 , states2) = (antimirov normalFormL effR2 evn) in
       (re2, states1+states2)
-      *)
+     
   | _ -> 
-  (*
-  let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentES normalFormL normalFormR in 
-  print_string (showEntail^"\n\n");
-  *)
+   *)
+
   unfold evn normalFormL normalFormR
   ;;
 
 
-let antimirov_shell (lhs:string) (rhs:string) : (bool * int) = 
-  
 
-  
+let antimirov_shell (lhs:string) (rhs:string) : (bool * int) = 
+
+
   let es1 = Parser.es_p Lexer.token (Lexing.from_string lhs) in
   let es2 = Parser.es_p Lexer.token (Lexing.from_string rhs) in
   antimirov es1 es2 [] 

@@ -17,9 +17,9 @@ let showOp (o:op) :string =
 
 let alphabet = ["A"; "B"; "C"; "d"; "e"; "f"; "g"; "h"; "I"; "J"; "K"; "L"; "M"; "N"]
 
-let height = 5;;
+let height = 4;;
 let sigma = 2;;
-let sampleNum = 2;;
+let sampleNum = 3;;
 
 let getRandomeOp (num:int):op = 
   match num with 
@@ -112,6 +112,15 @@ let main =
   let startTimeStamp = Sys.time() in
   let results = List.map (fun (lhs, rhs) -> (Antimirov.antimirov_shell lhs rhs )) pairs_temp in 
   let endTime = Sys.time() in 
+
+  print_string("=========Antichain=========\n");
+  print_string ("Avg Time: "^(string_of_float((endTime0 -. startTimeStamp0) *. (float_of_int 1000)/. ((float_of_int sampleNum) *. float_of_int sampleNum)))^"\n" );
+  let totalPstates = List.fold_left (fun acc (a,b) -> acc + b) 0 results0 in 
+
+  print_string ("Avg PStates: "^(string_of_float(float_of_int(totalPstates) /. ((float_of_int sampleNum) *. float_of_int sampleNum)))^"\n" );
+  (*
+  print_string (List.fold_left (fun acc (a,b) -> acc ^"["^ string_of_bool a ^":"^string_of_int b ^"]\n") "" results0);
+ *)
   
   print_string ("=========Antimirov========="^"\n");
   print_string ("Avg Time: "^(string_of_float((endTime -. startTimeStamp) *. (float_of_int 1000)/. ((float_of_int sampleNum) *. float_of_int sampleNum)))^"\n" );
@@ -125,14 +134,7 @@ let main =
   let pass = List.filter (fun (a,b) -> a == true ) results0 in 
   let fail = List.filter (fun (a,b) -> a == false ) results0 in 
 
-  print_string("=========Antichain=========\n");
-  print_string ("Avg Time: "^(string_of_float((endTime0 -. startTimeStamp0) *. (float_of_int 1000)/. ((float_of_int sampleNum) *. float_of_int sampleNum)))^"\n" );
-  let totalPstates = List.fold_left (fun acc (a,b) -> acc + b) 0 results0 in 
-
-  print_string ("Avg PStates: "^(string_of_float(float_of_int(totalPstates) /. ((float_of_int sampleNum) *. float_of_int sampleNum)))^"\n" );
-  (*
-  print_string (List.fold_left (fun acc (a,b) -> acc ^"["^ string_of_bool a ^":"^string_of_int b ^"]\n") "" results0);
- *)
+  
 
 
 
