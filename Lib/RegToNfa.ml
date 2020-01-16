@@ -20,12 +20,16 @@ let parse_re r =
   with Regex.Parse_error s -> die "Invalid regular expression: %S\n" s
 
 
-let antichain lhs rhs: (bool*int) =
+let antichain lhs rhs: (bool*int*float) =
 
-
+   let startTimeStamp = Sys.time() in
 
    let nfaA = Regex.compile (parse_re lhs) in
    let nfaB = Regex.compile (parse_re rhs) in
+   let (a, b) = Nfa.antichain_in nfaA nfaB [] in
+
+   let endTime0 = Sys.time() in 
+   (a, b, (endTime0 -. startTimeStamp)*.float_of_int 1000)
 
    (*
    let digraphA = Nfa_dot.digraph_of_nfa nfaA in
@@ -34,7 +38,8 @@ let antichain lhs rhs: (bool*int) =
    Format.printf "%a@." Nfa_dot.format_digraph digraphB;
    *)
 
-   Nfa.antichain_in nfaA nfaB [] ;;
+  
+   ;;
 
 let getStates r:int = 
    let nfaA = Regex.compile (parse_re r) in

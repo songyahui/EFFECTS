@@ -59,7 +59,7 @@ let cartesian l l' =
   List.concat (List.map (fun e -> List.map (fun e' -> (e, e')) l') l)
 ;;
 
-let getFst (a, b) = a ;;
+let getFst (a, b, c) = a ;;
 
 let rec genES (num:int) (acc:es list): es list= 
   if num = 0 then acc
@@ -67,6 +67,14 @@ let rec genES (num:int) (acc:es list): es list=
   (let one =  regexGen height sigma in 
   genES (num - 1) (append acc [one] );
   ) (**)
+;;
+
+let rec sublist b e l = 
+  match l with
+    [] -> failwith "sublist"
+  | h :: t -> 
+     let tail = if e=0 then [] else sublist (b-1) (e-1) t in
+     if b>0 then tail else h :: tail
 ;;
 
 let main =
@@ -82,36 +90,71 @@ let main =
   let (a,b) = Antimirov.antimirov lhs rhs [] in 
   print_string(string_of_bool a ^":"^string_of_int b);;
   *)
-  
-  
-  let outputfile = (Sys.getcwd ()^ "/" ^ "Testing/regex.dat") in
-  
+
+(************OUTPUT TO FILE************)
   
   let ess = genES sampleNum  [] in
   let pairs = cartesian ess ess (*[(Cons(Event "B", Cons(Event "B", Kleene(Event "B"))),Cons (Kleene(Event "B"), Cons(Event "B",Event "B") ))] *)in 
-  
+  (*
+  let outputfile = (Sys.getcwd ()^ "/" ^ "Testing/regex"^ string_of_int height ^".dat") in
+
   let dataset' = List.fold_left (fun acc (lhs, rhs) -> acc ^ showEntailmentESReg lhs rhs ^"\n") "" pairs in 
+  
   let dataset = List.fold_left (fun acc (lhs, rhs) -> acc ^ showEntailmentES lhs rhs ^"\n") "" pairs in 
+
   let oc = open_out outputfile in    (* 新建或修改文件,返回通道 *)
     fprintf oc "%s" (dataset'^"\n"^dataset);   (* 写一些东西 *)
     close_out oc;
+*)
+  let rowData:(Ast.es * int * Ast.es * int) list = List.map (fun (lhs, rhs) -> (lhs, RegToNfa.getStates (showESReg lhs) ,rhs, RegToNfa.getStates (showESReg rhs) ) ) pairs in 
 
-    
-  let startTimeStamp0 = Sys.time() in
-  let results0 = List.map (fun (lhs, rhs) -> 
-    let re = RegToNfa.antichain (showESReg lhs) (showESReg rhs)  in 
-    (*print_string (string_of_bool (getFst re)); *)
-    re
-  )
-  pairs in 
-  let endTime0 = Sys.time() in 
+(************Get the resulrs************)
+
+  let resultsChain = List.map (fun (lhs, rhs) -> RegToNfa.antichain (showESReg lhs) (showESReg rhs)) pairs in 
+  let resultsMirov = List.map (fun (lhs, rhs) -> (Antimirov.antimirov_shell lhs rhs )) pairs in 
+
+(************Output resulrs to files************)
+
+  let rec pairList lst1 lst2 lst3 = 
+    match (lst1, lst2,lst3 ) with
+      ([], [], []) -> [] 
+    | (x::xs, y ::ys , z::zs) -> (x, y, z) :: pairList xs ys zs
+    | _ -> raise (Foo "pairList")
+  in 
+  let pairResults = pairList resultsChain resultsMirov rowData in 
+  
+
+
+  let head = "" in 
+  let format_abc ((a, b , c):(bool * int * float)) :string = string_of_bool a ^ ", " ^ string_of_int b ^ ", " ^ string_of_float c ^ " " in 
+  let format_row ((lhs, lshS, rhs, rhsS): (es* int* es* int)) :string = showEntailmentESReg lhs rhs ^", " ^  string_of_int lshS ^ ", " ^ string_of_int rhsS ^ " " in 
+
+  let finalPrint = List.fold_left (fun acc (chain, mirov, row) -> acc^ format_row row^ ", " ^ format_abc chain ^", "^ format_abc mirov ^ "\n") head pairResults in
+  let outputResultfile = (Sys.getcwd ()^ "/" ^ "DataAnylase/data/result_height_"^ string_of_int height ^".csv") in 
+  let oc = open_out outputResultfile in    (* 新建或修改文件,返回通道 *)
+    fprintf oc "%s" (finalPrint);   (* 写一些东西 *)
+    close_out oc;
+
+
    
+(*
+  let pairs_tep = List.map (fun (a, b) -> ((showES a), (showES b))) pairs  in 
 
-  let pairs_temp = List.map (fun (a, b) -> ((showES a), (showES b))) pairs  in 
+  let pairs_temp = List.map (fun (a, b) -> (Parser.es_p Lexer.token (Lexing.from_string a), Parser.es_p Lexer.token (Lexing.from_string b))) pairs_tep  in 
+*)
 
-  let startTimeStamp = Sys.time() in
-  let results = List.map (fun (lhs, rhs) -> (Antimirov.antimirov_shell lhs rhs )) pairs_temp in 
-  let endTime = Sys.time() in 
+
+(*
+  let temp = List.map2 (fun (a,b) (c,d) -> a==c ) results0 results in 
+  
+  let pass0 = List.filter (fun (a,b) -> a == true ) results0 in 
+  let fail0 = List.filter (fun (a,b) -> a == false ) results0 in 
+
+  let pass = List.filter (fun (a,b) -> a == true ) results in 
+  let fail = List.filter (fun (a,b) -> a == false ) results in 
+
+  let (p0, f0, p, f) = if pass0 > fail0 then (sublist 0 (List.length fail0) pass0 ,fail0, sublist 0 (List.length fail0) pass ,fail ) else (pass0, sublist 0 (List.length pass0 ) fail0, pass, sublist 0 (List.length pass0 ) fail) in 
+
 
   print_string("=========Antichain=========\n");
   print_string ("Avg Time: "^(string_of_float((endTime0 -. startTimeStamp0) *. (float_of_int 1000)/. ((float_of_int sampleNum) *. float_of_int sampleNum)))^"\n" );
@@ -129,12 +172,8 @@ let main =
   (*
   print_string (List.fold_left (fun acc (a,b) -> acc ^"["^ string_of_bool a ^":"^string_of_int b ^"]\n") "" results);
   *)
-  let temp = List.map2 (fun (a,b) (c,d) -> a==c ) results0 results in 
   
-  let pass = List.filter (fun (a,b) -> a == true ) results0 in 
-  let fail = List.filter (fun (a,b) -> a == false ) results0 in 
 
-  
 
 
 
@@ -147,7 +186,7 @@ let main =
 
 
 
-  
+  *)
 
 
  

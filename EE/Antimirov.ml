@@ -13,11 +13,12 @@ let rec aCompareES es1 es2 =
   | (Emp, Emp) -> true
   | (Event s1, Event s2) -> 
     String.compare s1 s2 == 0
-  | (Cons (es1L, es1R), Cons (es2L, es2R)) -> (aCompareES es1L es2L) && (aCompareES es1R es2R)
+  | (Cons (es1L, es1R), Cons (es2L, es2R)) -> 
+    if (aCompareES es1L es2L) == false then false
+    else (aCompareES es1R es2R)
   | (ESOr (es1L, es1R), ESOr (es2L, es2R)) -> 
-      let one = ((aCompareES es1L es2L) && (aCompareES es1R es2R)) in
-      let two =  ((aCompareES es1L es2R) && (aCompareES es1R es2L)) in 
-      one || two
+      if ((aCompareES es1L es2L) && (aCompareES es1R es2R)) then true 
+      else ((aCompareES es1L es2R) && (aCompareES es1R es2L))
   | (Kleene esL, Kleene esR) -> aCompareES esL esR
   | _ -> false
 ;;
@@ -167,8 +168,8 @@ let rec aNormalES es:es  =
 
 
   | Cons (Cons (esIn1, esIn2), es2)-> aNormalES (Cons (esIn1, Cons (esIn2, es2))) 
-  | Cons (ESOr (or1, or2), es2) -> aNormalES (ESOr (aNormalES (Cons (or1, es2)), aNormalES (Cons (or2, es2)))) 
-  | Cons (es1, ESOr (or1, or2)) -> aNormalES (ESOr (aNormalES (Cons (es1, or1)), aNormalES (Cons (es1, or2)))) 
+  | Cons (ESOr (or1, or2), es2) -> aNormalES (ESOr ( (Cons (or1, es2)),  (Cons (or2, es2)))) 
+  | Cons (es1, ESOr (or1, or2)) -> aNormalES (ESOr ( (Cons (es1, or1)),  (Cons (es1, or2)))) 
 
   | Cons (es1, es2) -> 
       let normalES1 = aNormalES es1 in
@@ -319,10 +320,12 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) =
   ;;
 
 
-let antimirov_shell (lhs:string) (rhs:string) : (bool * int) = 
+let antimirov_shell (lhs:es) (rhs:es) : (bool * int * float) = 
 
+  let startTimeStamp = Sys.time() in
 
-  let es1 = Parser.es_p Lexer.token (Lexing.from_string lhs) in
-  let es2 = Parser.es_p Lexer.token (Lexing.from_string rhs) in
-  antimirov es1 es2 [] 
+  let (a, b) = antimirov lhs rhs [] in
+
+  let endTime0 = Sys.time() in 
+  (a, b, (endTime0 -. startTimeStamp)*.float_of_int 1000)
   ;;
