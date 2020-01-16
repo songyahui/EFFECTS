@@ -114,53 +114,7 @@ let rec aDerivative (es:es) (ev:string): es =
 ;;
 
 let rec aNormalES es:es  =
-(*
-    let rec antimirovLight (lhs:es) (rhs:es) (evn:evn ): bool = 
-    let normalFormL = aNormalES lhs in 
-    let normalFormR = aNormalES rhs in
-    let unfoldSingle ev esL esR (del:evn) = 
-      let derivL = aDerivative esL ev in
-      let derivR = aDerivative esR ev in
-      let (result) = antimirovLight derivL derivR del in
-      result
-    in
-    (*Unfold function which calls unfoldSingle*)
-    let unfold del esL esR= 
-      let fstL = remove_dup (aFst esL )in 
-      (*print_string ("\n" ^List.fold_left (fun acc a -> acc ^ "-"^ a) "" fstL^"\n");*)
-      let deltaNew:(evn) = append del [(esL, esR)] in
-      let rec chceckResultAND li:bool=
-        (match li with 
-          [] -> (true) 
-        | ev::fs -> 
-            let (re) = unfoldSingle ev esL esR deltaNew in 
-            if re == false then (false)
-            else chceckResultAND fs 
-        )
-      in 
-      let (resultFinal) = chceckResultAND fstL  in 
-      (resultFinal)    
-    
-    in 
-    if (isBot normalFormR) then false
-    (*[REFUTATION]*)
-    else if (aNullable normalFormL) == true && (aNullable normalFormR) == false then false
-        (*[Reoccur]*)
-    else if (aReoccur normalFormL normalFormR evn) == true then true
-        (*Unfold*)                    
-    else 
-    match (normalFormL, normalFormR) with
-      (ESOr (effL1, effL2), _) -> 
-      (*[LHSOR]*)
-        let (re1 ) = (antimirovLight effL1 normalFormR evn) in
-        if re1 == false then (false)
-        else 
-          let (re2) = (antimirovLight effL2 normalFormR evn) in
-          (re2)
-    | _ -> 
-    unfold evn normalFormL normalFormR
-  in 
-*)
+
   match es with
     Bot -> es
   | Emp -> es
@@ -239,15 +193,31 @@ let rec aReoccur esL esR (del:evn) =
 let rec connectDisj (esL:es list) :es = 
   match esL with 
     [] -> Bot
+  | [x] -> x
   | x::xs -> ESOr (x, connectDisj xs )
   ;;
 
+let rec commons (lhs:es list) (rhs:es list ) : es list =  
+  match lhs with
+     [] -> [] 
+  | x ::xs -> if List.mem x rhs then x :: commons xs rhs 
+  else commons xs rhs 
+;;
+
+let rec removeCommon (lhs:es list) (rhs:es list) : (es list * es list ) = 
+  let common = commons lhs rhs in 
+  (List.filter (fun a -> List.mem a common == false ) lhs, List.filter (fun a -> List.mem a common == false ) rhs)
+  ;;
+
+
+
+
 let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) = 
-  (*
-  if (List.length evn >500) then (false, 500) 
+  
+  if (List.length evn >50) then (false, 1) 
   else 
 
-
+(*
   print_string (string_of_int (List.length evn) ^"\n");
   if ( (List.length evn) > 10) then (false, 1)
   else 
@@ -260,17 +230,20 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) =
   let lhs' = remove_dup (splitCons normalFormL) in 
   let rhs' = remove_dup (splitCons normalFormR) in 
 
-  let normalFormL = aNormalES (connectDisj lhs') in 
-  let normalFormR = aNormalES (connectDisj rhs') in 
+  (*
+  let (lhs, rhs) = removeCommon lhs' rhs' in 
+*)
+  let normalFormL =  (connectDisj lhs') in 
+  let normalFormR =  (connectDisj rhs') in 
 
 (*
   print_string (string_of_int (List.length lhs')^ ":"^ string_of_int (List.length rhs') ^"\n");
- *) 
-(*  
+ *)
+ (*
   let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentES normalFormL normalFormR in 
   (*print_string (showEntail^"\n\n");
 *)
-
+  print_string ("\n=========================\n");
   List.fold_left (fun acc a -> print_string (showES a ^"\n")) ()  lhs' ;
 
   print_string ("\n----------------------\n");
@@ -304,7 +277,7 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) =
   
   in 
   
-  if checkexist lhs' rhs' then (true, 0) 
+  if checkexist lhs' rhs' then (true, 1) 
   else 
   if (isBot normalFormL) then (true, 0)
   (*[REFUTATION]*)

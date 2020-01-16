@@ -17,9 +17,9 @@ let showOp (o:op) :string =
 
 let alphabet = ["A"; "B"]
 
-let height = 1;;
+let height = 5;;
 let sigma = 2;;
-let sampleNum = 1;;
+let sampleNum = 100;;
 
 let getRandomeOp (num:int):op = 
   match num with 
@@ -113,6 +113,8 @@ let main =
 (*
 let temp1 = "" in 
 let temp2 = "" in 
+
+
 
 let temppairs = [(Parser.es_p Lexer.token (Lexing.from_string temp1)
 , Parser.es_p Lexer.token (Lexing.from_string temp2))] in 
