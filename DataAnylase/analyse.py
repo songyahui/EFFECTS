@@ -23,13 +23,24 @@ plt.xlabel(u"Height of the regular expression.")
 plt.ylabel(u"State number of the NFA.")
 plt.grid(linestyle="-", alpha=0.1)
 plt.savefig('/Users/mac/Desktop/hg/CAV2020/plots/Height_State.png')
-plt.show()
+#plt.show()
 
 colnames = ["Entil", "S1", "S2", "ReC", "StateC", "TimeC", "ReM", "StateM", "TimeM"]
-df = pd.read_csv(r'/Users/mac/Desktop/hg/EFFECTS/DataAnylase/data/result_height_2.csv', names=colnames, header=None)
-print(df['S1'].mean())
-print(df['S2'].mean())
+df = pd.read_csv(r'/Users/mac/Desktop/hg/EFFECTS/DataAnylase/data/result_height_6.csv', names=colnames, header=None)
+print("TIMEC", df['TimeC'].mean())
+print("TimeM", df['TimeM'].mean())
+print("StateC", df['StateC'].mean())
+print("StateM", df['StateM'].mean())
+print("completeness",  (df['ReM']- df['ReC']).sum() )
+temp = df['StateC']- df['StateM']
 
+print (temp)
+#predicate: a bool value function
+#ue simple math to descrbe algorithmn
+#patial correctness
+#inductive invanriants
+
+#still need to translate to low level?
 
 #x= [0,1,2,3,4,5,6]
 #antichain=[2,2.1988,2.8636 , 5.1608, 9.3329, 60.1115, 1289.0355]
@@ -42,3 +53,5 @@ print(df['S2'].mean())
 #plt.ylabel("value(m)")
 #plt.title("A simple plot")
 #plt.show()
+
+((((((AA)*)|((A*)(B*)))(((A*)*)*))((((AA)|(B|A))((AA)(B*)))(((AA)*)((AA)|(AA)))))|(((((B|B)|(A|A))((BB)(B|A)))(((A*)(B|B))|((B|A)(B*))))*))

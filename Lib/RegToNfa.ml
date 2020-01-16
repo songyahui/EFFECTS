@@ -23,7 +23,6 @@ let parse_re r =
 let antichain lhs rhs: (bool*int*float) =
 
    let startTimeStamp = Sys.time() in
-
    let nfaA = Regex.compile (parse_re lhs) in
    let nfaB = Regex.compile (parse_re rhs) in
    let (a, b) = Nfa.antichain_in nfaA nfaB [] in

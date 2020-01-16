@@ -166,11 +166,6 @@ let rec aNormalES es:es  =
   | Emp -> es
   | Event ev -> es
 
-
-  | Cons (Cons (esIn1, esIn2), es2)-> aNormalES (Cons (esIn1, Cons (esIn2, es2))) 
-  | Cons (ESOr (or1, or2), es2) -> aNormalES (ESOr ( (Cons (or1, es2)),  (Cons (or2, es2)))) 
-  | Cons (es1, ESOr (or1, or2)) -> aNormalES (ESOr ( (Cons (es1, or1)),  (Cons (es1, or2)))) 
-
   | Cons (es1, es2) -> 
       let normalES1 = aNormalES es1 in
       let normalES2 = aNormalES es2 in
@@ -185,8 +180,14 @@ let rec aNormalES es:es  =
           else Cons (normalES1, normalES2)
       | (Kleene (esIn1), Cons(Kleene (esIn2), es2)) -> 
           if aCompareES esIn1 esIn2 == true then normalES2
-          else Cons (normalES1, normalES2)
-      | (normal_es1, normal_es2) -> Cons (normal_es1, normal_es2)
+          else Cons (normalES1, normalES2) 
+
+      | (normal_es1, normal_es2) -> 
+        match (normal_es1, normal_es2) with 
+        |  (Cons (esIn1, esIn2), es2)-> aNormalES (Cons (esIn1, Cons (esIn2, es2))) 
+        |  (ESOr (or1, or2), es2) -> aNormalES (ESOr ( (Cons (or1, es2)),  (Cons (or2, es2)))) 
+        |  (es1, ESOr (or1, or2)) -> aNormalES (ESOr ( (Cons (es1, or1)),  (Cons (es1, or2)))) 
+        | _-> Cons (normal_es1, normal_es2)
       ;)
   | ESOr (es1, es2) -> 
       (match (aNormalES es1, aNormalES es2) with 
@@ -250,7 +251,9 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) =
   print_string (string_of_int (List.length evn) ^"\n");
   if ( (List.length evn) > 10) then (false, 1)
   else 
+  print_string ("\n==========================\n");
     *)
+  
   let normalFormL = aNormalES lhs in 
   let normalFormR = aNormalES rhs in
 
@@ -259,10 +262,22 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) =
 
   let normalFormL = aNormalES (connectDisj lhs') in 
   let normalFormR = aNormalES (connectDisj rhs') in 
-  (*
+
+(*
+  print_string (string_of_int (List.length lhs')^ ":"^ string_of_int (List.length rhs') ^"\n");
+ *) 
+(*  
   let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentES normalFormL normalFormR in 
-  print_string (showEntail^"\n\n");
- *)
+  (*print_string (showEntail^"\n\n");
+*)
+
+  List.fold_left (fun acc a -> print_string (showES a ^"\n")) ()  lhs' ;
+
+  print_string ("\n----------------------\n");
+
+  List.fold_left (fun acc a -> print_string (showES a ^"\n")) ()  rhs' ;
+*)
+
   let unfoldSingle ev esL esR (del:evn) = 
     let derivL = aDerivative esL ev in
     let derivR = aDerivative esR ev in
@@ -288,6 +303,9 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) =
     (resultFinal, states+1)    
   
   in 
+  
+  if checkexist lhs' rhs' then (true, 0) 
+  else 
   if (isBot normalFormL) then (true, 0)
   (*[REFUTATION]*)
   else if (isBot normalFormR) then (false, 1)

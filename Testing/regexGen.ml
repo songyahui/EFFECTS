@@ -15,11 +15,11 @@ let showOp (o:op) :string =
   | OpUinon-> "OpUinon\n"
   ;;
 
-let alphabet = ["A"; "B"; "C"; "d"; "e"; "f"; "g"; "h"; "I"; "J"; "K"; "L"; "M"; "N"]
+let alphabet = ["A"; "B"]
 
-let height = 2;;
+let height = 1;;
 let sigma = 2;;
-let sampleNum = 100;;
+let sampleNum = 1;;
 
 let getRandomeOp (num:int):op = 
   match num with 
@@ -95,7 +95,7 @@ let main =
   
   let ess = genES sampleNum  [] in
   let pairs = cartesian ess ess (*[(Cons(Event "B", Cons(Event "B", Kleene(Event "B"))),Cons (Kleene(Event "B"), Cons(Event "B",Event "B") ))] *)in 
-  (*
+  
   let outputfile = (Sys.getcwd ()^ "/" ^ "Testing/regex"^ string_of_int height ^".dat") in
 
   let dataset' = List.fold_left (fun acc (lhs, rhs) -> acc ^ showEntailmentESReg lhs rhs ^"\n") "" pairs in 
@@ -105,10 +105,19 @@ let main =
   let oc = open_out outputfile in    (* 新建或修改文件,返回通道 *)
     fprintf oc "%s" (dataset'^"\n"^dataset);   (* 写一些东西 *)
     close_out oc;
-*)
+
+
   let rowData:(Ast.es * int * Ast.es * int) list = List.map (fun (lhs, rhs) -> (lhs, RegToNfa.getStates (showESReg lhs) ,rhs, RegToNfa.getStates (showESReg rhs) ) ) pairs in 
 
 (************Get the resulrs************)
+(*
+let temp1 = "" in 
+let temp2 = "" in 
+
+let temppairs = [(Parser.es_p Lexer.token (Lexing.from_string temp1)
+, Parser.es_p Lexer.token (Lexing.from_string temp2))] in 
+*)
+
 
   let resultsChain = List.map (fun (lhs, rhs) -> RegToNfa.antichain (showESReg lhs) (showESReg rhs)) pairs in 
   let resultsMirov = List.map (fun (lhs, rhs) -> (Antimirov.antimirov_shell lhs rhs )) pairs in 
@@ -126,8 +135,8 @@ let main =
 
 
   let head = "" in 
-  let format_abc ((a, b , c):(bool * int * float)) :string = string_of_bool a ^ ", " ^ string_of_int b ^ ", " ^ string_of_float c ^ " " in 
-  let format_row ((lhs, lshS, rhs, rhsS): (es* int* es* int)) :string = showEntailmentESReg lhs rhs ^", " ^  string_of_int lshS ^ ", " ^ string_of_int rhsS ^ " " in 
+  let format_abc ((a, b , c):(bool * int * float)) :string = (if a then "1" else "0") ^ ", " ^ string_of_int b ^ ", " ^ string_of_float c ^ " " in 
+  let format_row ((lhs, lshS, rhs, rhsS): (es* int* es* int)) :string = showEntailmentES lhs rhs ^":" ^showEntailmentESReg lhs rhs  ^", " ^  string_of_int lshS ^ ", " ^ string_of_int rhsS ^ " " in 
 
   let finalPrint = List.fold_left (fun acc (chain, mirov, row) -> acc^ format_row row^ ", " ^ format_abc chain ^", "^ format_abc mirov ^ "\n") head pairResults in
   let outputResultfile = (Sys.getcwd ()^ "/" ^ "DataAnylase/data/result_height_"^ string_of_int height ^".csv") in 
@@ -143,17 +152,13 @@ let main =
   let pairs_temp = List.map (fun (a, b) -> (Parser.es_p Lexer.token (Lexing.from_string a), Parser.es_p Lexer.token (Lexing.from_string b))) pairs_tep  in 
 *)
 
-
 (*
-  let temp = List.map2 (fun (a,b) (c,d) -> a==c ) results0 results in 
+
+  let temp = List.map2 (fun (a,b, c) (e,f, g) -> a==e ) resultsChain resultsMirov in 
   
-  let pass0 = List.filter (fun (a,b) -> a == true ) results0 in 
-  let fail0 = List.filter (fun (a,b) -> a == false ) results0 in 
+  let pass0 = List.filter (fun (a,b, c) -> a == true ) resultsChain in 
+  let fail0 = List.filter (fun (a,b, c) -> a == false ) resultsChain in 
 
-  let pass = List.filter (fun (a,b) -> a == true ) results in 
-  let fail = List.filter (fun (a,b) -> a == false ) results in 
-
-  let (p0, f0, p, f) = if pass0 > fail0 then (sublist 0 (List.length fail0) pass0 ,fail0, sublist 0 (List.length fail0) pass ,fail ) else (pass0, sublist 0 (List.length pass0 ) fail0, pass, sublist 0 (List.length pass0 ) fail) in 
 
 
   print_string("=========Antichain=========\n");
@@ -186,7 +191,7 @@ let main =
 
 
 
-  *)
-
+  
+*)
 
  
