@@ -17,9 +17,9 @@ let showOp (o:op) :string =
 
 let alphabet = ["A"; "B"]
 
-let height = 100;;
+let height = 1;;
 let sigma = 2;;
-let sampleNum = 120;;
+let sampleNum = 10;;
 
 let getRandomeOp (num:int):op = 
   match num with 
@@ -93,7 +93,7 @@ let main =
 
 (************OUTPUT TO FILE************)
   let sample_n = sampleNum / 10 in 
-  let ess  = List.fold_left (fun acc a -> append acc (genES sample_n [] a) ) [] [0;1;2;3;4;5;6;]in 
+  let ess  = List.fold_left (fun acc a -> append acc (genES sample_n [] a) ) [] [0]in 
 
 
   let pairs = cartesian ess ess (*[(Cons(Event "B", Cons(Event "B", Kleene(Event "B"))),Cons (Kleene(Event "B"), Cons(Event "B",Event "B") ))] *)in 
@@ -113,10 +113,8 @@ let main =
 
 (************Get the resulrs************)
 
-let temp1 = "(((((B^*)|(A|A))^*).(((B.A).(B|A))|((B^*)^*))).((((B^*)^*).((A^*).(B.A)))|(((A.A)|(B.B))|((A.B)^*))))" in 
-let temp2 = "(((((A^*)|(B|A)).((A|B)|(A^*)))^*)|((((A.A).(A.A)).((A.A)|(B^*)))^*))" in 
-
-
+let temp1 = "(((A.A)^*)^*)" in
+let temp2 = "(((A.A)^*)^*)" in 
 
 let temppairs = [(Parser.es_p Lexer.token (Lexing.from_string temp1)
 , Parser.es_p Lexer.token (Lexing.from_string temp2))] in 
@@ -127,6 +125,8 @@ let temppairs = [(Parser.es_p Lexer.token (Lexing.from_string temp1)
   let resultsMirov = List.map (fun (lhs, rhs) -> (Antimirov.antimirov_shell lhs rhs )) temppairs in 
 
 (************Output resulrs to files************)
+
+print_string (string_of_int (List.length resultsChain) ^ ":" ^string_of_int (List.length resultsMirov) ^ ":" ^string_of_int (List.length rowData) ^"\n");
 
   let rec pairList lst1 lst2 lst3 = 
     match (lst1, lst2,lst3 ) with
