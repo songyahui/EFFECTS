@@ -58,6 +58,7 @@ let rec printExpr (expr: expression):string =
   | IfElse (e1, e2, e3) -> "if " ^ printExpr e1 ^ " then " ^ printExpr e2 ^ " else " ^ printExpr e3 
   | Cond (e1, e2, str) -> printExpr e1 ^ str ^ printExpr e2 
   | BinOp (e1, e2, str) -> printExpr e1 ^ str ^ printExpr e2 
+  | Assertion eff -> "Assert: " ^ showEffect eff 
   ;;
 
 
@@ -183,6 +184,12 @@ let rec verifier (caller:string) (expr:expression) (state_H:effect) (state_C:eff
     let state_C_IF  = addConstrain state_C condIf in 
     let state_C_ELSE  = addConstrain state_C condElse in 
     Disj ((verifier caller e2 state_H state_C_IF prog), (verifier caller e3 state_H state_C_ELSE prog))
+  | Assertion eff ->   
+    let his_cur =  (concatEffEff state_H state_C) in 
+    let (result, tree) = checkPrecondition (his_cur) eff in 
+    if result == true then state_C 
+    else raise (Foo ("Assertion " ^ showEffect eff ^" does not hold when !"))
+            
   | Call (name, exprList) -> 
     (match searMeth prog name with 
       None -> raise (Foo ("Method: "^ name ^" not defined!"))

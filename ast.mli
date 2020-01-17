@@ -58,6 +58,7 @@ type expression = Unit
           | IfElse of expression * expression * expression
           | Cond of expression * expression * string
           | BinOp of expression * expression * string
+          | Assertion of effect
 
 type param  = (_type * var) list
 

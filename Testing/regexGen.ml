@@ -17,9 +17,9 @@ let showOp (o:op) :string =
 
 let alphabet = ["A"; "B"]
 
-let height = 5;;
+let height = 100;;
 let sigma = 2;;
-let sampleNum = 100;;
+let sampleNum = 120;;
 
 let getRandomeOp (num:int):op = 
   match num with 
@@ -61,11 +61,11 @@ let cartesian l l' =
 
 let getFst (a, b, c) = a ;;
 
-let rec genES (num:int) (acc:es list): es list= 
+let rec genES (num:int) (acc:es list) (h:int): es list= 
   if num = 0 then acc
   else 
-  (let one =  regexGen height sigma in 
-  genES (num - 1) (append acc [one] );
+  (let one =  regexGen h sigma in 
+  genES (num - 1) (append acc [one] ) h;
   ) (**)
 ;;
 
@@ -92,8 +92,10 @@ let main =
   *)
 
 (************OUTPUT TO FILE************)
-  
-  let ess = genES sampleNum  [] in
+  let sample_n = sampleNum / 10 in 
+  let ess  = List.fold_left (fun acc a -> append acc (genES sample_n [] a) ) [] [0;1;2;3;4;5;6;]in 
+
+
   let pairs = cartesian ess ess (*[(Cons(Event "B", Cons(Event "B", Kleene(Event "B"))),Cons (Kleene(Event "B"), Cons(Event "B",Event "B") ))] *)in 
   
   let outputfile = (Sys.getcwd ()^ "/" ^ "Testing/regex"^ string_of_int height ^".dat") in
@@ -110,19 +112,19 @@ let main =
   let rowData:(Ast.es * int * Ast.es * int) list = List.map (fun (lhs, rhs) -> (lhs, RegToNfa.getStates (showESReg lhs) ,rhs, RegToNfa.getStates (showESReg rhs) ) ) pairs in 
 
 (************Get the resulrs************)
-(*
-let temp1 = "" in 
-let temp2 = "" in 
+
+let temp1 = "(((((B^*)|(A|A))^*).(((B.A).(B|A))|((B^*)^*))).((((B^*)^*).((A^*).(B.A)))|(((A.A)|(B.B))|((A.B)^*))))" in 
+let temp2 = "(((((A^*)|(B|A)).((A|B)|(A^*)))^*)|((((A.A).(A.A)).((A.A)|(B^*)))^*))" in 
 
 
 
 let temppairs = [(Parser.es_p Lexer.token (Lexing.from_string temp1)
 , Parser.es_p Lexer.token (Lexing.from_string temp2))] in 
-*)
+
 
 
   let resultsChain = List.map (fun (lhs, rhs) -> RegToNfa.antichain (showESReg lhs) (showESReg rhs)) pairs in 
-  let resultsMirov = List.map (fun (lhs, rhs) -> (Antimirov.antimirov_shell lhs rhs )) pairs in 
+  let resultsMirov = List.map (fun (lhs, rhs) -> (Antimirov.antimirov_shell lhs rhs )) temppairs in 
 
 (************Output resulrs to files************)
 

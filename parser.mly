@@ -7,7 +7,7 @@
 %token <string> STRING
 %token <bool> TRUEE  
 %token <bool> FALSEE
-%token EMPTY EVENTKEY CHOICE LPAR RPAR CONCAT OMEGA POWER PLUS MINUS TRUE FALSE DISJ CONJ   ENTIL INTT BOOLT VOIDT 
+%token EMPTY ASSERTKEY EVENTKEY CHOICE LPAR RPAR CONCAT OMEGA POWER PLUS MINUS TRUE FALSE DISJ CONJ   ENTIL INTT BOOLT VOIDT 
 %token LBRACK RBRACK COMMA SIMI  IF ELSE REQUIRE ENSURE LSPEC RSPEC
 %token EOF GT LT EQ  INCLUDE SHARP EQEQ GTEQ LTEQ UNDERLINE KLEENE NEGATION
 
@@ -54,6 +54,7 @@ expres_help :
 | name = VAR LPAR vlist = real_param RPAR {Call (name, vlist)}
 | v = VAR EQ e = expres_help{Assign (v, e)}
 | EVENTKEY LPAR ev = STRING RPAR {EventRaise ev}
+| ASSERTKEY LPAR eff = effect RPAR {Assertion eff}
 
 cond:
 | e1 = expres_help  EQEQ e2 = expres_help {Cond (e1, e2 ,"==")}

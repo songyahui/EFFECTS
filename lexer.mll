@@ -35,6 +35,7 @@ rule token = parse
 | "bool" {BOOLT}
 | "void" {VOIDT}
 | "event" {EVENTKEY}
+| "assert" {ASSERTKEY}
 | "|-" {ENTIL}
 | "TRUE" { TRUE }
 | "FALSE" { FALSE }

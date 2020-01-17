@@ -212,29 +212,38 @@ let rec removeCommon (lhs:es list) (rhs:es list) : (es list * es list ) =
 
 
 
-let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) = 
+let rec antimirov (lhs:es) (rhs:es) (evn:evn) : (bool * int * float) = 
   
-  if (List.length evn >50) then (false, 1) 
+  (*
+  print_string(string_of_int (List.length evn)^"\n");
+  *)
+  (*
+  if (List.length evn >35) then (false, 1) 
   else 
-
+*)
 (*
   print_string (string_of_int (List.length evn) ^"\n");
   if ( (List.length evn) > 10) then (false, 1)
   else 
   print_string ("\n==========================\n");
     *)
-  
+  let startTimeStamp = Sys.time() in
   let normalFormL = aNormalES lhs in 
   let normalFormR = aNormalES rhs in
+  
+  
 
   let lhs' = remove_dup (splitCons normalFormL) in 
   let rhs' = remove_dup (splitCons normalFormR) in 
-
+  
   (*
   let (lhs, rhs) = removeCommon lhs' rhs' in 
 *)
+
   let normalFormL =  (connectDisj lhs') in 
   let normalFormR =  (connectDisj rhs') in 
+  let endTimeStamp = Sys.time() in
+  let timeseg = (endTimeStamp -. startTimeStamp)*.float_of_int 1000 in 
 
 (*
   print_string (string_of_int (List.length lhs')^ ":"^ string_of_int (List.length rhs') ^"\n");
@@ -254,8 +263,8 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) =
   let unfoldSingle ev esL esR (del:evn) = 
     let derivL = aDerivative esL ev in
     let derivR = aDerivative esR ev in
-    let (result, states) = antimirov derivL derivR del in
-    (result, states)
+    let (result, states, timpsingle) = antimirov derivL derivR del in
+    (result, states, timpsingle)
   in
   (*Unfold function which calls unfoldSingle*)
   let unfold del esL esR= 
@@ -263,28 +272,28 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) =
 
     (*print_string ("\n" ^List.fold_left (fun acc a -> acc ^ "-"^ a) "" fstL^"\n");*)
     let deltaNew:(evn) = append del [(esL, esR)] in
-    let rec chceckResultAND li staacc:(bool * int )=
+    let rec chceckResultAND li staacc timeacc:(bool * int * float)=
       (match li with 
-        [] -> (true, staacc) 
+        [] -> (true, staacc, timeacc) 
       | ev::fs -> 
-          let (re, states) = unfoldSingle ev esL esR deltaNew in 
-          if re == false then (false , staacc+states)
-          else chceckResultAND fs (staacc+states)
+          let (re, states, temp_time) = unfoldSingle ev esL esR deltaNew in 
+          if re == false then (false , staacc+states, timeacc +. temp_time)
+          else chceckResultAND fs (staacc+states) (timeacc+. temp_time )
       )
     in 
-    let (resultFinal, states) = chceckResultAND fstL  0 in 
-    (resultFinal, states+1)    
+    let (resultFinal, states, time) = chceckResultAND fstL  0 (float_of_int 0) in 
+    (resultFinal, states+1, time)    
   
   in 
   
-  if checkexist lhs' rhs' then (true, 1) 
+  if checkexist lhs' rhs' then (true, 1, timeseg) 
   else 
-  if (isBot normalFormL) then (true, 0)
+  if (isBot normalFormL) then (true, 0, timeseg)
   (*[REFUTATION]*)
-  else if (isBot normalFormR) then (false, 1)
-  else if (aNullable normalFormL) == true && (aNullable normalFormR) == false then ( false, 1) 
+  else if (isBot normalFormR) then (false, 1, timeseg)
+  else if (aNullable normalFormL) == true && (aNullable normalFormR) == false then ( false, 1, timeseg) 
       (*[Reoccur]*)
-  else if (aReoccur normalFormL normalFormR evn) == true then ( true, 1) 
+  else if (aReoccur normalFormL normalFormR evn) == true then ( true, 1, timeseg) 
       (*Unfold*)                    
   else 
   (*
@@ -315,7 +324,9 @@ let antimirov_shell (lhs:es) (rhs:es) : (bool * int * float) =
 
   let startTimeStamp = Sys.time() in
 
-  let (a, b) = antimirov lhs rhs [] in
+  let (a, b, t) = antimirov lhs rhs [] in
+
+  print_string (string_of_float t);
 
   let endTime0 = Sys.time() in 
   (a, b, (endTime0 -. startTimeStamp)*.float_of_int 1000)

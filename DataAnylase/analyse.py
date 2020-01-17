@@ -26,9 +26,9 @@ plt.savefig('/Users/mac/Desktop/hg/CAV2020/plots/Height_State.png')
 #plt.show()
 
 colnames = ["Entil", "S1", "S2", "ReC", "StateC", "TimeC", "ReM", "StateM", "TimeM"]
-df = pd.read_csv(r'/Users/mac/Desktop/hg/EFFECTS/DataAnylase/data/result_height_5.csv', names=colnames, header=None)
-print("TIMEC", df['TimeC'].mean())
-print("TimeM", df['TimeM'].mean())
+df = pd.read_csv(r'/Users/mac/Desktop/hg/EFFECTS/DataAnylase/data/result_height_1.csv', names=colnames, header=None)
+print("TIMEC", df['TimeC'].median())
+print("TimeM", df['TimeM'].median())
 print("S1", df['S1'].mean(), "|- S2", df['S2'].mean())
 print("StateC", df['StateC'].mean())
 print("StateM", df['StateM'].mean())
