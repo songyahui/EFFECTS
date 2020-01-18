@@ -1,10 +1,29 @@
 open Ast
 open List
 open Pretty
-open Set
+
+
+type bst_t =  
+  | BLeaf 
+  | BNode of (int * (es list) * bst_t  * bst_t) (* Node (left, key, right) *)
+
+
+let rec insert_bst (len:int) (es:es) = function  
+  | BLeaf -> BNode (len, [es], BLeaf, BLeaf)
+  | BNode (k, esList, left , right) ->
+    if len < k then BNode (k, esList, (insert_bst len es) left, right) (* if x is smaller, go left *)
+    else if len == k then BNode (k, es::esList,  left, right)
+    else BNode (k, esList,left, (insert_bst len es) right) (* otherwise, go right *)
+;;
+
+
+
 
 
 exception Foo of string
+
+type evn = (es*es)list
+type evnBTS = (bst_t * bst_t) list
 
 let rec esLength (es:es) : int = 
   match es with
@@ -35,49 +54,20 @@ let rec aCompareES es1 es2 =
   | _ -> false
 ;;
 
-let rec aCompareESN es1 es2:int  = 
-  print_string ("+++++++++++++++++++++++++++++\n");
-  match (es1, es2) with 
-    (Bot, Bot) -> 0
-  | (Emp, Emp) -> 0
-  | (Event s1, Event s2) -> 
-    if String.compare s1 s2 == 0 then 0 else -1
-  | (Cons (es1L, es1R), Cons (es2L, es2R)) -> 
-    let temp = aCompareESN es1L es2L in 
-    if temp != 0 then -1
-    else (aCompareESN es1R es2R)
-  | (ESOr (es1L, es1R), ESOr (es2L, es2R)) -> 
-      if ((aCompareESN es1L es2L == 0) && (aCompareESN es1R es2R == 0)) then 0 
-      else if ((aCompareESN es1L es2R == 0) && (aCompareESN es1R es2L == 0)) then 0 
-      else -1
-  | (Kleene esL, Kleene esR) -> aCompareESN esL esR
-  | _ -> -1
-;;
+let rec checkexist lst super: bool = 
+  match lst with
+  | [] -> true
+  | x::rest  -> if List.mem x super then checkexist rest super
+  else false 
+  ;;
 
-module EsSet =
-struct
-  type t = es
-  let compare = aCompareESN
-  
-end
-
-
-
-module ESSet: (Set.S with type elt = es) = Set.Make(EsSet)
-
-
-type evn = (ESSet.t * ESSet.t)list
-
-let showSet (set:ESSet.t) :unit = ESSet.iter (fun a -> print_string (showES a ^"\n") ) set;;
-
-let rec showEvn evn :unit = 
-  match evn with 
-    [] -> () 
-  | (a, b) :: rest  -> 
-    showSet a ;
-    print_string ("\n----------------\n");
-    showSet b ;
-    showEvn rest;;
+let rec mem_bst (len:int) (es:es) = function  
+  | BLeaf -> false
+  | BNode (k, esList, left, right) ->
+    if len < k then mem_bst len es left
+    else if len == k then checkexist [es] esList
+    else mem_bst len es right
+    ;;
 
 let rec aNullable (es:es) : bool=
   match es with
@@ -120,32 +110,24 @@ let rec splitCons (es:es) : es list =
   | _ -> [es]
   ;;
 
-let rec checkexist lst super: bool = 
-  match lst with
-  | [] -> true
-  | x::rest  -> if List.mem x super then checkexist rest super
-  else false 
-  ;;
 
-let rec creatSet (lst :es list) :ESSet.t = 
-  match lst with 
-    [] -> ESSet.empty
-  | x::xs -> ESSet.union (ESSet.singleton x) (creatSet xs )
-  ;;
+
+
 
 let rec aReoccur esL esR (del:evn) = 
   match del with 
   | [] -> false 
-  | (setL, setR) :: rest -> 
-   (*
-    let tempL = creatSet (splitCons esL) in 
-*)
-    let subsetL = ESSet.subset esL setL in 
+  | (es1, es2) :: rest -> 
+    let tempHL = splitCons es1 in 
+    let tempL = splitCons esL in 
+
+    let subsetL = checkexist tempL tempHL in 
       (*List.fold_left (fun acc a -> acc && List.mem a tempHL  ) true tempL in*)
-    (* 
-    let tempR = creatSet (splitCons esR) in 
-*)
-    let supersetR = ESSet.subset setR esR in 
+    
+    let tempHR = splitCons es2 in 
+    let tempR = splitCons esR in 
+
+    let supersetR = checkexist tempHR tempR in 
       (*List.fold_left (fun acc a -> acc && List.mem a tempR  ) true tempHR in*)
     
     if (subsetL && supersetR) then true
@@ -275,7 +257,7 @@ let rec removeCommon (lhs:es list) (rhs:es list) : (es list * es list ) =
 let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) = 
   
   (*
-  if (List.length evn >50) then (false, 1) 
+  if (List.length evn >30) then (false, 1) 
   else 
 *)
 (*
@@ -300,16 +282,10 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) =
 (*
   print_string (string_of_int (List.length lhs')^ ":"^ string_of_int (List.length rhs') ^"\n");
  *)
- 
+ (*
   let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentES normalFormL normalFormR in 
-  print_string (showEntail^"\n\n");
-
-  print_string ("\n===============\n");
-  showEvn evn;
-
-
-
-(*
+  (*print_string (showEntail^"\n\n");
+*)
   print_string ("\n=========================\n");
   List.fold_left (fun acc a -> print_string (showES a ^"\n")) ()  lhs' ;
 
@@ -329,7 +305,7 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) =
     let fstL = remove_dup (aFst esL )in 
 
     (*print_string ("\n" ^List.fold_left (fun acc a -> acc ^ "-"^ a) "" fstL^"\n");*)
-    let deltaNew:(evn) = append del [(creatSet (splitCons esL), creatSet (splitCons esR))] in
+    let deltaNew:(evn) = append del [(esL, esR)] in
     let rec chceckResultAND li staacc:(bool * int )=
       (match li with 
         [] -> (true, staacc) 
@@ -344,14 +320,14 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) =
   
   in 
   
-  if ESSet.subset (creatSet (splitCons normalFormL))  (creatSet (splitCons normalFormR))  then (true, 1) 
+  if checkexist lhs' rhs' then (true, 1) 
   else 
   if (isBot normalFormL) then (true, 0)
   (*[REFUTATION]*)
   else if (isBot normalFormR) then (false, 1)
   else if (aNullable normalFormL) == true && (aNullable normalFormR) == false then ( false, 1) 
       (*[Reoccur]*)
-  else if (aReoccur (creatSet (splitCons normalFormL)) (creatSet (splitCons normalFormR)) evn) == true then ( true, 1) 
+  else if (aReoccur normalFormL normalFormR evn) == true then ( true, 1) 
       (*Unfold*)                    
   else 
   (*

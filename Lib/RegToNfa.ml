@@ -24,8 +24,6 @@ let antichain lhs rhs: (bool*int*float) =
 
    let startTimeStamp = Sys.time() in
 
-   let lhs = "(((((B)*)|(A|A)))*)(BA(B|A)|((((B)*))*))(((((B)*))*)((A)*)BA|((AA|BB)|((AB)*)))" in
-   let rhs = "((((((A)*)|(B|A))((A|B)|((A)*)))*)|((AAAA(AA|((B)*)))*))" in 
 
    let nfaA = Regex.compile (parse_re lhs) in
    let nfaB = Regex.compile (parse_re rhs) in
