@@ -7,6 +7,7 @@ open List
 open Ast
 open Printf
 open Askz3
+open Int32
 
 
 exception Foo of string
@@ -113,6 +114,22 @@ let rec showESReg (es:es):string =
   | ESOr (es1, es2) -> "("^(showESReg es1) ^ "|" ^ (showESReg es2)^")"
   | Kleene es -> "(" ^"(" ^ (showESReg es) ^")" ^ "*"^")"
   | _ -> raise (Foo "showESReg exception!")
+  ;;
+
+let rec regToInt (esIn:es):int32  = 
+  let rec helper es : int = 
+    match es with
+    | Bot -> 0
+    | Emp -> 0
+    | Event ev ->  if String.compare ev "A" == 0 then 1 else 2
+    | Cons (es1, es2) -> (helper es1) * (helper es2)
+    | ESOr (es1, es2) -> (helper es1) + (helper es2) 
+    | Kleene es ->  (helper es) * 10
+    | _ -> raise (Foo "regToInt exception!")
+  in 
+  let temp =  (helper esIn) in 
+  
+  of_int temp
   ;;
 
 (*To pretty print pure formulea*)

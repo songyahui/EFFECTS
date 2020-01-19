@@ -124,6 +124,7 @@ let transition_map_of_letter_set : LetterSet.S.t -> StateSet.t CharSetMap.t =
 
 type t = C.t regex
 
+
 let fresh_state =
   let counter = ref 0l in
   let incr32 r = r := Int32.succ !r in

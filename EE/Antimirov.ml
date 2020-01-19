@@ -2,7 +2,6 @@ open Ast
 open List
 open Pretty
 
-
 type bst_t =  
   | BLeaf 
   | BNode of (int * (es list) * bst_t  * bst_t) (* Node (left, key, right) *)
@@ -17,12 +16,14 @@ let rec insert_bst (len:int) (es:es) = function
 ;;
 
 
-
-
+module SS = Set.Make(Int32)
 
 exception Foo of string
 
-type evn = (es*es)list
+type evn = (es * es)list
+
+type evnSet = (SS.t * SS.t) list
+
 type evnBTS = (bst_t * bst_t) list
 
 let rec esLength (es:es) : int = 
@@ -36,6 +37,7 @@ let rec esLength (es:es) : int =
   | _ ->  raise (Foo "else esLength") 
 
   ;;
+
 
 let rec aCompareES es1 es2 = 
 
@@ -105,13 +107,24 @@ let rec remove_dup lst=
 
 
 let rec splitCons (es:es) : es list = 
+
   match es with 
     ESOr (es1, es2) -> append (splitCons es1) (splitCons es2)
   | _ -> [es]
+
   ;;
 
 
+  
 
+let rec aReoccurSet (esL:SS.t) (esR:SS.t) (del:evnSet) = 
+  match del with 
+  | [] -> false 
+  | (es1, es2) :: rest -> 
+
+    if (SS.subset esL es1 && SS.subset es2 esR) then true
+    else aReoccurSet esL esR rest (*REOCCUR*) 
+  ;;
 
 
 let rec aReoccur esL esR (del:evn) = 
@@ -251,13 +264,23 @@ let rec removeCommon (lhs:es list) (rhs:es list) : (es list * es list ) =
   (List.filter (fun a -> List.mem a common == false ) lhs, List.filter (fun a -> List.mem a common == false ) rhs)
   ;;
 
+let fromEsToSet (es:es): SS.t = 
+
+  let listL = List.map (fun a -> regToInt a) (splitCons es) in 
+  List.fold_left (fun acc a -> SS.union acc (SS.singleton a)) SS.empty listL
+  ;;
+
+let fromListToSet (esL:es list) :SS.t = 
+  let listL = List.map (fun a -> regToInt a) ( esL) in 
+  List.fold_left (fun acc a -> SS.union acc (SS.singleton a)) SS.empty listL
+  ;;
 
 
 
-let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) = 
+let rec antimirov (lhs:es) (rhs:es) (evn:evnSet ): (bool * int) = 
   
   (*
-  if (List.length evn >30) then (false, 1) 
+  if (List.length evn >2) then raise (Foo "ddd")
   else 
 *)
 (*
@@ -294,7 +317,7 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) =
   List.fold_left (fun acc a -> print_string (showES a ^"\n")) ()  rhs' ;
 *)
 
-  let unfoldSingle ev esL esR (del:evn) = 
+  let unfoldSingle ev esL esR (del:evnSet) = 
     let derivL = aDerivative esL ev in
     let derivR = aDerivative esR ev in
     let (result, states) = antimirov derivL derivR del in
@@ -305,7 +328,8 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) =
     let fstL = remove_dup (aFst esL )in 
 
     (*print_string ("\n" ^List.fold_left (fun acc a -> acc ^ "-"^ a) "" fstL^"\n");*)
-    let deltaNew:(evn) = append del [(esL, esR)] in
+
+    let deltaNew:(evnSet) = append del [(fromEsToSet esL, fromEsToSet esR)] in
     let rec chceckResultAND li staacc:(bool * int )=
       (match li with 
         [] -> (true, staacc) 
@@ -327,7 +351,8 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) =
   else if (isBot normalFormR) then (false, 1)
   else if (aNullable normalFormL) == true && (aNullable normalFormR) == false then ( false, 1) 
       (*[Reoccur]*)
-  else if (aReoccur normalFormL normalFormR evn) == true then ( true, 1) 
+  else 
+   if (aReoccurSet (fromListToSet lhs') (fromListToSet rhs') evn) == true then ( true, 1) 
       (*Unfold*)                    
   else 
   (*

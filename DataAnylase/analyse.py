@@ -26,35 +26,18 @@ plt.savefig('/Users/mac/Desktop/hg/CAV2020/plots/Height_State.png')
 #plt.show()
 
 colnames = ["Entil", "S1", "S2", "ReC", "StateC", "TimeC", "ReM", "StateM", "TimeM"]
-df = pd.read_csv(r'/Users/mac/Desktop/hg/EFFECTS/DataAnylase/data/result_height_6.csv', names=colnames, header=None)
-print("TIMEC", df['TimeC'].mean())
-print("TimeM", df['TimeM'].mean())
+df = pd.read_csv(r'/Users/mac/Desktop/hg/EFFECTS/DataAnylase/data/result_height_5.csv', names=colnames, header=None)
+print("TIMEC", df['TimeC'].median())
+print("TimeM", df['TimeM'].median())
 print("S1", df['S1'].mean(), "|- S2", df['S2'].mean())
 print("StateC", df['StateC'].mean())
 print("StateM", df['StateM'].mean())
-#print("completeness",  (df['ReM']- df['ReC']).sum() )
+print("incompleteness",  (df['ReM']- df['ReC']).sum() )
+
 temp = df['StateC']- df['StateM']
 
-print (temp)
+print(temp)
 
 
 
-#predicate: a bool value function
-#ue simple math to descrbe algorithmn
-#patial correctness
-#inductive invanriants
-
-#still need to translate to low level?
-
-#x= [0,1,2,3,4,5,6]
-#antichain=[2,2.1988,2.8636 , 5.1608, 9.3329, 60.1115, 1289.0355]
-#antimirov=[2,2.0442,2.2843 , 3.365,5.4141, 19.1076, 896.2009]
-
-
-#plt.figure()
-#plt.plot(x,antichain,antimirov)
-#plt.xlabel("time(s)")
-#plt.ylabel("value(m)")
-#plt.title("A simple plot")
-#plt.show()
 

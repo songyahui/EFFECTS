@@ -17,7 +17,7 @@ let showOp (o:op) :string =
 
 let alphabet = ["A"; "B"]
 
-let height = 100;;
+let height = 6;;
 let sigma = 2;;
 let sampleNum = 100;;
 
@@ -34,7 +34,6 @@ let getRandomEvent (s:int): string =
   let ev = Random.int s in
   List.nth alphabet ev
   ;;
-
 
 let rec regexGen (h:int) (s:int) : es = 
   if h <= 0 then Event (getRandomEvent s)
@@ -92,9 +91,12 @@ let main =
   *)
 
 (************OUTPUT TO FILE************)
-  let sample_n = sampleNum / 10 in 
-  let ess  = List.fold_left (fun acc a -> append acc (genES sample_n [] a) ) [] [0;1;2;3;4;5;6;7]in 
-
+(*
+  let sample_n = sampleNum / 1 in 
+  let li = [0;1;2;3;4;5;6] in 
+  let ess  = List.fold_left (fun acc a -> append acc (genES sample_n [] a) ) [] li in 
+*)
+  let ess = genES sampleNum [] height in 
 
   let pairs = cartesian ess ess (*[(Cons(Event "B", Cons(Event "B", Kleene(Event "B"))),Cons (Kleene(Event "B"), Cons(Event "B",Event "B") ))] *)in 
   

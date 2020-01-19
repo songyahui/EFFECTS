@@ -1,6 +1,6 @@
 (** Top-level program for building DOT representations of NFAs from regexes *)
 open Nfa
-open  Int32
+open Int32
 open Set
 
 let die fmt = Printf.kprintf (fun s -> prerr_endline s; exit 1) fmt
