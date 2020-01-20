@@ -17,9 +17,9 @@ let showOp (o:op) :string =
 
 let alphabet = ["A"; "B"]
 
-let height = 1;;
+let height = 101;;
 let sigma = 2;;
-let sampleNum = 1;;
+let sampleNum = 13;;
 
 let getRandomeOp (num:int):op = 
   match num with 
@@ -91,12 +91,13 @@ let main =
   *)
 
 (************OUTPUT TO FILE************)
-(*
+
   let li = [1;2;3;4;5;6;7;8] in 
   let ess  = List.fold_left (fun acc a -> append acc (genES sampleNum [] a) ) [] li in 
-*)
- 
+
+(*
 let ess = genES sampleNum [] height in 
+*)
 
   let pairs = cartesian ess ess (*[(Cons(Event "B", Cons(Event "B", Kleene(Event "B"))),Cons (Kleene(Event "B"), Cons(Event "B",Event "B") ))] *)in 
   
@@ -115,14 +116,13 @@ let ess = genES sampleNum [] height in
 
 (************Get the resulrs************)
 
-let temp1 = "((A^*).(A.((A^*).(((A|B).((A^*).(A.(A^*))))^*))))" in
-let temp2 = "((A.(A^*)).(((A|B).(A.(A^*)))^*))" in 
-
+(*
 let temppairs = [(Parser.es_p Lexer.token (Lexing.from_string temp1)
 , Parser.es_p Lexer.token (Lexing.from_string temp2))] in 
+*)
 
   let resultsChain = List.map (fun (lhs, rhs) -> RegToNfa.antichain (showESReg lhs) (showESReg rhs)) pairs in 
-  let resultsMirov = List.map (fun (lhs, rhs) -> (Antimirov.antimirov_shell lhs rhs )) temppairs in 
+  let resultsMirov = List.map (fun (lhs, rhs) -> (Antimirov.antimirov_shell lhs rhs )) pairs in 
 
 (************Output resulrs to files************)
 
