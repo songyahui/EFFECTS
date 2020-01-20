@@ -89,8 +89,12 @@ term:
 | str = VAR { Var str }
 | n = INTE {Number n}
 | LPAR r = term RPAR { r }
+| a = term b = INTE {Minus (a, 0 -  b)}
+(*
+| a = term MINUS b = INTE {Minus (a, b )}
+*)
 | a = term PLUS b = INTE {Plus (a, b)}
-| a = term MINUS b = INTE {Minus (a, b)}
+
 
 
 pure:

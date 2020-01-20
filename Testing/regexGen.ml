@@ -17,7 +17,7 @@ let showOp (o:op) :string =
 
 let alphabet = ["A"; "B"]
 
-let height = 6;;
+let height = 5;;
 let sigma = 2;;
 let sampleNum = 100;;
 
@@ -36,7 +36,7 @@ let getRandomEvent (s:int): string =
   ;;
 
 let rec regexGen (h:int) (s:int) : es = 
-  if h <= 0 then Event (getRandomEvent s)
+  if h <= 1 then Event (getRandomEvent s)
   else 
     (Random.self_init ();
     let num = Random.int 3 in 
@@ -91,12 +91,12 @@ let main =
   *)
 
 (************OUTPUT TO FILE************)
-(*
-  let sample_n = sampleNum / 1 in 
-  let li = [0;1;2;3;4;5;6] in 
-  let ess  = List.fold_left (fun acc a -> append acc (genES sample_n [] a) ) [] li in 
+  (*
+  let li = [1;2;3;4;5;6;7;8;9] in 
+  let ess  = List.fold_left (fun acc a -> append acc (genES sampleNum [] a) ) [] li in 
 *)
-  let ess = genES sampleNum [] height in 
+
+let ess = genES sampleNum [] height in 
 
   let pairs = cartesian ess ess (*[(Cons(Event "B", Cons(Event "B", Kleene(Event "B"))),Cons (Kleene(Event "B"), Cons(Event "B",Event "B") ))] *)in 
   
@@ -118,7 +118,6 @@ let main =
 (*
 let temppairs = [(Parser.es_p Lexer.token (Lexing.from_string temp1)
 , Parser.es_p Lexer.token (Lexing.from_string temp2))] in 
-
 *)
 
   let resultsChain = List.map (fun (lhs, rhs) -> RegToNfa.antichain (showESReg lhs) (showESReg rhs)) pairs in 
@@ -126,8 +125,9 @@ let temppairs = [(Parser.es_p Lexer.token (Lexing.from_string temp1)
 
 (************Output resulrs to files************)
 
+(*
 print_string (string_of_int (List.length resultsChain) ^ ":" ^string_of_int (List.length resultsMirov) ^ ":" ^string_of_int (List.length rowData) ^"\n");
-
+*)
   let rec pairList lst1 lst2 lst3 = 
     match (lst1, lst2,lst3 ) with
       ([], [], []) -> [] 

@@ -15,14 +15,13 @@ let rec insert_bst (len:int) (es:es) = function
     else BNode (k, esList,left, (insert_bst len es) right) (* otherwise, go right *)
 ;;
 
+exception Foo of string
 
 module SS = Set.Make(Int32)
 
-exception Foo of string
+type evnSet = (SS.t * SS.t) list
 
 type evn = (es * es)list
-
-type evnSet = (SS.t * SS.t) list
 
 type evnBTS = (bst_t * bst_t) list
 
@@ -39,22 +38,6 @@ let rec esLength (es:es) : int =
   ;;
 
 
-let rec aCompareES es1 es2 = 
-
-  match (es1, es2) with 
-    (Bot, Bot) -> true
-  | (Emp, Emp) -> true
-  | (Event s1, Event s2) -> 
-    String.compare s1 s2 == 0
-  | (Cons (es1L, es1R), Cons (es2L, es2R)) -> 
-    if (aCompareES es1L es2L) == false then false
-    else (aCompareES es1R es2R)
-  | (ESOr (es1L, es1R), ESOr (es2L, es2R)) -> 
-      if ((aCompareES es1L es2L) && (aCompareES es1R es2R)) then true 
-      else ((aCompareES es1L es2R) && (aCompareES es1R es2L))
-  | (Kleene esL, Kleene esR) -> aCompareES esL esR
-  | _ -> false
-;;
 
 let rec checkexist lst super: bool = 
   match lst with
@@ -169,7 +152,6 @@ let rec aDerivative (es:es) (ev:string): es =
 ;;
 
 let rec aNormalES es:es  =
-
   match es with
     Bot -> es
   | Emp -> es
@@ -307,8 +289,9 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evnSet ): (bool * int) =
  *)
  (*
   let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentES normalFormL normalFormR in 
-  (*print_string (showEntail^"\n\n");
-*)
+  print_string (showEntail^"\n\n");
+  *)
+(*
   print_string ("\n=========================\n");
   List.fold_left (fun acc a -> print_string (showES a ^"\n")) ()  lhs' ;
 
@@ -318,6 +301,9 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evnSet ): (bool * int) =
 *)
 
   let unfoldSingle ev esL esR (del:evnSet) = 
+    (*
+    print_string ("\n--------:"^ev ^"\n");
+    *)
     let derivL = aDerivative esL ev in
     let derivR = aDerivative esR ev in
     let (result, states) = antimirov derivL derivR del in
@@ -344,7 +330,7 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evnSet ): (bool * int) =
   
   in 
   
-  if checkexist lhs' rhs' then (true, 1) 
+  if SS.subset (fromListToSet lhs') (fromListToSet rhs') then (true, 1) 
   else 
   if (isBot normalFormL) then (true, 0)
   (*[REFUTATION]*)

@@ -236,7 +236,7 @@ let rec verification (dec:declare) (prog: program): string =
     let (result_tree, result, states) =  Rewriting.containment acc ( post) [] varList in 
     let result = "[Result: "^ string_of_bool result ^"]\n" in 
     let states = "[Explored "^ string_of_int (states+1)  ^ " States]\n" in 
-    let verification_time = "[Verification Time: " ^ string_of_float (Sys.time() -. startTimeStamp) ^ "]\n" in
+    let verification_time = "[Verification Time: " ^ string_of_float (Sys.time() -. startTimeStamp) ^ " s]\n" in
     let printTree = printTree ~line_prefix:"* " ~get_name ~get_children result_tree in
     "=======================\n"^ head ^ precon ^ accumulated ^ postcon ^ result ^ states ^verification_time^ "\n" ^ printTree ^ "\n" 
     

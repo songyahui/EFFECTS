@@ -26,18 +26,31 @@ plt.savefig('/Users/mac/Desktop/hg/CAV2020/plots/Height_State.png')
 #plt.show()
 
 colnames = ["Entil", "S1", "S2", "ReC", "StateC", "TimeC", "ReM", "StateM", "TimeM"]
-df = pd.read_csv(r'/Users/mac/Desktop/hg/EFFECTS/DataAnylase/data/result_height_5.csv', names=colnames, header=None)
-print("TIMEC", df['TimeC'].median())
-print("TimeM", df['TimeM'].median())
-print("S1", df['S1'].mean(), "|- S2", df['S2'].mean())
+df = pd.read_csv(r'/Users/mac/Desktop/hg/EFFECTS/DataAnylase/data/result_height_6.csv', names=colnames, header=None)
+print("TIMEC", df['TimeC'].mean())
+print("TimeM", df['TimeM'].mean())
+print("S1", df['S1'].max(), "|- S2", df['S2'].max())
 print("StateC", df['StateC'].mean())
 print("StateM", df['StateM'].mean())
 print("incompleteness",  (df['ReM']- df['ReC']).sum() )
 
 temp = df['StateC']- df['StateM']
 
-print(temp)
+listC = []
+listM = []
 
+i = 0
+while i < 10000:
+    if (df['ReM'][i] ==0 and df['ReC'][i] == 0):
+        listM.append(df['TimeM'][i])
+        listC.append(df['TimeC'][i])
 
+    i += 1
 
+def Average(lst):
+    return sum(lst) / len(lst)
+
+print (len(listC))
+print("TIMEC", Average (listC))
+print("TimeM", Average (listM))
 

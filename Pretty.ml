@@ -116,21 +116,53 @@ let rec showESReg (es:es):string =
   | _ -> raise (Foo "showESReg exception!")
   ;;
 
+let encodeStrToInt (str:string):int = 
+  match String.get str 0 with
+    'A' -> 1
+  | 'B' -> 2 
+  | 'C' -> 3
+  | 'D' -> 4
+  | 'E' -> 5
+  | 'F' -> 6
+  | 'G' -> 7 
+  | 'H' -> 8
+  | 'I' -> 9
+  | 'J' -> 10 
+  | 'K' -> 11
+  | 'L' -> 12
+  | 'M' -> 13
+  | 'N' -> 14
+  | 'P' -> 15
+  | 'Q' -> 16
+  | 'R' -> 17
+  | 'S' -> 18
+  | 'T' -> 19
+  | 'V' -> 20
+  | 'X' -> 21
+  | 'Y' -> 22
+  | 'Z' -> 23
+  | _ -> 24
+  ;;
+
 let rec regToInt (esIn:es):int32  = 
   let rec helper es : int = 
     match es with
-    | Bot -> 0
+    | Bot -> -1
     | Emp -> 0
-    | Event ev ->  if String.compare ev "A" == 0 then 1 else 2
+    | Underline -> 10
+    | Event ev ->  encodeStrToInt ev
     | Cons (es1, es2) -> (helper es1) * (helper es2)
     | ESOr (es1, es2) -> (helper es1) + (helper es2) 
-    | Kleene es ->  (helper es) * 10
-    | _ -> raise (Foo "regToInt exception!")
+    | Kleene es ->  (helper es) * 8
+    | Ttimes (esIn, t) -> (helper esIn) * 16
+    | Omega esIn -> (helper esIn) * 32
   in 
   let temp =  (helper esIn) in 
   
   of_int temp
   ;;
+
+
 
 (*To pretty print pure formulea*)
 let rec showPure (p:pure):string = 
@@ -320,6 +352,24 @@ let rec normalTerms (t:terms):terms  =
   | Plus (Number n1, n2) -> Number (n1 + n2)
   | _ -> t 
   ;;
+
+
+let rec aCompareES es1 es2 = 
+
+  match (es1, es2) with 
+    (Bot, Bot) -> true
+  | (Emp, Emp) -> true
+  | (Event s1, Event s2) -> 
+    String.compare s1 s2 == 0
+  | (Cons (es1L, es1R), Cons (es2L, es2R)) -> 
+    if (aCompareES es1L es2L) == false then false
+    else (aCompareES es1R es2R)
+  | (ESOr (es1L, es1R), ESOr (es2L, es2R)) -> 
+      if ((aCompareES es1L es2L) && (aCompareES es1R es2R)) then true 
+      else ((aCompareES es1L es2R) && (aCompareES es1R es2L))
+  | (Kleene esL, Kleene esR) -> aCompareES esL esR
+  | _ -> false
+;;
  
 
 let rec normalES es pi = 
@@ -337,8 +387,60 @@ let rec normalES es pi =
       | (_, Emp) -> normalES1
       | (Bot, _) -> Bot
       | (Omega _, _ ) -> normalES1
+
+      | (Kleene (esIn1), Kleene (esIn2)) -> 
+          if aCompareES esIn1 esIn2 == true then normalES2
+          else Cons (normalES1, normalES2)
+      | (Kleene (esIn1), Cons(Kleene (esIn2), es2)) -> 
+          if aCompareES esIn1 esIn2 == true then normalES2
+          else Cons (normalES1, normalES2) 
+
+      | (normal_es1, normal_es2) -> 
+        match (normal_es1, normal_es2) with 
+        |  (Cons (esIn1, esIn2), es2)-> normalES (Cons (esIn1, Cons (esIn2, es2))) pi 
+        |  (ESOr (or1, or2), es2) -> normalES (ESOr ( (Cons (or1, es2)),  (Cons (or2, es2)))) pi
+        |  (es1, ESOr (or1, or2)) -> normalES (ESOr ( (Cons (es1, or1)),  (Cons (es1, or2)))) pi
+        | _-> Cons (normal_es1, normal_es2)
+      ;)
+  | ESOr (es1, es2) -> 
+      (match (normalES es1 pi, normalES es2 pi) with 
+        (Bot, Bot) -> Bot
+      | (Bot, norml_es2) -> norml_es2
+      | (norml_es1, Bot) -> norml_es1
+      | (ESOr(es1In, es2In), norml_es2 ) ->
+        if aCompareES norml_es2 es1In || aCompareES norml_es2 es2In then ESOr(es1In, es2In)
+        else ESOr (ESOr(es1In, es2In), norml_es2 )
+      | (norml_es2, ESOr(es1In, es2In) ) ->
+        if aCompareES norml_es2 es1In || aCompareES norml_es2 es2In then ESOr(es1In, es2In)
+        else ESOr (norml_es2, ESOr(es1In, es2In))
+      | (Emp, Kleene norml_es2) ->  Kleene norml_es2
+      | (Kleene norml_es2, Emp) ->  Kleene norml_es2
+
+      | (norml_es1, norml_es2) -> 
+        if aCompareES  norml_es1 norml_es2 == true then norml_es1
+        else 
+        (match (norml_es1, norml_es2) with
+          (norml_es1, Kleene norml_es2) ->  
+          if aCompareES norml_es1 norml_es2 == true then Kleene norml_es2
+          else ESOr (norml_es1, Kleene norml_es2)
+        | (Kleene norml_es2, norml_es1) ->  
+          if aCompareES norml_es1 norml_es2 == true then Kleene norml_es2
+          else ESOr (Kleene norml_es2, norml_es1)
+        |  _-> ESOr (norml_es1, norml_es2)
+        )
+      ;)
+  (*
+  | Cons (es1, es2) -> 
+      let normalES1 = normalES es1 pi in
+      let normalES2 = normalES es2 pi in
+      (match (normalES1, normalES2) with 
+        (Emp, _) -> normalES2
+      | (_, Emp) -> normalES1
+      | (Bot, _) -> Bot
+      | (Omega _, _ ) -> normalES1
       | (normal_es1, normal_es2) -> Cons (normal_es1, normal_es2)
       ;)
+      
   | ESOr (es1, es2) -> 
       (match (normalES es1 pi, normalES es2 pi) with 
         (Bot, Bot) -> Bot
@@ -346,6 +448,7 @@ let rec normalES es pi =
       | (norml_es1, Bot) -> norml_es1
       | (norml_es1, norml_es2) -> ESOr (norml_es1, norml_es2)
       ;)
+      *)
   | Ttimes (es1, terms) -> 
       let t = normalTerms terms in 
       let normalInside = normalES es1 pi in 
@@ -365,6 +468,7 @@ let rec normalES es pi =
       (match normalInside with
         Emp -> Emp
       | Kleene esIn1 ->  Kleene (normalES esIn1 pi)
+      | ESOr(Emp, aa) -> Kleene aa
       | _ ->  Kleene normalInside)
   ;;
 

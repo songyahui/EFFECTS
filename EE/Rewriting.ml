@@ -22,6 +22,10 @@ ocamlc -o trs  Tree.ml  Rewriting.ml
 ----------------------------------------------------*)
 exception Foo of string
 
+module CS = Set.Make(Int32) (*context set*)
+
+type ctxSet = (CS.t * CS.t) list
+
 
 let rec nullable (pi :pure) (es:es) : bool=
   match es with
@@ -133,6 +137,46 @@ let rec compareEff eff1 eff2 =
   | _ -> false
   ;;
 
+let rec reoccurCtxSet (esL:CS.t) (esR:CS.t) (ctx:ctxSet) = 
+  match ctx with 
+  | [] -> false 
+  | (es1, es2) :: rest -> 
+
+    if (CS.subset esL es1 && CS.subset es2 esR ) then true
+    else reoccurCtxSet esL esR rest (*REOCCUR*) 
+  ;;
+
+let rec splitCons (es:es) : es list = 
+
+  match es with 
+    ESOr (es1, es2) -> append (splitCons es1) (splitCons es2)
+  | _ -> [es]
+
+  ;;
+
+let fromEsToSet (es:es): CS.t = 
+
+  let listL = List.map (fun a -> regToInt a) (splitCons es) in 
+  List.fold_left (fun acc a -> CS.union acc (CS.singleton a)) CS.empty listL
+  ;;
+
+let fromListToSet (esL:es list) :CS.t = 
+  let listL = List.map (fun a -> regToInt a) ( esL) in 
+  List.fold_left (fun acc a -> CS.union acc (CS.singleton a)) CS.empty listL
+  ;;
+
+let rec remove_dup lst= 
+  match lst with
+      | [] -> []
+      | h::t -> h::(remove_dup (List.filter (fun x -> x<>h) t))
+      ;;
+
+let rec connectDisj (esL:es list) :es = 
+  match esL with 
+    [] -> Bot
+  | [x] -> x
+  | x::xs -> ESOr (x, connectDisj xs )
+  ;;
 
 let rec reoccurHelp piL esL piR esR (del:context) = 
   match del with 
@@ -503,12 +547,14 @@ value indicating the validility of the effect entailment
     
 
 
-let rec containment (effL:effect) (effR:effect) (delta:context list) (varList:string list): (binary_tree * bool * int) = 
+let rec containment (effL:effect) (effR:effect) (delta:ctxSet) (varList:string list): (binary_tree * bool * int) = 
   let normalFormL = normalEffect effL in 
   let normalFormR = normalEffect effR in
   let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentEff normalFormL normalFormR in 
+  (*
   print_string(showEntail ^"\n");
-  let unfoldSingle ev piL esL piR esR (del:context list) = 
+  *)
+  let unfoldSingle ev piL esL piR esR (del:ctxSet) = 
     let derivL = derivative piL esL ev in
     let derivR = derivative piR esR ev in
     let (tree, result, states) = containment derivL derivR del varList in
@@ -517,9 +563,11 @@ let rec containment (effL:effect) (effR:effect) (delta:context list) (varList:st
   (*Unfold function which calls unfoldSingle*)
   let unfold del piL esL piR esR= 
     let fstL = remove_dups (fst piL esL )in 
-
+    (*
     let hypos = getNewHypos fstL piL esL piR esR in 
-    let deltaNew:(context list) = append del [hypos] in
+    *)
+
+    let deltaNew:(ctxSet) = append del [(fromEsToSet esL, fromEsToSet esR)]in
     let rec chceckResultAND li acc staacc:(bool *binary_tree list* int )=
       (match li with 
         [] -> (true, acc, staacc) 
@@ -549,6 +597,10 @@ let rec containment (effL:effect) (effR:effect) (delta:context list) (varList:st
         let (tree2, re2 , states2) = (containment effL effR2 delta varList) in
         (Node (showEntailmentEff normalFormL normalFormR ^ showRule RHSOR, [tree1; tree2] ), re2, states1+states2)
   | (Effect (piL, esL), Effect (piR, esR))-> 
+    let lhs' = remove_dup (splitCons esL) in 
+    let rhs' = remove_dup (splitCons esR) in 
+    let esL =  (connectDisj lhs') in 
+    let esR =  (connectDisj rhs') in 
       if entailConstrains piL piR == false then (Node(showEntail ^ "   [Contradictory]", []), false, 0)  
       else 
       (*Existential*)
@@ -579,7 +631,7 @@ let rec containment (effL:effect) (effR:effect) (delta:context list) (varList:st
         else if (isEmp normalFormR) == true  
         then  (Node(showEntail^"   [Frame-Prove]" ^" with R = "^(showES esL ) , []),true, 0) 
       (*[Reoccur]*)
-        else if (reoccur piL esL piR esR delta) == true 
+        else if (reoccurCtxSet (fromListToSet lhs') (fromListToSet rhs') delta) == true 
         then (Node(showEntail ^ "   [Reoccur-Prove] "  , []), true, 0) 
       (*Transitivity
         else if (transitivity piL esL piR esR delta )== true 
@@ -832,18 +884,21 @@ let createS_1 es = Ttimes (es, Minus (Var "s", 1) );;
 
 
 let printReportHelper lhs rhs: (binary_tree * bool * int) = 
+  (*
   let delta = getProductHypo lhs rhs in 
+  *)
   let varList = append (getAllVarFromEff lhs) (getAllVarFromEff rhs) in  
-  containment lhs rhs [delta] varList 
+  containment lhs rhs [] varList 
   ;;
 
 
 let printReport lhs rhs:string =
-  
+  let startTimeStamp = Sys.time() in
   let (tree, re, states) =  printReportHelper lhs rhs in
+  let verification_time = "[Verification Time: " ^ string_of_float (Sys.time() -. startTimeStamp) ^ " s]\n" in
   let result = printTree ~line_prefix:"* " ~get_name ~get_children tree in
   let states = "[Explored "^ string_of_int (states+1) ^ " States]\n" in 
-  let buffur = ( "===================================="^"\n" ^(showEntailmentEff lhs rhs)^"\n[Result] " ^(if re then "Succeed\n" else "Fail\n") ^ states ^"\n\n"^ result)
+  let buffur = ( "===================================="^"\n" ^(showEntailmentEff lhs rhs)^"\n[Result] " ^(if re then "Succeed\n" else "Fail\n") ^ states ^verification_time^" \n\n"^ result)
   in buffur
   ;;
 
