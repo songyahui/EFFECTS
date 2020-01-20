@@ -13,10 +13,6 @@ open Pretty
 ocamlc -o trs  Tree.ml  Rewriting.ml
 *)
 
-
-
-
-
 (*----------------------------------------------------
 ------------------Utility Functions------------------
 ----------------------------------------------------*)
@@ -61,6 +57,15 @@ let rec appendEff_ES eff es =
   (*raise ( Foo "appendEff_ES exception!")*)
   ;;
 
+let ifShouldDisj (temp1:effect) (temp2:effect) : effect = 
+  match (temp1, temp2) with
+      (Effect(pure1, evs1), Effect(pure2, evs2)) -> 
+        if comparePure pure1 pure2 then  Effect (pure1, ESOr (evs1, evs2))
+        else Disj (temp1, temp2 )
+      | _ -> 
+      Disj (temp1, temp2 )
+  ;;
+
 
 let rec derivative (p :pure) (es:es) (ev:string): effect =
   match es with
@@ -71,7 +76,10 @@ let rec derivative (p :pure) (es:es) (ev:string): effect =
       if (String.compare ev "_") == 0 then  Effect (p, Emp)
       else if (String.compare ev1 ev) == 0 then Effect (p, Emp) else Effect (FALSE, Bot)
   | Omega es1 -> appendEff_ES (derivative p es1 ev) es
-  | ESOr (es1 , es2) -> Disj (derivative p es1 ev, derivative p es2 ev)
+  | ESOr (es1 , es2) -> 
+    let temp1 = normalEffect (derivative p es1 ev) in
+    let temp2 = normalEffect (derivative p es2 ev) in 
+    ifShouldDisj temp1 temp2
   | Ttimes (es1, t) -> 
       let pi = PureAnd (Gt (t, Number 0), p) in
       let efF = derivative pi es1 ev in 
@@ -80,9 +88,9 @@ let rec derivative (p :pure) (es:es) (ev:string): effect =
   | Cons (es1 , es2) -> 
       if nullable p es1 
       then let efF = derivative p es1 ev in 
-          let effL = appendEff_ES efF es2 in 
-          let effR = derivative p es2 ev in 
-          Disj (effL, effR)
+          let effL = normalEffect (appendEff_ES efF es2) in 
+          let effR = normalEffect (derivative p es2 ev) in 
+          ifShouldDisj effL effR
       else let efF = derivative p es1 ev in 
           appendEff_ES efF es2    
           
@@ -94,17 +102,6 @@ let rec derivative (p :pure) (es:es) (ev:string): effect =
 (*----------------------------------------------------
 ----------------------CONTAINMENT--------------------
 ----------------------------------------------------*)
-
-
-
-
-
-
-
-
-
-
-
 
 let rec compareES es1 es2 = 
   match (es1, es2) with 
@@ -595,7 +592,7 @@ let rec containment (effL:effect) (effR:effect) (delta:ctxSet) (varList:string l
       if re1 == true then (Node (showEntailmentEff normalFormL normalFormR ^ showRule RHSOR, [tree1] ), true, states1)
       else 
         let (tree2, re2 , states2) = (containment effL effR2 delta varList) in
-        (Node (showEntailmentEff normalFormL normalFormR ^ showRule RHSOR, [tree1; tree2] ), re2, states1+states2)
+        (Node (showEntailmentEff normalFormL normalFormR ^ showRule RHSOR, [tree1; tree2] ), re2, states1+states2+1)
   | (Effect (piL, esL), Effect (piR, esR))-> 
     let lhs' = remove_dup (splitCons esL) in 
     let rhs' = remove_dup (splitCons esR) in 
@@ -623,16 +620,16 @@ let rec containment (effL:effect) (effR:effect) (delta:ctxSet) (varList:string l
 
 
       (*[DISPROVE]*)
-        else if (comparePure piR FALSE == true ) then (Node(showEntail ^ "   [DISPROVE] "  , []), false, 0)
+        else if (comparePure piR FALSE == true ) then (Node(showEntail ^ "   [DISPROVE] "  , []), false, 1)
       (*[REFUTATION]*)
         else if (nullable piL esL) == true && (nullable piR esR) == false 
-        then (Node(showEntail ^ "   [REFUTATION] "  , []), false, 0) 
+        then (Node(showEntail ^ "   [REFUTATION] "  , []), false, 1) 
       (*[Frame]*)
         else if (isEmp normalFormR) == true  
-        then  (Node(showEntail^"   [Frame-Prove]" ^" with R = "^(showES esL ) , []),true, 0) 
+        then  (Node(showEntail^"   [Frame-Prove]" ^" with R = "^(showES esL ) , []),true, 1) 
       (*[Reoccur]*)
         else if (reoccurCtxSet (fromListToSet lhs') (fromListToSet rhs') delta) == true 
-        then (Node(showEntail ^ "   [Reoccur-Prove] "  , []), true, 0) 
+        then (Node(showEntail ^ "   [Reoccur-Prove] "  , []), true, 1) 
       (*Transitivity
         else if (transitivity piL esL piR esR delta )== true 
         then (Node(showEntail ^ "   [Reoccur-Transitive] "  , []), true, 0) 
@@ -660,7 +657,7 @@ let rec containment (effL:effect) (effR:effect) (delta:ctxSet) (varList:string l
                             if re1 == false then (Node (showEntailmentEff normalFormL normalFormR ^ showRule LHSCASE ^ " *Pruning search*",[tree1] ), re1, states1)
                             else
                             let (tree2, re2 , states2) = (containment leftNonZero rightNonZero delta varList) in
-                            (Node (showEntailmentEff normalFormL normalFormR ,[tree1; tree2] ), re1 && re2, states1+states2)
+                            (Node (showEntailmentEff normalFormL normalFormR ,[tree1; tree2] ), re1 && re2, states1+states2+1)
                 | false -> (*[UNFOLD]*)unfold delta piL esL piR esR
                 )
             | Plus  (Var t, num) -> 
@@ -702,7 +699,7 @@ let rec containment (effL:effect) (effR:effect) (delta:ctxSet) (varList:string l
                             if re1 == false then (Node (showEntailmentEff normalFormL normalFormR ^ showRule LHSCASE ^ " *Pruning search*",[tree1] ), re1, states1)
                             else 
                             let (tree2, re2, states2 ) = (containment leftNonZero rightNonZero delta varList) in
-                            (Node (showEntailmentEff normalFormL normalFormR ,[tree1; tree2] ), re1 && re2, states1+states2)
+                            (Node (showEntailmentEff normalFormL normalFormR ,[tree1; tree2] ), re1 && re2, states1+states2+1)
                         | false -> (*UNFOLD*) unfold delta piL esL piR esR
                         )
               | Plus  (Var t, num) -> 
@@ -746,7 +743,7 @@ let rec containment (effL:effect) (effR:effect) (delta:ctxSet) (varList:string l
                             if re1 == true then (Node (showEntailmentEff effL effR ,[tree1] ), true, states1) 
                             else 
                               let (tree2, re2, states2 ) = (containment leftNonZero rightNonZero delta varList) in
-                              (Node (showEntailmentEff effL effR ,[tree1; tree2] ), re2, states1+states2)
+                              (Node (showEntailmentEff effL effR ,[tree1; tree2] ), re2, states1+states2+1)
                         | false -> (*UNFOLD*)unfold delta piL esL piR esR
                         )
                 | Plus  (Var t, num) -> 
@@ -792,7 +789,7 @@ let rec containment (effL:effect) (effR:effect) (delta:ctxSet) (varList:string l
                             if re1 == true then (Node (showEntailmentEff normalFormL normalFormR , [tree1] ), true, states1)
                             else 
                             let (tree2, re2, states2 ) =  (containment leftNonZero rightNonZero delta varList) in 
-                            (Node (showEntailmentEff normalFormL normalFormR , [tree1; tree2] ), re2, states1+states2)
+                            (Node (showEntailmentEff normalFormL normalFormR , [tree1; tree2] ), re2, states1+states2+1)
                         | false -> (*UNFOLD*)unfold delta piL esL piR esR
                         )
                 | Plus  (Var t, num) -> 

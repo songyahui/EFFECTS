@@ -188,7 +188,7 @@ let rec verifier (caller:string) (expr:expression) (state_H:effect) (state_C:eff
     let his_cur =  (concatEffEff state_H state_C) in 
     let (result, tree) = checkPrecondition (his_cur) eff in 
     if result == true then state_C 
-    else raise (Foo ("Assertion " ^ showEffect eff ^" does not hold when !"))
+    else raise (Foo ("Assertion " ^ showEffect eff ^" does not hold!"))
             
   | Call (name, exprList) -> 
     (match searMeth prog name with 

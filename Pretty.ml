@@ -118,9 +118,9 @@ let rec showESReg (es:es):string =
 
 let encodeStrToInt (str:string):int = 
   match String.get str 0 with
-    'A' -> 1
+    'A' -> 3
   | 'B' -> 2 
-  | 'C' -> 3
+  | 'C' -> 1
   | 'D' -> 4
   | 'E' -> 5
   | 'F' -> 6
@@ -151,9 +151,9 @@ let rec regToInt (esIn:es):int32  =
     | Emp -> 0
     | Underline -> 10
     | Event ev ->  encodeStrToInt ev
-    | Cons (es1, es2) -> (helper es1) * (helper es2)
-    | ESOr (es1, es2) -> (helper es1) + (helper es2) 
-    | Kleene es ->  (helper es) * 8
+    | Cons (es1, es2) -> 3 * (helper es1) + (helper es2)
+    | ESOr (es1, es2) -> (helper es1) + 2* (helper es2) 
+    | Kleene es ->  (helper es) * 10
     | Ttimes (esIn, t) -> (helper esIn) * 16
     | Omega esIn -> (helper esIn) * 32
   in 
