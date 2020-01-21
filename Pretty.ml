@@ -186,6 +186,8 @@ let rec showEffect (e:effect) :string =
   ;;
 
 (*To pretty print effects entialments*)
+
+
 let showEntailmentEff (eff1:effect)( eff2:effect):string = showEffect eff1 ^ " |- "  ^ showEffect eff2;;
 
 (*To pretty print event sequence entailment*)
