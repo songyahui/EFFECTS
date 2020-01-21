@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import csv
+import statistics
 
 data = {
   #  '1': [2,3,3,2,3,2,3,2,3,3,3,2,2,2,3,2,2,2,3,3,2,2,2,2,2,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,2,3,2,2,3,2,2,2,3,2,2,2,3,2,2,2,2,2,2,2,2,3,2,2,2,3,3,2,3,2,2,2,3,2,2,2,2,2,2,2,2,3,2,2,2,3,3,3,2,2,2,3,3,2,3,2,3,3,2,2,2,2,2,2,2,3,2,2,3,3,3,2,3,2,2,2,2,2,2,2,3,2,2,2,3,2,2,3,2,2,2,3,2,3,2,3,2,3,3,3,3,3,2,2,2,2,3,3,2,3,3,3,2,2,3,2,2,3,2,2,3,2,2,3,2,2,2,3,2,3,2,3,2,3,2,2,3,2,2,3,3,2,2,3,2,3,2,2,2,2,3,2,2,2,3,2,2,3,2,2,3,2,2,2,2,3,3,2,2,2,2,3,3,3,2,2,2,3,2,2,2,2,2,2,2,2,3,2,3,2,2,3,3,3,2,2,3,2,2,2,2,2,2,2,2,2,2,2,2,3,3,2,3,3,2,2,3,2,3,2,2,2,2,2,3,3,2,2,3,3,2,3,2,2,2,2,2,2,3,2,2,2,2,2,2,2,2,2,2,2,3,2,2,2,2,2,3,2,3,3,3,2,2,2,2,2,2,2,2,2,2,2,2,3,3,2,3,3,2,2,2,2,3,3,3,2,2,2,2,2,3,3,2,2,3,3,2,2,2,3,3,3,2,2,2,3,3,3,2,3,2,2,2,3,2,3,3,3,2,2,2,3,3,3,2,2,2,3,3,2,2,3,2,2,2,3,2,2,2,2,2,2,2,3,3,2,3,2,2,2,2,2,2,2,2,2,2,3,2,3,3,2,3,2,2,2,2,2,3,2,3,2,2,2,2,2,3,2,2,3,3,2,2,3,2,2,3,3,2,2,2,2,2,2,3,2,3,2,2,2,2,3,2,3,2,2,2,3,2,2,2,2,3,2,2,3,3,3,3,2,2,2,2,3,2,2,3,2,3,2,2,3,2,3,2,3,2,2,2,3,2,3,3,2,2,2,2,2,2,2,3,3,2,2,2,2,2,2,3,2,2,3,3,2,3,3,2,2,2,2,3,3,2,3,2,3,2,2,2,2,2,2,3,2,2,2,3,3,2,2,2,3,2,2,3,2,2,3,2,2,2,2,3,3,2,2,3,2,2,2,2,2,2,3,3,2,2,3,3,2,3,2,3,3,2,2,3,2,3,3,3,2,2,2,2,2,3,2,2,2,2,3,2,2,2,3,2,2,3,2,2,3,3,3,2,2,3,3,3,2,3,2,2,2,3,2,3,2,2,3,2,2,3,2,2,3,2,3,3,3,2,2,2,2,3,2,3,3,2,3,3,2,2,2,2,2,2,2,2,2,2,2,3,2,2,3,3,2,3,2,2,3,2,2,2,2,2,3,3,2,2,2,2,2,3,2,2,2,2,2,2,3,2,2,3,2,2,2,2,2,2,3,2,2,2,3,2,2,3,2,2,2,2,3,2,2,2,2,3,2,2,2,2,3,2,2,2,3,3,2,3,3,3,3,2,2,2,2,3,3,2,2,2,2,2,2,2,3,3,2,2,3,2,3,2,3,2,2,2,2,2,2,3,2,3,2,2,3,2,2,3,3,2,3,2,3,2,2,2,2,3,2,3,2,3,2,2,2,2,2,2,2,3,3,2,2,2,3,2,2,3,2,2,2,3,2,2,3,2,2,3,2,2,2,2,2,2,3,2,2,2,2,2,2,2,2,2,2,2,2,2,3,2,3,2,2,2,3,3,3,2,3,3,2,2,2,2,2,3,2,2,2,2,3,2,2,2,2,3,2,2,2,2,2,2,2,2,3,2,2,2,2,2,3,3,2,3,3,3,3,2,2,3,3,2,3,3,2,3,2,2,3,2,3,2,3,2,2,3,2,2,3,2,2,2,2,2,2,2,2,2,3,2,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,2,3,2,3,2,2,2,3,2,3,2,2,2,2,3,3,2,2,3,3,2,3,3,3,2,2,2,2,3,3,2,3,2,2,3,2,2,2,2,2,3,3,2,3,2,3,2,3,3,2,2,2,3,2,2,2,2,2,2,3,2,3,2,2,2,2,3,2,3,2,2,3,3,2,3,2,2,3,2,2,3,3,2,3,3,3,2,2],
@@ -26,7 +27,7 @@ plt.savefig('/Users/mac/Desktop/hg/CAV2020/plots/Height_State.png')
 plt.show()
 
 colnames = ["Entil", "S1", "S2", "ReC", "StateC", "TimeC", "ReM", "StateM", "TimeM"]
-df = pd.read_csv(r'/Users/mac/Desktop/hg/EFFECTS/DataAnylase/data/result_height_100.csv', names=colnames, header=None)
+df = pd.read_csv(r'/Users/mac/Desktop/hg/EFFECTS/DataAnylase/data/result_height_101.csv', names=colnames, header=None)
 print("TIMEC", df['TimeC'].mean())
 print("TimeM", df['TimeM'].mean())
 sum = df['S1'] + df['S2']
@@ -40,28 +41,74 @@ print("incompleteness",  (df['ReM']- df['ReC']).sum() )
 listX = []
 listM = []
 listC = []
+listTM = []
+listTC = []
+listMedianTimeC = [[],[],[],[],[]]
+listMedianTimeM = [[],[],[],[],[]]
 
 i = 0
-while i < 11025:
-    if (df['ReM'][i] == df['ReC'][i]  and df['StateC'][i] < 2000):
+while i < 10816:
+    if (df['ReM'][i] == 0 and df['ReM'][i] == df['ReC'][i]  and df['StateC'][i] < 1500):
         listX.append(df['S1'][i] + df['S2'][i])
         listM.append(df['StateM'][i])
         listC.append(df['StateC'][i])
+        if df['S1'][i] + df['S2'][i] <20:
+            listMedianTimeC[0].append(df['TimeC'][i])
+            listMedianTimeM[0].append(df['TimeM'][i])
+
+        elif (df['S1'][i] + df['S2'][i] <40 and df['S1'][i] + df['S2'][i] >20):
+            listMedianTimeC[1].append(df['TimeC'][i])
+            listMedianTimeM[1].append(df['TimeM'][i])
+        elif (df['S1'][i] + df['S2'][i] <60and df['S1'][i] + df['S2'][i] >40):
+            listMedianTimeC[2].append(df['TimeC'][i])
+            listMedianTimeM[2].append(df['TimeM'][i])
+        elif (df['S1'][i] + df['S2'][i] <80and df['S1'][i] + df['S2'][i] >60):
+            listMedianTimeC[3].append(df['TimeC'][i])
+            listMedianTimeM[3].append(df['TimeM'][i])
+        else:
+            listMedianTimeC[4].append(df['TimeC'][i])
+            listMedianTimeM[4].append(df['TimeM'][i])
     i += 1
+
+
+
+
+name_list = ['0-20', '20-40', '40-60', '60-80', '80-100']
+num_list = [statistics.median(listMedianTimeC[0]),
+            statistics.median(listMedianTimeC[1]),
+            statistics.median(listMedianTimeC[2]),
+            statistics.median(listMedianTimeC[3]),
+            statistics.median(listMedianTimeC[4])]
+
+num_list1 = [statistics.median(listMedianTimeM[0]),
+            statistics.median(listMedianTimeM[1]),
+            statistics.median(listMedianTimeM[2]),
+            statistics.median(listMedianTimeM[3]),
+            statistics.median(listMedianTimeM[4])]
+x = list(range(len(num_list)))
+total_width, n = 0.8, 2
+width = total_width / n
+
+plt.bar(x, num_list, width=width, label='Antichain', fc='y')
+for i in range(len(x)):
+    x[i] = x[i] + width
+plt.bar(x, num_list1, width=width, label='Antimirov', tick_label=name_list, fc='r')
+plt.legend()
+plt.show()
 
 def Average(lst):
     return sum(lst) / len(lst)
 print max(listC)
 
-plt.scatter(listX, listC,  s=50, label = '$Antichain$', c = 'blue', marker='.', alpha = None, edgecolors= 'white')
+plt.scatter(listX, listC,  s=70, label = '$Antichain$', c = 'blue', marker='.', alpha = None, edgecolors= 'white')
 
-plt.scatter(listX, listM,  s=50, label = '$Antimirov$', c = 'red', marker='.', alpha = None, edgecolors= 'white')
+plt.scatter(listX, listM,  s=70, label = '$Antimirov$', c = 'red', marker='.', alpha = None, edgecolors= 'white')
 
-plt.legend()
-plt.ylabel(u"Exploring states.")
-plt.xlabel(u"State(A) + State(B)")
-plt.grid(linestyle="-", alpha=0.1)
-plt.savefig('/Users/mac/Desktop/hg/CAV2020/plots/Explore_State.png')
-plt.show()
 
-TRUE/\(((A^*).(A.((A^*).(((A.((A^*).(A.(A^*))))|(B.((A^*).(A.(A^*)))))^*))))|((A^*).(((A.((A^*).(A.(A^*))))|(B.((A^*).(A.(A^*)))))^*))) |- TRUE/\((A^*).(((A.(A.(A^*)))|(B.(A.(A^*))))^*))
+#plt.legend()
+#plt.ylabel(u"Exploring states.")
+#plt.xlabel(u"State(A) + State(B)")
+#plt.grid(linestyle="-", alpha=0.1)
+#plt.savefig('/Users/mac/Desktop/hg/CAV2020/plots/Explore_State.png')
+#plt.show()
+
