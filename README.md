@@ -20,6 +20,8 @@ git ls-files | xargs wc -l
 
 ./trs src/effect/ex1.ee src/effect/output.txt > src/effect/output.txt 2>&1
 
+./verify src/program/send.c src/program/output.txt
+
 # Server:
 
 sudo rm -r EFFECTS/
