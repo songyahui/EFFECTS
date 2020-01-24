@@ -18,10 +18,9 @@ ocamlc -o trs  Tree.ml  Rewriting.ml
 ----------------------------------------------------*)
 exception Foo of string
 
-
 module CS = Set.Make(Int32) (*context set*)
 
-type ctxSet = (pure * es * CS.t) list
+type ctxSet = (CS.t * CS.t) list
 
 
 let rec nullable (pi :pure) (es:es) : bool=
@@ -36,12 +35,6 @@ let rec nullable (pi :pure) (es:es) : bool=
   | Underline -> false
   | Kleene es1 -> true
 ;;
-
-let rec nullableEff (eff:effect) : bool=
-  match eff with
-    Effect(p, es) -> nullable p es 
-  | Disj (eff1, eff2) -> nullableEff eff1 || nullableEff eff2 
-  ;;
     
 let rec fst (pi :pure) (es:es): event list = 
   match es with
@@ -65,15 +58,12 @@ let rec appendEff_ES eff es =
   ;;
 
 let ifShouldDisj (temp1:effect) (temp2:effect) : effect = 
-  Disj (temp1, temp2 )
-  (*
   match (temp1, temp2) with
       (Effect(pure1, evs1), Effect(pure2, evs2)) -> 
         if comparePure pure1 pure2 then  Effect (pure1, ESOr (evs1, evs2))
         else Disj (temp1, temp2 )
       | _ -> 
       Disj (temp1, temp2 )
-      *)
   ;;
 
 
@@ -107,12 +97,6 @@ let rec derivative (p :pure) (es:es) (ev:string): effect =
   | Kleene es1 -> appendEff_ES  (derivative p es1 ev) es
 
 ;;
-
-let rec derivativeEff (eff:effect) ev :effect = 
-  match eff with
-    Effect (p, es) -> derivative p es ev
-  | Disj (eff1, eff2) -> Disj (derivativeEff eff1 ev, derivativeEff eff2 ev) 
-  ;;
 
 
 (*----------------------------------------------------
@@ -150,7 +134,14 @@ let rec compareEff eff1 eff2 =
   | _ -> false
   ;;
 
+let rec reoccurCtxSet (esL:CS.t) (esR:CS.t) (ctx:ctxSet) = 
+  match ctx with 
+  | [] -> false 
+  | (es1, es2) :: rest -> 
 
+    if (CS.subset esL es1 && CS.subset es2 esR ) then true
+    else reoccurCtxSet esL esR rest (*REOCCUR*) 
+  ;;
 
 let rec splitCons (es:es) : es list = 
 
@@ -159,16 +150,10 @@ let rec splitCons (es:es) : es list =
   | _ -> [es]
 
   ;;
-  
-let rec splitEffects (eff:effect) : ((pure*es) list) =
-  match eff with 
-    Disj (eff1, eff2) -> append  (splitEffects eff1) (splitEffects eff2) 
-  | Effect (p, es) -> [(p, es)]
-  ;;
 
-let fromEffToSet (eff:effect): CS.t = 
+let fromEsToSet (es:es): CS.t = 
 
-  let listL = List.map (fun (p, es) -> regToInt es) (splitEffects eff) in 
+  let listL = List.map (fun a -> regToInt a) (splitCons es) in 
   List.fold_left (fun acc a -> CS.union acc (CS.singleton a)) CS.empty listL
   ;;
 
@@ -269,14 +254,6 @@ let entailConstrains pi1 pi2 =
   let sat = askZ3 (Neg (PureOr (Neg pi1, pi2))) in
   if sat then false
   else true;;
-
-let rec reoccurCtxSet piL esL (esR:CS.t) (ctx:ctxSet) = 
-  match ctx with 
-  | [] -> false 
-  | (pi, es, es2) :: rest -> 
-    if (entailConstrains piL pi && compareES es esL && CS.subset es2 esR ) then true
-    else reoccurCtxSet piL esL esR rest (*REOCCUR*) 
-  ;;
 
 let rec getPureFromEffect effect = 
   match effect with
@@ -574,230 +551,41 @@ let rec containment (effL:effect) (effR:effect) (delta:ctxSet) (varList:string l
   (*
   print_string(showEntail ^"\n");
   *)
-  let unfoldSingle ev piL esL effR (del:ctxSet) = 
+  let unfoldSingle ev piL esL piR esR (del:ctxSet) = 
     let derivL = derivative piL esL ev in
-    let derivR = derivativeEff effR ev in
+    let derivR = derivative piR esR ev in
     let (tree, result, states) = containment derivL derivR del varList in
-    (Node (showEntailmentEff (Effect(piL, esL)) effR ^ "   [Unfold with Fst = "^  ev ^ "]",[tree] ), result, states+1)
+    (Node (showEntailmentEff ( (Effect(piL, esL))) ((Effect(piR, esR))) ^ "   [Unfold with Fst = "^  ev ^ "]",[tree] ), result, states+1)
   in
   (*Unfold function which calls unfoldSingle*)
-  let unfold del piL esL effR= 
+  let unfold del piL esL piR esR= 
     let fstL = remove_dups (fst piL esL )in 
     (*
     let hypos = getNewHypos fstL piL esL piR esR in 
     *)
 
-    let deltaNew:(ctxSet) = append del [(piL, esL, fromEffToSet effR)]in
+    let deltaNew:(ctxSet) = append del [(fromEsToSet esL, fromEsToSet esR)]in
     let rec chceckResultAND li acc staacc:(bool *binary_tree list* int )=
       (match li with 
         [] -> (true, acc, staacc) 
       | ev::fs -> 
-          let (tree, re, states) = unfoldSingle ev piL esL effR deltaNew in 
+          let (tree, re, states) = unfoldSingle ev piL esL piR esR deltaNew in 
           if re == false then (false , tree::acc, staacc+states)
           else chceckResultAND fs (tree::acc) (staacc+states)
       )
     in 
     let (resultFinal, trees, states) = chceckResultAND fstL [] 0 in 
-    (Node (showEntailmentEff ( (Effect(piL, esL))) (effR) ,trees ), resultFinal, states)    
+    (Node (showEntailmentEff ( (Effect(piL, esL))) ((Effect(piR, esR))) ,trees ), resultFinal, states)    
   
   in 
-  let preUnfold piL esL piR esR : (pure*es*pure*es) = 
-    (match esL with
-    (*LHSEX*)
-    | Kleene esIn ->  
-      (piL, esL, piR, esR)
-    | Cons (Kleene esIn, _) -> 
-      (piL, esL, piR, esR)
-    | Ttimes (esIn, term) -> 
-        (match term with 
-          Var s -> 
-            (match  entailConstrains piL (Eq (Var s, Number 0) ) with 
-              true -> (*[CASE SPLIT]*) 
-                        let zeroCase = PureAnd (piL, Eq (Var s, Number 0) ) in 
-                        let nonZeroCase = PureAnd (piL, Gt (Var s, Number 0) ) in 
-                        let leftZero = addConstrain (Effect(piL, Emp)) zeroCase in
-                        let rightZero = addConstrain normalFormR zeroCase in
-                        let leftNonZero = addConstrain normalFormL nonZeroCase in
-                        let rightNonZero = addConstrain normalFormR nonZeroCase in
-                        let (tree1, re1, states1 ) = (containment leftZero rightZero delta varList) in
-                        if re1 == false then (Node (showEntailmentEff normalFormL normalFormR ^ showRule LHSCASE ^ " *Pruning search*",[tree1] ), re1, states1)
-                        else
-                        let (tree2, re2 , states2) = (containment leftNonZero rightNonZero delta varList) in
-                        (Node (showEntailmentEff normalFormL normalFormR ,[tree1; tree2] ), re1 && re2, states1+states2+1)
-            | false -> (*[UNFOLD]*)unfold delta piL esL piR esR
-            )
-        | Plus  (Var t, num) -> 
-        (*[LHSSUB]*)
-                    let newVar = getAfreeVar varList in 
-                    let lhs = substituteEff normalFormL  (Plus  (Var t, num))  (Var newVar) in
-                    let rhs = substituteEff normalFormR  (Plus  (Var t, num))  (Var newVar) in
-                    let cons = PureAnd( Eq (Var newVar, Plus (Var t, num) ), PureOr (Gt (Var newVar, Number 0) , Eq (Var newVar, Number 0) )) in
-                    let lhs' = addConstrain lhs cons in 
-                    let rhs' = addConstrain rhs cons in 
-                    let (tree, re, states) = containment lhs' rhs' delta (newVar::varList)in
-                    (Node (showEntailmentEff normalFormL normalFormR ,[tree] ), re, states)
-        | Minus (Var t, num) -> 
-        (*[LHSSUB]*)
-                    let newVar = getAfreeVar varList in 
-                    let lhs = substituteEff normalFormL  (Minus  (Var t, num)) (Var newVar) in
-                    let rhs = substituteEff normalFormR  (Minus  (Var t, num)) (Var newVar) in
-                    let cons = PureAnd( Eq (Var newVar, Minus (Var t, num) ),PureOr (Gt (Var newVar, Number 0) , Eq (Var newVar, Number 0) ) )in
-                    let lhs' = addConstrain lhs cons in 
-                    let rhs' = addConstrain rhs cons in 
-                    let (tree, re, states) = containment lhs' rhs' delta (newVar::varList)in
-                    (Node (showEntailmentEff normalFormL normalFormR ,[tree] ), re, states)
-        | Number n -> unfold delta piL esL piR esR
-        | _ -> print_endline (showEntailmentEff normalFormL normalFormR);
-          raise ( Foo "term is too complicated exception1!")
-        )
-    | Cons (Ttimes (esIn, term), restES) -> 
-        (match term with 
-          Var s -> 
-            (match  entailConstrains piL (Eq (Var s, Number 0) ) with 
-                      true -> (*CASE SPLIT*) 
-                        let zeroCase = PureAnd (piL, Eq (Var s, Number 0) ) in 
-                        let nonZeroCase = PureAnd (piL, Gt (Var s, Number 0) ) in 
-                        let leftZero = addConstrain (Effect(piL, restES)) zeroCase in
-                        let rightZero = addConstrain normalFormR zeroCase in
-                        let leftNonZero = addConstrain normalFormL nonZeroCase in
-                        let rightNonZero = addConstrain normalFormR nonZeroCase in
-                        let (tree1, re1 , states1) = (containment leftZero rightZero delta varList) in
-                        if re1 == false then (Node (showEntailmentEff normalFormL normalFormR ^ showRule LHSCASE ^ " *Pruning search*",[tree1] ), re1, states1)
-                        else 
-                        let (tree2, re2, states2 ) = (containment leftNonZero rightNonZero delta varList) in
-                        (Node (showEntailmentEff normalFormL normalFormR ,[tree1; tree2] ), re1 && re2, states1+states2+1)
-                    | false -> (*UNFOLD*) unfold delta piL esL piR esR
-                    )
-          | Plus  (Var t, num) -> 
-                    let newVar = getAfreeVar varList in 
-                    let lhs = substituteEff normalFormL  (Plus  (Var t, num)) (Var newVar) in
-                    let rhs = substituteEff normalFormR  (Plus  (Var t, num)) (Var newVar) in
-                    let cons = PureAnd( Eq (Var newVar, Plus (Var t, num) ), PureOr (Gt (Var newVar, Number 0) , Eq (Var newVar, Number 0) )) in
-                    let lhs' = addConstrain lhs cons in 
-                    let rhs' = addConstrain rhs cons in 
-                    let (tree, re, states) = containment lhs' rhs' delta (newVar::varList)in
-                    (Node (showEntailmentEff normalFormL normalFormR ,[tree] ), re, states)
-          | Minus (Var t, num) -> 
-                    let newVar = getAfreeVar varList in 
-                    let lhs = substituteEff normalFormL  (Minus  (Var t, num)) (Var newVar) in
-                    let rhs = substituteEff normalFormR  (Minus  (Var t, num)) (Var newVar) in
-                    let cons = PureAnd( Eq (Var newVar, Minus (Var t, num) ), PureOr (Gt (Var newVar,Number  0) , Eq (Var newVar, Number 0) )) in
-                    let lhs' = addConstrain lhs cons in 
-                    let rhs' = addConstrain rhs cons in 
-                    let (tree, re, states) = containment lhs' rhs' delta (newVar::varList)in
-                    (Node (showEntailmentEff normalFormL normalFormR ,[tree] ), re, states)
-          | Number n -> unfold delta piL esL piR esR
-          | _ -> print_endline (showEntailmentEff normalFormL normalFormR);
-          raise ( Foo "term is too complicated exception2!")
-        )
-      | _ -> (*RHSEX*)
-        (match esR with
-          Ttimes (esInR, termR) -> 
-            (match termR with 
-              Var s -> 
-                    if quantified_in_LHS esL s then unfold delta piL esL piR esR
-                    else 
-                    (match  entailConstrains piR (Eq (Var s, Number 0) ) with 
-                      true -> (*CASE SPLIT*) 
-                        let zeroCase = PureAnd (piL, Eq (Var s, Number 0) ) in 
-                        let nonZeroCase = PureAnd (piL, Gt (Var s, Number 0) ) in 
-                        let leftZero = addConstrain normalFormL zeroCase in
-                        let rightZero = addConstrain (Effect(piR, Emp)) zeroCase in
-                        let leftNonZero = addConstrain normalFormL nonZeroCase in
-                        let rightNonZero = addConstrain normalFormR nonZeroCase in
-                        let (tree1, re1, states1 ) = (containment leftZero rightZero delta varList) in
-                        if re1 == true then (Node (showEntailmentEff effL effR ,[tree1] ), true, states1) 
-                        else 
-                          let (tree2, re2, states2 ) = (containment leftNonZero rightNonZero delta varList) in
-                          (Node (showEntailmentEff effL effR ,[tree1; tree2] ), re2, states1+states2+1)
-                    | false -> (*UNFOLD*)unfold delta piL esL piR esR
-                    )
-            | Plus  (Var t, num) -> 
-                    if quantified_in_LHS esL t then unfold delta piL esL piR esR
-                    else 
-                    let newVar = getAfreeVar varList in
-                    let lhs = substituteEff normalFormL  (Plus  (Var t, num)) (Var newVar) in
-                    let rhs = substituteEff normalFormR  (Plus  (Var t, num)) (Var newVar) in
-                    let cons = PureAnd( Eq (Var newVar, Plus (Var t, num) ),PureOr (Gt (Var newVar, Number 0) , Eq (Var newVar, Number 0) )) in
-                    let lhs' = addConstrain lhs cons in 
-                    let rhs' = addConstrain rhs cons in 
-                    let (tree, re, states) = containment lhs' rhs' delta (newVar::varList)in
-                    (Node (showEntailmentEff normalFormL normalFormR ,[tree] ), re, states)
-            | Minus (Var t, num) -> 
-                    if quantified_in_LHS esL t then unfold delta piL esL piR esR
-                    else 
-                    let newVar = getAfreeVar varList in 
-                    let lhs = substituteEff normalFormL  (Minus  (Var t, num)) (Var newVar) in
-                    let rhs = substituteEff normalFormR  (Minus  (Var t, num)) (Var newVar) in
-                    let cons = PureAnd( Eq (Var newVar, Minus (Var t, num) ), PureOr (Gt (Var newVar, Number 0) , Eq (Var newVar, Number 0) )) in
-                    let lhs' = addConstrain lhs cons in 
-                    let rhs' = addConstrain rhs cons in 
-                    let (tree, re, states) = containment lhs' rhs' delta (newVar::varList)in
-                    (Node (showEntailmentEff normalFormL normalFormR ,[tree] ), re, states)
-            | Number n -> unfold delta piL esL piR esR
-            | _ -> print_endline (showEntailmentEff normalFormL normalFormR);
-            raise ( Foo "term is too complicated exception3!")
-            )
-        | Cons (Ttimes (esInR, termR), restESR) -> 
-            (match termR with 
-              Var s -> 
-                    if quantified_in_LHS esL s then unfold delta piL esL piR esR
-                    else 
-                    (match  entailConstrains piL (Eq (Var s, Number 0) ) with 
-                      true -> (*CASE SPLIT*) 
-                        let zeroCase = PureAnd (piR, Eq (Var s, Number 0) ) in 
-                        let nonZeroCase = PureAnd (piR, Gt (Var s, Number 0) ) in 
-                        let leftZero = addConstrain normalFormL zeroCase in
-                        let rightZero = addConstrain (Effect(piR, restESR)) zeroCase in
-                        let leftNonZero = addConstrain normalFormL nonZeroCase in
-                        let rightNonZero = addConstrain normalFormR nonZeroCase in
-                        let (tree1, re1, states1 ) = (containment leftZero rightZero delta varList) in
-                        if re1 == true then (Node (showEntailmentEff normalFormL normalFormR , [tree1] ), true, states1)
-                        else 
-                        let (tree2, re2, states2 ) =  (containment leftNonZero rightNonZero delta varList) in 
-                        (Node (showEntailmentEff normalFormL normalFormR , [tree1; tree2] ), re2, states1+states2+1)
-                    | false -> (*UNFOLD*)unfold delta piL esL piR esR
-                    )
-            | Plus  (Var t, num) -> 
-                    if quantified_in_LHS esL t then unfold delta piL esL piR esR
-                    else 
-                    let newVar = getAfreeVar varList in 
-                    let lhs = substituteEff normalFormL  (Plus  (Var t, num)) (Var newVar)  in
-                    let rhs = substituteEff normalFormR  (Plus  (Var t, num))  (Var newVar) in
-                    let cons = PureAnd( Eq (Var newVar, Plus (Var t, num) ), PureOr (Gt (Var newVar, Number 0) , Eq (Var newVar, Number 0) )) in
-                    let lhs' = addConstrain lhs cons in 
-                    let rhs' = addConstrain rhs cons in 
-                    let (tree, re, states) = containment lhs' rhs' delta (newVar::varList)in
-                    (Node (showEntailmentEff normalFormL normalFormR ,[tree] ), re, states)
-            | Minus (Var t, num) -> 
-                    if quantified_in_LHS esL t then unfold delta piL esL piR esR
-                    else 
-                    let newVar = getAfreeVar varList in 
-                    let lhs = substituteEff normalFormL  (Minus  (Var t, num)) (Var newVar)  in
-                    let rhs = substituteEff normalFormR  (Minus  (Var t, num)) (Var newVar)  in
-                    let cons = PureAnd( Eq (Var newVar, Minus (Var t, num) ), PureOr (Gt (Var newVar, Number 0) , Eq (Var newVar, Number 0) )) in
-                    let lhs' = addConstrain lhs cons in 
-                    let rhs' = addConstrain rhs cons in 
-                    let (tree, re, states) = containment lhs' rhs' delta (newVar::varList)in
-                    (Node (showEntailmentEff normalFormL normalFormR ,[tree] ), re, states)
-            | Number n -> unfold delta piL esL piR esR
-            | _ -> print_endline (showEntailmentEff normalFormL normalFormR);
-            raise ( Foo "term is too complicated exception4!")
-            )
-        | _ -> (*UNFOLD*)unfold delta piL esL piR esR
-        )
-    ) 
-
-  in 
-  match (normalFormL) with
-    Disj (effL1, effL2) -> 
+  match (normalFormL, normalFormR) with
+    (Disj (effL1, effL2), _) -> 
     (*[LHSOR]*)
       let (tree1, re1, states1 ) = (containment effL1 effR delta varList) in
       if re1 == false then (Node (showEntailmentEff normalFormL normalFormR ^ showRule LHSOR, [tree1] ),  false, states1)
       else 
         let (tree2, re2 , states2) = (containment effL2 effR delta varList) in
         (Node (showEntailmentEff normalFormL normalFormR ^ showRule LHSOR, [tree1; tree2] ), re2, states1+states2+1)
-  (*
   | (_, Disj (effR1, effR2)) -> 
     (*[RHSOR]*)
       let (tree1, re1, states1 ) = (containment effL effR1 delta varList) in
@@ -805,20 +593,8 @@ let rec containment (effL:effect) (effR:effect) (delta:ctxSet) (varList:string l
       else 
         let (tree2, re2 , states2) = (containment effL effR2 delta varList) in
         (Node (showEntailmentEff normalFormL normalFormR ^ showRule RHSOR, [tree1; tree2] ), re2, states1+states2+1)
-  *)
-  | Effect (piL, esL)-> 
-    if (nullableEff normalFormL) == true && (nullableEff normalFormR) == false then (Node(showEntail ^ "   [REFUTATION] "  , []), false, 1) 
-    else if (isEmp normalFormR) == true then  (Node(showEntail^"   [Frame-Prove]" ^" with R = "^(showES esL ) , []),true, 1) 
-    else 
-      let rhsSet = remove_dup (splitEffects normalFormR) in 
-      if (reoccurCtxSet piL esL (fromListToSet rhsSet) delta) == true then (Node(showEntail ^ "   [Reoccur-Prove] "  , []), true, 1) 
-    else 
-      let pairList = List.map (fun (piR, esR) -> preUnfold piL esL piR esR) rhsSet in 
-      let (piL', esL', effR) = checkAndGetPairs pairList in
-      unfold piL' esL' effR
-    
-
-(*
+  | (Effect (piL, esL), Effect (piR, esR))-> 
+    let lhs' = remove_dup (splitCons esL) in 
     let rhs' = remove_dup (splitCons esR) in 
     let esL =  (connectDisj lhs') in 
     let esR =  (connectDisj rhs') in 
@@ -846,10 +622,205 @@ let rec containment (effL:effect) (effR:effect) (delta:ctxSet) (varList:string l
       (*[DISPROVE]*)
         else if (comparePure piR FALSE == true ) then (Node(showEntail ^ "   [DISPROVE] "  , []), false, 1)
       (*[REFUTATION]*)
-
+        else if (nullable piL esL) == true && (nullable piR esR) == false 
+        then (Node(showEntail ^ "   [REFUTATION] "  , []), false, 1) 
+      (*[Frame]*)
+        else if (isEmp normalFormR) == true  
+        then  (Node(showEntail^"   [Frame-Prove]" ^" with R = "^(showES esL ) , []),true, 1) 
+      (*[Reoccur]*)
+        else if (reoccurCtxSet (fromListToSet lhs') (fromListToSet rhs') delta) == true 
+        then (Node(showEntail ^ "   [Reoccur-Prove] "  , []), true, 1) 
+      (*Transitivity
+        else if (transitivity piL esL piR esR delta )== true 
+        then (Node(showEntail ^ "   [Reoccur-Transitive] "  , []), true, 0) 
+      *)
       (*Unfold*)                    
       else 
-   *)    
+        (match esL with
+        (*LHSEX*)
+        | Kleene esIn ->  
+          unfold delta piL esL piR esR
+        | Cons (Kleene esIn, _) -> 
+          unfold delta piL esL piR esR
+        | Ttimes (esIn, term) -> 
+            (match term with 
+              Var s -> 
+                (match  entailConstrains piL (Eq (Var s, Number 0) ) with 
+                  true -> (*[CASE SPLIT]*) 
+                            let zeroCase = PureAnd (piL, Eq (Var s, Number 0) ) in 
+                            let nonZeroCase = PureAnd (piL, Gt (Var s, Number 0) ) in 
+                            let leftZero = addConstrain (Effect(piL, Emp)) zeroCase in
+                            let rightZero = addConstrain normalFormR zeroCase in
+                            let leftNonZero = addConstrain normalFormL nonZeroCase in
+                            let rightNonZero = addConstrain normalFormR nonZeroCase in
+                            let (tree1, re1, states1 ) = (containment leftZero rightZero delta varList) in
+                            if re1 == false then (Node (showEntailmentEff normalFormL normalFormR ^ showRule LHSCASE ^ " *Pruning search*",[tree1] ), re1, states1)
+                            else
+                            let (tree2, re2 , states2) = (containment leftNonZero rightNonZero delta varList) in
+                            (Node (showEntailmentEff normalFormL normalFormR ,[tree1; tree2] ), re1 && re2, states1+states2+1)
+                | false -> (*[UNFOLD]*)unfold delta piL esL piR esR
+                )
+            | Plus  (Var t, num) -> 
+            (*[LHSSUB]*)
+                        let newVar = getAfreeVar varList in 
+                        let lhs = substituteEff normalFormL  (Plus  (Var t, num))  (Var newVar) in
+                        let rhs = substituteEff normalFormR  (Plus  (Var t, num))  (Var newVar) in
+                        let cons = PureAnd( Eq (Var newVar, Plus (Var t, num) ), PureOr (Gt (Var newVar, Number 0) , Eq (Var newVar, Number 0) )) in
+                        let lhs' = addConstrain lhs cons in 
+                        let rhs' = addConstrain rhs cons in 
+                        let (tree, re, states) = containment lhs' rhs' delta (newVar::varList)in
+                        (Node (showEntailmentEff normalFormL normalFormR ,[tree] ), re, states)
+            | Minus (Var t, num) -> 
+            (*[LHSSUB]*)
+                        let newVar = getAfreeVar varList in 
+                        let lhs = substituteEff normalFormL  (Minus  (Var t, num)) (Var newVar) in
+                        let rhs = substituteEff normalFormR  (Minus  (Var t, num)) (Var newVar) in
+                        let cons = PureAnd( Eq (Var newVar, Minus (Var t, num) ),PureOr (Gt (Var newVar, Number 0) , Eq (Var newVar, Number 0) ) )in
+                        let lhs' = addConstrain lhs cons in 
+                        let rhs' = addConstrain rhs cons in 
+                        let (tree, re, states) = containment lhs' rhs' delta (newVar::varList)in
+                        (Node (showEntailmentEff normalFormL normalFormR ,[tree] ), re, states)
+            | Number n -> unfold delta piL esL piR esR
+            | _ -> print_endline (showEntailmentEff normalFormL normalFormR);
+              raise ( Foo "term is too complicated exception1!")
+            )
+        | Cons (Ttimes (esIn, term), restES) -> 
+            (match term with 
+              Var s -> 
+                (match  entailConstrains piL (Eq (Var s, Number 0) ) with 
+                          true -> (*CASE SPLIT*) 
+                            let zeroCase = PureAnd (piL, Eq (Var s, Number 0) ) in 
+                            let nonZeroCase = PureAnd (piL, Gt (Var s, Number 0) ) in 
+                            let leftZero = addConstrain (Effect(piL, restES)) zeroCase in
+                            let rightZero = addConstrain normalFormR zeroCase in
+                            let leftNonZero = addConstrain normalFormL nonZeroCase in
+                            let rightNonZero = addConstrain normalFormR nonZeroCase in
+                            let (tree1, re1 , states1) = (containment leftZero rightZero delta varList) in
+                            if re1 == false then (Node (showEntailmentEff normalFormL normalFormR ^ showRule LHSCASE ^ " *Pruning search*",[tree1] ), re1, states1)
+                            else 
+                            let (tree2, re2, states2 ) = (containment leftNonZero rightNonZero delta varList) in
+                            (Node (showEntailmentEff normalFormL normalFormR ,[tree1; tree2] ), re1 && re2, states1+states2+1)
+                        | false -> (*UNFOLD*) unfold delta piL esL piR esR
+                        )
+              | Plus  (Var t, num) -> 
+                        let newVar = getAfreeVar varList in 
+                        let lhs = substituteEff normalFormL  (Plus  (Var t, num)) (Var newVar) in
+                        let rhs = substituteEff normalFormR  (Plus  (Var t, num)) (Var newVar) in
+                        let cons = PureAnd( Eq (Var newVar, Plus (Var t, num) ), PureOr (Gt (Var newVar, Number 0) , Eq (Var newVar, Number 0) )) in
+                        let lhs' = addConstrain lhs cons in 
+                        let rhs' = addConstrain rhs cons in 
+                        let (tree, re, states) = containment lhs' rhs' delta (newVar::varList)in
+                        (Node (showEntailmentEff normalFormL normalFormR ,[tree] ), re, states)
+              | Minus (Var t, num) -> 
+                        let newVar = getAfreeVar varList in 
+                        let lhs = substituteEff normalFormL  (Minus  (Var t, num)) (Var newVar) in
+                        let rhs = substituteEff normalFormR  (Minus  (Var t, num)) (Var newVar) in
+                        let cons = PureAnd( Eq (Var newVar, Minus (Var t, num) ), PureOr (Gt (Var newVar,Number  0) , Eq (Var newVar, Number 0) )) in
+                        let lhs' = addConstrain lhs cons in 
+                        let rhs' = addConstrain rhs cons in 
+                        let (tree, re, states) = containment lhs' rhs' delta (newVar::varList)in
+                        (Node (showEntailmentEff normalFormL normalFormR ,[tree] ), re, states)
+              | Number n -> unfold delta piL esL piR esR
+              | _ -> print_endline (showEntailmentEff normalFormL normalFormR);
+              raise ( Foo "term is too complicated exception2!")
+            )
+          | _ -> (*RHSEX*)
+            (match esR with
+              Ttimes (esInR, termR) -> 
+                (match termR with 
+                  Var s -> 
+                        if quantified_in_LHS esL s then unfold delta piL esL piR esR
+                        else 
+                        (match  entailConstrains piR (Eq (Var s, Number 0) ) with 
+                          true -> (*CASE SPLIT*) 
+                            let zeroCase = PureAnd (piL, Eq (Var s, Number 0) ) in 
+                            let nonZeroCase = PureAnd (piL, Gt (Var s, Number 0) ) in 
+                            let leftZero = addConstrain normalFormL zeroCase in
+                            let rightZero = addConstrain (Effect(piR, Emp)) zeroCase in
+                            let leftNonZero = addConstrain normalFormL nonZeroCase in
+                            let rightNonZero = addConstrain normalFormR nonZeroCase in
+                            let (tree1, re1, states1 ) = (containment leftZero rightZero delta varList) in
+                            if re1 == true then (Node (showEntailmentEff effL effR ,[tree1] ), true, states1) 
+                            else 
+                              let (tree2, re2, states2 ) = (containment leftNonZero rightNonZero delta varList) in
+                              (Node (showEntailmentEff effL effR ,[tree1; tree2] ), re2, states1+states2+1)
+                        | false -> (*UNFOLD*)unfold delta piL esL piR esR
+                        )
+                | Plus  (Var t, num) -> 
+                        if quantified_in_LHS esL t then unfold delta piL esL piR esR
+                        else 
+                        let newVar = getAfreeVar varList in
+                        let lhs = substituteEff normalFormL  (Plus  (Var t, num)) (Var newVar) in
+                        let rhs = substituteEff normalFormR  (Plus  (Var t, num)) (Var newVar) in
+                        let cons = PureAnd( Eq (Var newVar, Plus (Var t, num) ),PureOr (Gt (Var newVar, Number 0) , Eq (Var newVar, Number 0) )) in
+                        let lhs' = addConstrain lhs cons in 
+                        let rhs' = addConstrain rhs cons in 
+                        let (tree, re, states) = containment lhs' rhs' delta (newVar::varList)in
+                        (Node (showEntailmentEff normalFormL normalFormR ,[tree] ), re, states)
+                | Minus (Var t, num) -> 
+                        if quantified_in_LHS esL t then unfold delta piL esL piR esR
+                        else 
+                        let newVar = getAfreeVar varList in 
+                        let lhs = substituteEff normalFormL  (Minus  (Var t, num)) (Var newVar) in
+                        let rhs = substituteEff normalFormR  (Minus  (Var t, num)) (Var newVar) in
+                        let cons = PureAnd( Eq (Var newVar, Minus (Var t, num) ), PureOr (Gt (Var newVar, Number 0) , Eq (Var newVar, Number 0) )) in
+                        let lhs' = addConstrain lhs cons in 
+                        let rhs' = addConstrain rhs cons in 
+                        let (tree, re, states) = containment lhs' rhs' delta (newVar::varList)in
+                        (Node (showEntailmentEff normalFormL normalFormR ,[tree] ), re, states)
+                | Number n -> unfold delta piL esL piR esR
+                | _ -> print_endline (showEntailmentEff normalFormL normalFormR);
+                raise ( Foo "term is too complicated exception3!")
+                )
+            | Cons (Ttimes (esInR, termR), restESR) -> 
+                (match termR with 
+                  Var s -> 
+                        if quantified_in_LHS esL s then unfold delta piL esL piR esR
+                        else 
+                        (match  entailConstrains piL (Eq (Var s, Number 0) ) with 
+                          true -> (*CASE SPLIT*) 
+                            let zeroCase = PureAnd (piR, Eq (Var s, Number 0) ) in 
+                            let nonZeroCase = PureAnd (piR, Gt (Var s, Number 0) ) in 
+                            let leftZero = addConstrain normalFormL zeroCase in
+                            let rightZero = addConstrain (Effect(piR, restESR)) zeroCase in
+                            let leftNonZero = addConstrain normalFormL nonZeroCase in
+                            let rightNonZero = addConstrain normalFormR nonZeroCase in
+                            let (tree1, re1, states1 ) = (containment leftZero rightZero delta varList) in
+                            if re1 == true then (Node (showEntailmentEff normalFormL normalFormR , [tree1] ), true, states1)
+                            else 
+                            let (tree2, re2, states2 ) =  (containment leftNonZero rightNonZero delta varList) in 
+                            (Node (showEntailmentEff normalFormL normalFormR , [tree1; tree2] ), re2, states1+states2+1)
+                        | false -> (*UNFOLD*)unfold delta piL esL piR esR
+                        )
+                | Plus  (Var t, num) -> 
+                        if quantified_in_LHS esL t then unfold delta piL esL piR esR
+                        else 
+                        let newVar = getAfreeVar varList in 
+                        let lhs = substituteEff normalFormL  (Plus  (Var t, num)) (Var newVar)  in
+                        let rhs = substituteEff normalFormR  (Plus  (Var t, num))  (Var newVar) in
+                        let cons = PureAnd( Eq (Var newVar, Plus (Var t, num) ), PureOr (Gt (Var newVar, Number 0) , Eq (Var newVar, Number 0) )) in
+                        let lhs' = addConstrain lhs cons in 
+                        let rhs' = addConstrain rhs cons in 
+                        let (tree, re, states) = containment lhs' rhs' delta (newVar::varList)in
+                        (Node (showEntailmentEff normalFormL normalFormR ,[tree] ), re, states)
+                | Minus (Var t, num) -> 
+                        if quantified_in_LHS esL t then unfold delta piL esL piR esR
+                        else 
+                        let newVar = getAfreeVar varList in 
+                        let lhs = substituteEff normalFormL  (Minus  (Var t, num)) (Var newVar)  in
+                        let rhs = substituteEff normalFormR  (Minus  (Var t, num)) (Var newVar)  in
+                        let cons = PureAnd( Eq (Var newVar, Minus (Var t, num) ), PureOr (Gt (Var newVar, Number 0) , Eq (Var newVar, Number 0) )) in
+                        let lhs' = addConstrain lhs cons in 
+                        let rhs' = addConstrain rhs cons in 
+                        let (tree, re, states) = containment lhs' rhs' delta (newVar::varList)in
+                        (Node (showEntailmentEff normalFormL normalFormR ,[tree] ), re, states)
+                | Number n -> unfold delta piL esL piR esR
+                | _ -> print_endline (showEntailmentEff normalFormL normalFormR);
+                raise ( Foo "term is too complicated exception4!")
+                )
+            | _ -> (*UNFOLD*)unfold delta piL esL piR esR
+            )
+        )        
   ;;
   
 (*----------------------------------------------------

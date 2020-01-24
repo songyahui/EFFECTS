@@ -23,8 +23,8 @@ df7 = pd.read_csv(r'/Users/mac/Desktop/hg/EFFECTS/DataAnylase/data/result_height
 
 
 
-a = "TimeC"
-b = "TimeM"
+a = "StateC"
+b = "StateM"
 
 name_list = ['1', '2', '3', '4', '5', '6', '7']
 num_listC = [df1[a].median(),
