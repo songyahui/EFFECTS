@@ -3,6 +3,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import csv
 import statistics
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import csv
+import statistics
+'''
 
 data = {
   #  '1': [2,3,3,2,3,2,3,2,3,3,3,2,2,2,3,2,2,2,3,3,2,2,2,2,2,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,2,3,2,2,3,2,2,2,3,2,2,2,3,2,2,2,2,2,2,2,2,3,2,2,2,3,3,2,3,2,2,2,3,2,2,2,2,2,2,2,2,3,2,2,2,3,3,3,2,2,2,3,3,2,3,2,3,3,2,2,2,2,2,2,2,3,2,2,3,3,3,2,3,2,2,2,2,2,2,2,3,2,2,2,3,2,2,3,2,2,2,3,2,3,2,3,2,3,3,3,3,3,2,2,2,2,3,3,2,3,3,3,2,2,3,2,2,3,2,2,3,2,2,3,2,2,2,3,2,3,2,3,2,3,2,2,3,2,2,3,3,2,2,3,2,3,2,2,2,2,3,2,2,2,3,2,2,3,2,2,3,2,2,2,2,3,3,2,2,2,2,3,3,3,2,2,2,3,2,2,2,2,2,2,2,2,3,2,3,2,2,3,3,3,2,2,3,2,2,2,2,2,2,2,2,2,2,2,2,3,3,2,3,3,2,2,3,2,3,2,2,2,2,2,3,3,2,2,3,3,2,3,2,2,2,2,2,2,3,2,2,2,2,2,2,2,2,2,2,2,3,2,2,2,2,2,3,2,3,3,3,2,2,2,2,2,2,2,2,2,2,2,2,3,3,2,3,3,2,2,2,2,3,3,3,2,2,2,2,2,3,3,2,2,3,3,2,2,2,3,3,3,2,2,2,3,3,3,2,3,2,2,2,3,2,3,3,3,2,2,2,3,3,3,2,2,2,3,3,2,2,3,2,2,2,3,2,2,2,2,2,2,2,3,3,2,3,2,2,2,2,2,2,2,2,2,2,3,2,3,3,2,3,2,2,2,2,2,3,2,3,2,2,2,2,2,3,2,2,3,3,2,2,3,2,2,3,3,2,2,2,2,2,2,3,2,3,2,2,2,2,3,2,3,2,2,2,3,2,2,2,2,3,2,2,3,3,3,3,2,2,2,2,3,2,2,3,2,3,2,2,3,2,3,2,3,2,2,2,3,2,3,3,2,2,2,2,2,2,2,3,3,2,2,2,2,2,2,3,2,2,3,3,2,3,3,2,2,2,2,3,3,2,3,2,3,2,2,2,2,2,2,3,2,2,2,3,3,2,2,2,3,2,2,3,2,2,3,2,2,2,2,3,3,2,2,3,2,2,2,2,2,2,3,3,2,2,3,3,2,3,2,3,3,2,2,3,2,3,3,3,2,2,2,2,2,3,2,2,2,2,3,2,2,2,3,2,2,3,2,2,3,3,3,2,2,3,3,3,2,3,2,2,2,3,2,3,2,2,3,2,2,3,2,2,3,2,3,3,3,2,2,2,2,3,2,3,3,2,3,3,2,2,2,2,2,2,2,2,2,2,2,3,2,2,3,3,2,3,2,2,3,2,2,2,2,2,3,3,2,2,2,2,2,3,2,2,2,2,2,2,3,2,2,3,2,2,2,2,2,2,3,2,2,2,3,2,2,3,2,2,2,2,3,2,2,2,2,3,2,2,2,2,3,2,2,2,3,3,2,3,3,3,3,2,2,2,2,3,3,2,2,2,2,2,2,2,3,3,2,2,3,2,3,2,3,2,2,2,2,2,2,3,2,3,2,2,3,2,2,3,3,2,3,2,3,2,2,2,2,3,2,3,2,3,2,2,2,2,2,2,2,3,3,2,2,2,3,2,2,3,2,2,2,3,2,2,3,2,2,3,2,2,2,2,2,2,3,2,2,2,2,2,2,2,2,2,2,2,2,2,3,2,3,2,2,2,3,3,3,2,3,3,2,2,2,2,2,3,2,2,2,2,3,2,2,2,2,3,2,2,2,2,2,2,2,2,3,2,2,2,2,2,3,3,2,3,3,3,3,2,2,3,3,2,3,3,2,3,2,2,3,2,3,2,3,2,2,3,2,2,3,2,2,2,2,2,2,2,2,2,3,2,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,2,3,2,3,2,2,2,3,2,3,2,2,2,2,3,3,2,2,3,3,2,3,3,3,2,2,2,2,3,3,2,3,2,2,3,2,2,2,2,2,3,3,2,3,2,3,2,3,3,2,2,2,3,2,2,2,2,2,2,3,2,3,2,2,2,2,3,2,3,2,2,3,3,2,3,2,2,3,2,2,3,3,2,3,3,3,2,2],
@@ -25,9 +31,11 @@ plt.ylabel(u"State number of the NFA.")
 plt.grid(linestyle="-", alpha=0.1)
 plt.savefig('/Users/mac/Desktop/hg/CAV2020/plots/Height_State.png')
 plt.show()
+'''
+
 
 colnames = ["Entil", "S1", "S2", "ReC", "StateC", "TimeC", "ReM", "StateM", "TimeM"]
-df = pd.read_csv(r'/Users/mac/Desktop/hg/EFFECTS/DataAnylase/data/result_height_101.csv', names=colnames, header=None)
+df = pd.read_csv(r'/Users/mac/Desktop/hg/EFFECTS/DataAnylase/data/result_height_103.csv', names=colnames, header=None)
 print("TIMEC", df['TimeC'].mean())
 print("TimeM", df['TimeM'].mean())
 sum = df['S1'] + df['S2']
@@ -41,14 +49,15 @@ print("incompleteness",  (df['ReM']- df['ReC']).sum() )
 listX = []
 listM = []
 listC = []
-listTM = []
-listTC = []
+listTM = [[],[],[],[],[],[]]
+listTC = [[],[],[],[],[],[]]
 listMedianTimeC = [[],[],[],[],[]]
 listMedianTimeM = [[],[],[],[],[]]
 
 i = 0
-while i < 10816:
-    if (df['ReM'][i] == 0 and df['ReM'][i] == df['ReC'][i]  and df['StateC'][i] < 175):
+total = 19600
+while i < total:
+    if (df['ReM'][i] == df['ReC'][i]  and df['StateC'][i] < 175):
         listX.append(df['S1'][i] + df['S2'][i])
         listM.append(df['StateM'][i])
         listC.append(df['StateC'][i])
@@ -60,6 +69,8 @@ def Average(lst):
     return sum(lst) / len(lst)
 print max(listC)
 
+print (len(listX))
+
 plt.scatter(listX, listC,  s=70, label = '$Antichain$', c = 'c', marker='.', alpha = None, edgecolors= 'white')
 
 plt.scatter(listX, listM,  s=70, label = '$Antimirov$', c = 'royalblue', marker='.', alpha = None, edgecolors= 'white')
@@ -67,9 +78,79 @@ plt.scatter(listX, listM,  s=70, label = '$Antimirov$', c = 'royalblue', marker=
 
 
 plt.legend()
-plt.ylabel(u"Exploring states.")
+plt.ylabel(u"Search Space.")
 plt.xlabel(u"State(A) + State(B)")
 plt.grid(linestyle="-", alpha=0.1)
 plt.savefig('/Users/mac/Desktop/hg/CAV2020/plots/Explore_State.png')
 plt.show()
 
+
+'''
+i = 0
+while i < total:
+    if (df['ReM'][i] and df['ReM'][i] == df['ReC'][i]  and df['StateC'][i] < 10000):
+        temp = df['S1'][i] + df['S2'][i]
+        if temp <5:
+            listTM[0].append(df['TimeM'][i])
+            listTC[0].append(df['TimeC'][i])
+        elif temp < 10:
+            listTM[1].append(df['TimeM'][i])
+            listTC[1].append(df['TimeC'][i])
+        elif temp < 20 :
+            listTM[2].append(df['TimeM'][i])
+            listTC[2].append(df['TimeC'][i])
+        elif temp <30 :
+            listTM[3].append(df['TimeM'][i])
+            listTC[3].append(df['TimeC'][i])
+        else:
+            listTM[4].append(df['TimeM'][i])
+            listTC[4].append(df['TimeC'][i])
+
+    i += 1
+
+
+
+
+name_list = ['10-25', '25~40', '40~55', '55~70', '70-85']
+num_listC = [statistics.median(listTC[0]),
+             statistics.median(listTC[1]),
+             statistics.median(listTC[2]),
+             statistics.median(listTC[3]),
+             statistics.median(listTC[4])]
+
+num_listM = [statistics.median(listTM[0]),
+             statistics.median(listTM[1]),
+             statistics.median(listTM[2]),
+             statistics.median(listTM[3]),
+             statistics.median(listTM[4])]
+
+num_listC1 = [len(listTC[0]),
+             len(listTC[1]),
+             len(listTC[2]),
+             len(listTC[3]),
+             len(listTC[4])]
+
+num_listM1 = [len(listTM[0]),
+             len(listTM[1]),
+             len(listTM[2]),
+             len(listTM[3]),
+             len(listTM[4])]
+
+print num_listC1
+print num_listM1
+
+x = list(range(len(num_listC)))
+total_width, n = 0.8, 2
+width = total_width / n
+
+
+a =plt.bar(x, num_listC, width=width, label='ANTICHAIN', fc='c')
+for i in range(len(x)):
+    x[i] = x[i] + width
+b= plt.bar(x, num_listM, width=width, label='ANTIMIROV', tick_label=name_list, fc='royalblue')
+
+plt.legend()
+plt.savefig('/Users/mac/Desktop/hg/CAV2020/plots/height-state.png')
+
+plt.show()
+'''

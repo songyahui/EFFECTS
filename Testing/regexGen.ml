@@ -17,15 +17,21 @@ let showOp (o:op) :string =
 
 let alphabet = ["A"; "B"]
 
-let height = 101;;
+let height = 8;;
+let minS = 0;;
 let sigma = 2;;
-let sampleNum = 13;;
+let sampleNum = 5;;
 
 let getRandomeOp (num:int):op = 
   match num with 
-    0 -> OpCon
-  | 1 -> OpStar
-  | 2 -> OpUinon 
+    0 -> OpStar
+  | 1 -> OpUinon
+  | 2 -> OpCon 
+  | 3 -> OpCon
+  | 4 -> OpCon
+  | 5 -> OpCon
+  | 6 -> OpCon
+  | 7 -> OpCon
   | _ -> raise (Foo "randomeOp exception")
   ;;
 
@@ -39,7 +45,7 @@ let rec regexGen (h:int) (s:int) : es =
   if h <= 1 then Event (getRandomEvent s)
   else 
     (Random.self_init ();
-    let num = Random.int 3 in 
+    let num = Random.int 8 in 
     let op = getRandomeOp num in 
     match op with 
       OpCon -> 
@@ -54,8 +60,19 @@ let rec regexGen (h:int) (s:int) : es =
     )
 ;;
 
+let rec regexGenshell (h:int) (s:int) (minS): es = 
+  let temp = regexGen h s in 
+  if (RegToNfa.getStates (showESReg temp) < minS) then regexGenshell h s minS
+  else temp
+  ;;
+
+
 let cartesian l l' = 
-  List.concat (List.map (fun e -> List.map (fun e' -> (e, e')) l') l)
+  let temp = List.concat (List.map (fun e -> List.map (fun e' ->  (e, e')) l') l) in
+  (*
+  List.filter (fun (e1, e2) -> (aCompareES e1 e2 == false)) temp 
+  *)
+  temp
 ;;
 
 let getFst (a, b, c) = a ;;
@@ -67,6 +84,16 @@ let rec genES (num:int) (acc:es list) (h:int): es list=
   genES (num - 1) (append acc [one] ) h;
   ) (**)
 ;;
+
+let rec genESpair (num:int) (h:int) (minS): (es*es) list = 
+  if num = 0 then []
+  else 
+  let a  = regexGenshell h sigma minS in 
+  let b  = regexGenshell h sigma minS in  
+  let c  = regexGenshell h sigma minS in 
+  List.append [(a, ESOr (a, b));(ESOr (a, b) , a);  (a, b); (b, a) ; (a,c)] (genESpair (num-1) h minS)
+  ;;
+
 
 let rec sublist b e l = 
   match l with
@@ -92,15 +119,31 @@ let main =
 
 (************OUTPUT TO FILE************)
 
-  let li = [1;2;3;4;5;6;7;8] in 
+(*
+  let li = [1;2;3;4;5;6;7] in 
   let ess  = List.fold_left (fun acc a -> append acc (genES sampleNum [] a) ) [] li in 
 
-(*
-let ess = genES sampleNum [] height in 
-*)
+
+  let ess'  = genES sampleNum [] height in 
+
+  let ess = List.filter (fun a -> getStates (showESReg a) > 8) ess' in 
+  *)
+
+  
+
+  (*
+  let temp = List.map (fun a -> getStates (showESReg a)) ess in 
+
+  let total  = List.fold_left (fun acc a -> print_string (string_of_int a ^"\n");acc + a) 0 temp in 
+
+  print_string (string_of_int (total/(List.length temp))^"\n");
+
 
   let pairs = cartesian ess ess (*[(Cons(Event "B", Cons(Event "B", Kleene(Event "B"))),Cons (Kleene(Event "B"), Cons(Event "B",Event "B") ))] *)in 
-  
+  *)
+
+  let pairs = genESpair sampleNum height minS in 
+
   let outputfile = (Sys.getcwd ()^ "/" ^ "Testing/regex"^ string_of_int height ^".dat") in
 
   let dataset' = List.fold_left (fun acc (lhs, rhs) -> acc ^ showEntailmentESReg lhs rhs ^"\n") "" pairs in 
@@ -111,7 +154,6 @@ let ess = genES sampleNum [] height in
     fprintf oc "%s" (dataset'^"\n"^dataset);   (* 写一些东西 *)
     close_out oc;
 
-
   let rowData:(Ast.es * int * Ast.es * int) list = List.map (fun (lhs, rhs) -> (lhs, RegToNfa.getStates (showESReg lhs) ,rhs, RegToNfa.getStates (showESReg rhs) ) ) pairs in 
 
 (************Get the resulrs************)
@@ -121,8 +163,8 @@ let temppairs = [(Parser.es_p Lexer.token (Lexing.from_string temp1)
 , Parser.es_p Lexer.token (Lexing.from_string temp2))] in 
 *)
 
-  let resultsChain = List.map (fun (lhs, rhs) -> RegToNfa.antichain (showESReg lhs) (showESReg rhs)) pairs in 
-  let resultsMirov = List.map (fun (lhs, rhs) -> (Antimirov.antimirov_shell lhs rhs )) pairs in 
+  let resultsChain = List.map (fun (lhs, rhs) ->  RegToNfa.antichain (showESReg lhs) (showESReg rhs)) pairs in 
+  let resultsMirov = List.map (fun (lhs, rhs) ->  (Antimirov.antimirov_shell lhs rhs )) pairs in 
 
 (************Output resulrs to files************)
 
@@ -195,8 +237,8 @@ print_string (string_of_int (List.length resultsChain) ^ ":" ^string_of_int (Lis
   print_string ("\nIncomplete: "^ string_of_int (List.fold_left(fun acc a -> if a then acc else acc + 1) 0 temp)^"\n");
 
 
-
-  
 *)
+  
+
 
  

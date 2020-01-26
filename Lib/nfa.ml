@@ -69,7 +69,7 @@ let rec antichain_in (nfaA:nfa) (nfaB:nfa) (processed:(StateSet.t * StateSet.t) 
     let (b_trans, state2) = antichain_in nfaA'' nfaB'' ((nfaA.start,nfaB.start) :: processed) in 
 
     (*print_string(string_of_int (state1) ^ "+" ^ string_of_int(state2)^"\n");*)
-    (a_trans && b_trans, state1+state2+1)
+    (a_trans && b_trans, state1+state2+1(*StateSet.cardinal nfaA.start*))
   ;; 
 
 
