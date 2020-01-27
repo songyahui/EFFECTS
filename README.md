@@ -60,6 +60,10 @@ sudo cp ../cgi-bin/EFFECTS/src/effect/* effect/
 
 sudo chown www-data:www-data -R effect/
 
+sudo cp ../cgi-bin/EFFECTS/src/program/* program/
+
+sudo chown www-data:www-data -R program/
+
 
 
 
