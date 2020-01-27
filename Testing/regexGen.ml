@@ -18,9 +18,9 @@ let showOp (o:op) :string =
 let alphabet = ["A"; "B"]
 
 let height = 8;;
-let minS = 0;;
+let minS = 70;;
 let sigma = 2;;
-let sampleNum = 5;;
+let sampleNum = 30;;
 
 let getRandomeOp (num:int):op = 
   match num with 
@@ -90,8 +90,7 @@ let rec genESpair (num:int) (h:int) (minS): (es*es) list =
   else 
   let a  = regexGenshell h sigma minS in 
   let b  = regexGenshell h sigma minS in  
-  let c  = regexGenshell h sigma minS in 
-  List.append [(a, ESOr (a, b));(ESOr (a, b) , a);  (a, b); (b, a) ; (a,c)] (genESpair (num-1) h minS)
+  List.append [(a, ESOr (a, b));(ESOr (a, b) , a);  (a, b); (b, a) ] (genESpair (num-1) h minS)
   ;;
 
 
@@ -182,10 +181,12 @@ print_string (string_of_int (List.length resultsChain) ^ ":" ^string_of_int (Lis
 
 
   let head = "" in 
-  let format_abc ((a, b , c):(bool * int * float)) :string = (if a then "1" else "0") ^ ", " ^ string_of_int b ^ ", " ^ string_of_float c ^ " " in 
+  let format_m ((a, b , c):(bool * int * float)) :string = (if a then "1" else "0") ^ ", " ^ string_of_int b ^ ", " ^ string_of_float c ^ " " in 
+  let format_c ((a, b , c, d):(bool * int * float * float)) :string = (if a then "1" else "0") ^ ", " ^ string_of_int b ^ ", " ^ string_of_float c ^ ", " ^ string_of_float d ^ " " in 
+
   let format_row ((lhs, lshS, rhs, rhsS): (es* int* es* int)) :string = showEntailmentES lhs rhs ^":" ^showEntailmentESReg lhs rhs  ^", " ^  string_of_int lshS ^ ", " ^ string_of_int rhsS ^ " " in 
 
-  let finalPrint = List.fold_left (fun acc (chain, mirov, row) -> acc^ format_row row^ ", " ^ format_abc chain ^", "^ format_abc mirov ^ "\n") head pairResults in
+  let finalPrint = List.fold_left (fun acc (chain, mirov, row) -> acc^ format_row row^ ", " ^ format_c chain ^", "^ format_m mirov ^ "\n") head pairResults in
   let outputResultfile = (Sys.getcwd ()^ "/" ^ "DataAnylase/data/result_height_"^ string_of_int height ^".csv") in 
   let oc = open_out outputResultfile in    (* 新建或修改文件,返回通道 *)
     fprintf oc "%s" (finalPrint);   (* 写一些东西 *)
