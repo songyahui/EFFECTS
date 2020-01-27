@@ -16,24 +16,3 @@ void send (int n)
         send (n - 1);
     }
 } 
-
-void server (int n)
-    /*
-    require (n>0\/n=0)/\emp
-    ensure (n>0\/n=0)/\((Ready.(Send^n).Done)^w)
-    */
-{
-    event("Ready");
-    send(n);
-	server(n);
-}
-
-int main ()
-/*
-    require TRUE /\emp
-    ensure TRUE/\((Ready.(Send^n).Done)^w)
-    */
-{
-    server (1);
-}
-
