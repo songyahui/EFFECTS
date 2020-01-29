@@ -46,7 +46,9 @@ Program Verification
 ./clean
 ```
 
+### Benchmark:
 
+We provide a [Miroc-Benchmark](http://loris-5.d2.comp.nus.edu.sg/Effect/BenchMark.zip) for checking inclusion among regular expressions: 
 
 
 
