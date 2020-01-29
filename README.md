@@ -1,5 +1,4 @@
-# Tvide: an Automated Temporal Verification tool of 
-# Integrated Dependent Effects
+# Tvide: an Automated Temporal Verification tool of \\ Integrated Dependent Effects
 
 ## Online demo
 
