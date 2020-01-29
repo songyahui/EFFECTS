@@ -565,14 +565,14 @@ value indicating the validility of the effect entailment
     
 
 
-let rec containment (effL:effect) (effR:effect) (delta:ctxSet) (varList:string list): (binary_tree * bool * int) = 
+let rec containment (effL:effect) (effR:effect) (delta:context) (varList:string list): (binary_tree * bool * int) = 
   let normalFormL = normalEffect effL in 
   let normalFormR = normalEffect effR in
   let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentEff normalFormL normalFormR in 
   (*
   print_string(showEntail ^"\n");
   *)
-  let unfoldSingle ev piL esL piR esR (del:ctxSet) = 
+  let unfoldSingle ev piL esL piR esR (del:context) = 
     let derivL = derivative piL esL ev in
     let derivR = derivative piR esR ev in
     let (tree, result, states) = containment derivL derivR del varList in
@@ -585,7 +585,7 @@ let rec containment (effL:effect) (effR:effect) (delta:ctxSet) (varList:string l
     let hypos = getNewHypos fstL piL esL piR esR in 
     *)
 
-    let deltaNew:(ctxSet) = append del [(fromEsToSet esL, fromEsToSet esR)]in
+    let deltaNew = append del [(piL, esL, piR, esR)]in
     let rec chceckResultAND li acc staacc:(bool *binary_tree list* int )=
       (match li with 
         [] -> (true, acc, staacc) 
@@ -649,7 +649,10 @@ let rec containment (effL:effect) (effR:effect) (delta:ctxSet) (varList:string l
         else if (isEmp normalFormR) == true  
         then  (Node(showEntail^"   [Frame-Prove]" ^" with R = "^(showES esL ) , []),true, 1) 
       (*[Reoccur]*)
+      (*
         else if (reoccurCtxSet (fromListToSet lhs') (fromListToSet rhs') delta) == true 
+        *)
+        else if (reoccurHelp piL esL piR esR  delta) == true 
         then 
         (
           (*print_string ("\n"^showEntail^"\n");*)
