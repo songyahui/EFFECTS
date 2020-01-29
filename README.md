@@ -49,11 +49,13 @@ Program Verification
 
 
 
+
+
+
+
+#### ===========This is for myself=========
+
 git ls-files | xargs wc -l
-
-
-
-#### ===========For Myself=========:
 
 sudo rm -r EFFECTS/
 
