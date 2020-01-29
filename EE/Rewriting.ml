@@ -142,7 +142,7 @@ let rec reoccurCtxSet (esL:CS.t) (esR:CS.t) (ctx:ctxSet) =
 
     if (CS.subset esL es1 && CS.subset es2 esR ) then 
     (
-      print_string ("\n=======\n");
+      (*print_string ("\n=======\n");
       CS.iter (fun a -> print_string (to_string a ^"  ")) es1;
       print_string ("\n");
       CS.iter (fun a -> print_string (to_string a ^"  ")) es2;
@@ -151,6 +151,7 @@ let rec reoccurCtxSet (esL:CS.t) (esR:CS.t) (ctx:ctxSet) =
       print_string ("\n");
       CS.iter (fun a -> print_string (to_string a ^"  ")) esR;
       print_string ("\n");
+      *)
       true
     )
     else reoccurCtxSet esL esR rest (*REOCCUR*) 
@@ -169,8 +170,8 @@ let fromEsToSet (es:es): CS.t =
   let listL = List.map (fun a -> 
     let temp = regToInt a in 
     (
-    print_string (showES a);
-    print_string (to_string temp ^"\n");
+    (*print_string (showES a);
+    print_string (to_string temp ^"\n");*)
     temp
     )
     ) (splitCons es) in 
@@ -651,7 +652,7 @@ let rec containment (effL:effect) (effR:effect) (delta:ctxSet) (varList:string l
         else if (reoccurCtxSet (fromListToSet lhs') (fromListToSet rhs') delta) == true 
         then 
         (
-          print_string ("\n"^showEntail^"\n");
+          (*print_string ("\n"^showEntail^"\n");*)
           (Node(showEntail ^ "   [Reoccur-Prove] "  , []), true, 0) 
         )
       (*Transitivity
