@@ -24,7 +24,6 @@ opam switch create 4.07.1
 eval $(opam env)
 sudo apt-get install menhir
 sudo apt-get install z3
-
 ```
 
 ### Examples:
