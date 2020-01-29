@@ -17,8 +17,9 @@ let showOp (o:op) :string =
 
 let alphabet = ["A"; "B"]
 
-let height = 8;;
-let minS = 70;;
+let height = 7;;
+let minS = 0;;
+let maxS = 30;;
 let sigma = 2;;
 let sampleNum = 30;;
 
@@ -27,11 +28,13 @@ let getRandomeOp (num:int):op =
     0 -> OpStar
   | 1 -> OpUinon
   | 2 -> OpCon 
-  | 3 -> OpCon
-  | 4 -> OpCon
-  | 5 -> OpCon
-  | 6 -> OpCon
-  | 7 -> OpCon
+  | 3 -> OpCon 
+  | 4 -> OpCon 
+  | 5 -> OpCon 
+  | 6 -> OpCon 
+  | 7 -> OpCon 
+  | 8 -> OpCon 
+  | 9 -> OpCon 
   | _ -> raise (Foo "randomeOp exception")
   ;;
 
@@ -45,7 +48,7 @@ let rec regexGen (h:int) (s:int) : es =
   if h <= 1 then Event (getRandomEvent s)
   else 
     (Random.self_init ();
-    let num = Random.int 8 in 
+    let num = Random.int 10 in 
     let op = getRandomeOp num in 
     match op with 
       OpCon -> 
@@ -60,9 +63,10 @@ let rec regexGen (h:int) (s:int) : es =
     )
 ;;
 
-let rec regexGenshell (h:int) (s:int) (minS): es = 
+let rec regexGenshell (h:int) (s:int) (minS) (maxS): es = 
   let temp = regexGen h s in 
-  if (RegToNfa.getStates (showESReg temp) < minS) then regexGenshell h s minS
+  let num = RegToNfa.getStates (showESReg temp) in 
+  if ( num < minS || num > maxS) then regexGenshell h s minS maxS
   else temp
   ;;
 
@@ -85,12 +89,12 @@ let rec genES (num:int) (acc:es list) (h:int): es list=
   ) (**)
 ;;
 
-let rec genESpair (num:int) (h:int) (minS): (es*es) list = 
+let rec genESpair (num:int) (h:int) (minS) (maxS): (es*es) list = 
   if num = 0 then []
   else 
-  let a  = regexGenshell h sigma minS in 
-  let b  = regexGenshell h sigma minS in  
-  List.append [(a, ESOr (a, b));(ESOr (a, b) , a);  (a, b); (b, a) ] (genESpair (num-1) h minS)
+  let a  = regexGenshell h sigma minS maxS in 
+  let b  = regexGenshell h sigma minS maxS in  
+  List.append [(a, ESOr (a, b));(ESOr (a, b) , a);  (a, b);] (genESpair (num-1) h minS maxS)
   ;;
 
 
@@ -141,16 +145,17 @@ let main =
   let pairs = cartesian ess ess (*[(Cons(Event "B", Cons(Event "B", Kleene(Event "B"))),Cons (Kleene(Event "B"), Cons(Event "B",Event "B") ))] *)in 
   *)
 
-  let pairs = genESpair sampleNum height minS in 
+  let pairs = genESpair sampleNum height minS maxS in 
 
   let outputfile = (Sys.getcwd ()^ "/" ^ "Testing/regex"^ string_of_int height ^".dat") in
 
+(*
   let dataset' = List.fold_left (fun acc (lhs, rhs) -> acc ^ showEntailmentESReg lhs rhs ^"\n") "" pairs in 
-  
+  *)
   let dataset = List.fold_left (fun acc (lhs, rhs) -> acc ^ showEntailmentES lhs rhs ^"\n") "" pairs in 
 
   let oc = open_out outputfile in    (* 新建或修改文件,返回通道 *)
-    fprintf oc "%s" (dataset'^"\n"^dataset);   (* 写一些东西 *)
+    fprintf oc "%s" ((*dataset'^"\n"^*)dataset);   (* 写一些东西 *)
     close_out oc;
 
   let rowData:(Ast.es * int * Ast.es * int) list = List.map (fun (lhs, rhs) -> (lhs, RegToNfa.getStates (showESReg lhs) ,rhs, RegToNfa.getStates (showESReg rhs) ) ) pairs in 
@@ -184,7 +189,7 @@ print_string (string_of_int (List.length resultsChain) ^ ":" ^string_of_int (Lis
   let format_m ((a, b , c):(bool * int * float)) :string = (if a then "1" else "0") ^ ", " ^ string_of_int b ^ ", " ^ string_of_float c ^ " " in 
   let format_c ((a, b , c, d):(bool * int * float * float)) :string = (if a then "1" else "0") ^ ", " ^ string_of_int b ^ ", " ^ string_of_float c ^ ", " ^ string_of_float d ^ " " in 
 
-  let format_row ((lhs, lshS, rhs, rhsS): (es* int* es* int)) :string = showEntailmentES lhs rhs ^":" ^showEntailmentESReg lhs rhs  ^", " ^  string_of_int lshS ^ ", " ^ string_of_int rhsS ^ " " in 
+  let format_row ((lhs, lshS, rhs, rhsS): (es* int* es* int)) :string = showEntailmentES lhs rhs ^(*":" ^showEntailmentESReg lhs rhs  ^*)", " ^  string_of_int lshS ^ ", " ^ string_of_int rhsS ^ " " in 
 
   let finalPrint = List.fold_left (fun acc (chain, mirov, row) -> acc^ format_row row^ ", " ^ format_c chain ^", "^ format_m mirov ^ "\n") head pairResults in
   let outputResultfile = (Sys.getcwd ()^ "/" ^ "DataAnylase/data/result_height_"^ string_of_int height ^".csv") in 

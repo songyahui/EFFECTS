@@ -55,9 +55,9 @@ listMedianTimeC = [[],[],[],[],[]]
 listMedianTimeM = [[],[],[],[],[]]
 
 i = 0
-total = 19600
+total = len(df)
 while i < total:
-    if (df['ReM'][i] == 0 and df['ReM'][i] == df['ReC'][i]  and df['StateC'][i] < 175):
+    if (df['ReM'][i] == df['ReC'][i]  and df['StateC'][i] < 175):
         listX.append(df['S1'][i] + df['S2'][i])
         listM.append(df['StateM'][i])
         listC.append(df['StateC'][i])
@@ -81,7 +81,7 @@ plt.legend()
 plt.ylabel(u"Number of Processed/Hypotheses .")
 plt.xlabel(u"States(A) + States(B)")
 plt.grid(linestyle="-", alpha=0.1)
-plt.savefig('/Users/mac/Desktop/hg/CAV2020/plots/Explore_State.png')
+plt.savefig('/Users/mac/Desktop/hg/CAV2020/plots/Explore_State1.png')
 plt.show()
 
 

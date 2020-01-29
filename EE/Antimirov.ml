@@ -259,7 +259,7 @@ let fromListToSet (esL:es list) :SS.t =
 
 
 
-let rec antimirov (lhs:es) (rhs:es) (evn:evnSet ): (bool * int) = 
+let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) = 
   
   (*
   if (List.length evn >2) then raise (Foo "ddd")
@@ -300,7 +300,7 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evnSet ): (bool * int) =
   List.fold_left (fun acc a -> print_string (showES a ^"\n")) ()  rhs' ;
 *)
 
-  let unfoldSingle ev esL esR (del:evnSet) = 
+  let unfoldSingle ev esL esR (del:evn) = 
     (*
     print_string ("\n--------:"^ev ^"\n");
     *)
@@ -315,7 +315,8 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evnSet ): (bool * int) =
 
     (*print_string ("\n" ^List.fold_left (fun acc a -> acc ^ "-"^ a) "" fstL^"\n");*)
 
-    let deltaNew:(evnSet) = append del [(fromEsToSet esL, fromEsToSet esR)] in
+(*    let deltaNew:(evnSet) = append del [(fromEsToSet esL, fromEsToSet esR)] in*)
+    let deltaNew:(evn) = append del [( esL,  esR)] in
     let rec chceckResultAND li staacc:(bool * int )=
       (match li with 
         [] -> (true, staacc) 
@@ -330,15 +331,20 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evnSet ): (bool * int) =
   
   in 
   
-  if SS.subset (fromListToSet lhs') (fromListToSet rhs') then (true, 1) 
+  if (checkexist (lhs') rhs') then (true, 1) 
+  (*
+  SS.subset (fromListToSet lhs') (fromListToSet rhs') then (true, 1) 
+  *)
   else 
+  
   if (isBot normalFormL) then (true, 0)
   (*[REFUTATION]*)
   else if (isBot normalFormR) then (false, 1)
   else if (aNullable normalFormL) == true && (aNullable normalFormR) == false then ( false, 1) 
       (*[Reoccur]*)
   else 
-   if (aReoccurSet (fromListToSet lhs') (fromListToSet rhs') evn) == true then ( true, 1) 
+   (*if (aReoccurSet (fromListToSet lhs') (fromListToSet rhs') evn) == true then ( true, 1) *)
+    if (aReoccur ( normalFormL) ( normalFormR) evn) == true then ( true, 1) 
       (*Unfold*)                    
   else 
   (*

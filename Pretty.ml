@@ -144,6 +144,15 @@ let encodeStrToInt (str:string):int =
   | _ -> 24
   ;;
 
+let rec termToInt (t:terms) : int = 
+match t with
+      Var s -> encodeStrToInt s
+    | Number num -> num 
+    | Plus (term, num) -> termToInt term + num
+    | Minus (term, num) -> termToInt term - num
+  
+;;
+
 let rec regToInt (esIn:es):int32  = 
   let rec helper es : int = 
     match es with
@@ -154,8 +163,8 @@ let rec regToInt (esIn:es):int32  =
     | Cons (es1, es2) -> 5 * (helper es1) + (helper es2)
     | ESOr (es1, es2) -> (helper es1) + 7* (helper es2) 
     | Kleene es ->  (helper es) * 11
-    | Ttimes (esIn, t) -> (helper esIn) * 13
-    | Omega esIn -> (helper esIn) * 17
+    | Ttimes (esIn, t) -> (helper esIn (*+ termToInt t*) ) * 13
+    | Omega esIn -> (helper esIn ) * 17
   in 
   let temp =  (helper esIn) in 
   
@@ -350,7 +359,8 @@ let rec existPi pi li =
 
 let rec normalTerms (t:terms):terms  = 
   match t with 
-    Minus (Number n1, n2) ->  Number (n1- n2) 
+    Minus (Minus(s, n1), n2) ->  Minus(s, n1 + n2)
+  | Minus (Number n1, n2) ->  Number (n1- n2) 
   | Plus (Number n1, n2) -> Number (n1 + n2)
   | _ -> t 
   ;;

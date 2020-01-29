@@ -6,6 +6,7 @@ open Parser
 open Lexer
 open Askz3
 open Pretty
+open Int32
 
 
 
@@ -139,7 +140,19 @@ let rec reoccurCtxSet (esL:CS.t) (esR:CS.t) (ctx:ctxSet) =
   | [] -> false 
   | (es1, es2) :: rest -> 
 
-    if (CS.subset esL es1 && CS.subset es2 esR ) then true
+    if (CS.subset esL es1 && CS.subset es2 esR ) then 
+    (
+      print_string ("\n=======\n");
+      CS.iter (fun a -> print_string (to_string a ^"  ")) es1;
+      print_string ("\n");
+      CS.iter (fun a -> print_string (to_string a ^"  ")) es2;
+      print_string ("\n-------\n");
+      CS.iter (fun a -> print_string (to_string a ^"  ")) esL;
+      print_string ("\n");
+      CS.iter (fun a -> print_string (to_string a ^"  ")) esR;
+      print_string ("\n");
+      true
+    )
     else reoccurCtxSet esL esR rest (*REOCCUR*) 
   ;;
 
@@ -153,7 +166,14 @@ let rec splitCons (es:es) : es list =
 
 let fromEsToSet (es:es): CS.t = 
 
-  let listL = List.map (fun a -> regToInt a) (splitCons es) in 
+  let listL = List.map (fun a -> 
+    let temp = regToInt a in 
+    (
+    print_string (showES a);
+    print_string (to_string temp ^"\n");
+    temp
+    )
+    ) (splitCons es) in 
   List.fold_left (fun acc a -> CS.union acc (CS.singleton a)) CS.empty listL
   ;;
 
@@ -629,7 +649,11 @@ let rec containment (effL:effect) (effR:effect) (delta:ctxSet) (varList:string l
         then  (Node(showEntail^"   [Frame-Prove]" ^" with R = "^(showES esL ) , []),true, 1) 
       (*[Reoccur]*)
         else if (reoccurCtxSet (fromListToSet lhs') (fromListToSet rhs') delta) == true 
-        then (Node(showEntail ^ "   [Reoccur-Prove] "  , []), true, 1) 
+        then 
+        (
+          print_string ("\n"^showEntail^"\n");
+          (Node(showEntail ^ "   [Reoccur-Prove] "  , []), true, 0) 
+        )
       (*Transitivity
         else if (transitivity piL esL piR esR delta )== true 
         then (Node(showEntail ^ "   [Reoccur-Transitive] "  , []), true, 0) 

@@ -182,7 +182,7 @@ listC = []
 def addition (df) :
     i = 0
     while i < len(df) :
-        if (df['ReM'][i] == df['ReC'][i]  and df['StateC'][i] < 175 and df['S1'][i] + df['S2'][i] < 120):
+        if (df['ReM'][i] == df['ReC'][i]  and df['StateC'][i] < 175 and df['S1'][i] + df['S2'][i] < 100):
             listX.append(df['S1'][i] + df['S2'][i])
             listM.append(df['StateM'][i])
             listC.append(df['StateC'][i])
@@ -206,7 +206,7 @@ plt.scatter(listX, listM,  s=70, label = '$T.r.s$', c = 'c', marker='.', alpha =
 
 
 plt.legend()
-plt.ylabel(u"Search Space (No.Processed/Hypotheses).")
+plt.ylabel(u"Search Steps (No.Processed/Hypotheses).")
 plt.xlabel(u"States(A) + States(B)")
 plt.grid(linestyle="-", alpha=0.1)
 plt.savefig('/Users/mac/Desktop/hg/CAV2020/plots/Explore_State.png')

@@ -18,8 +18,8 @@ void send (int n)
 
 void server (int n)
     /*
-    require (n>0\/n=0)/\emp
-    ensure (n>0\/n=0)/\((Ready.(Send^n).Done)^w)
+    require TRUE/\emp
+    ensure TRUE/\((Ready.(Send^n).Done)^w)
     */
 {
     event("Ready");
@@ -33,5 +33,5 @@ int main ()
     ensure TRUE/\((Ready.(Send^n).Done)^w)
     */
 {
-    server (1);
+    server (5);
 }
