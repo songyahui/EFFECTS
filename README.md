@@ -1,11 +1,11 @@
-## Tvide: an Automated Temporal Verification tool of Integrated Dependent Effects
+# Tvide: an Automated Temporal Verification tool of Integrated Dependent Effects
 
-### Online demo
+## Online demo
 
 The easiest way to try the code is to use the [web UI](http://loris-5.d2.comp.nus.edu.sg/Effect/index.html?ex=send&type=c&options=sess) written
 by [Yahui Song](https://www.comp.nus.edu.sg/~yahuis/).
 
-# To Compile:
+### To Compile:
 
 ```
 git clone https://github.com/songyahui/EFFECTS.git
@@ -15,7 +15,7 @@ chmod 755 compile
 ./compile
 ```
 
-# Dependencies:
+### Dependencies:
 
 ```
 opam switch create 4.07.1
@@ -25,7 +25,7 @@ sudo apt-get install z3
 
 ```
 
-# Example:
+### Examples:
 
 Entailments Checking 
 
@@ -39,7 +39,7 @@ Program Verification
 ./verify src/program/send.c src/program/output.txt
 ```
 
-# To Clean:
+### To Clean:
 
 ``` 
 ./clean
@@ -51,7 +51,7 @@ git ls-files | xargs wc -l
 
 
 
-# ===========For Myself=========:
+#### ===========For Myself=========:
 
 sudo rm -r EFFECTS/
 
