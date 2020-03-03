@@ -642,18 +642,18 @@ let rec containment (effL:effect) (effR:effect) (delta:context) (varList:string 
 
 
       (*[DISPROVE]*)
-        else if (comparePure piR FALSE == true ) then (Node(showEntail ^ "   [DISPROVE] "  , []), false, 1)
+      else if (comparePure piR FALSE == true ) then (Node(showEntail ^ "   [DISPROVE] "  , []), false, 1)
       (*[REFUTATION]*)
-        else if (nullable piL esL) == true && (nullable piR esR) == false 
+      else if (nullable piL esL) == true && (nullable piR esR) == false 
         then (Node(showEntail ^ "   [REFUTATION] "  , []), false, 1) 
       (*[Frame]*)
-        else if (isEmp normalFormR) == true  
+      else if (isEmp normalFormR) == true  
         then  (Node(showEntail^"   [Frame-Prove]" ^" with R = "^(showES esL ) , []),true, 1) 
       (*[Reoccur]*)
       (*
         else if (reoccurCtxSet (fromListToSet lhs') (fromListToSet rhs') delta) == true 
         *)
-        else if (reoccurHelp piL esL piR esR  delta) == true 
+      else if (reoccurHelp piL esL piR esR  delta) == true 
         then 
         (
           (*print_string ("\n"^showEntail^"\n");*)
