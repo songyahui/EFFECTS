@@ -270,11 +270,12 @@ let rec transitivity piL esL piR esR (del:context list) :bool =
 
 
 let entailConstrains pi1 pi2 = 
+  let sat = not (askZ3 ( (PureAnd (Neg pi1, pi2)))) in
   (*print_string (showPure pi1 ^" and " ^ showPure pi2 ^" ==> ");
-  print_string (string_of_bool (askZ3 (PureAnd (pi1, pi2))) ^ "\n");*)
-  let sat = askZ3 (Neg (PureOr (Neg pi1, pi2))) in
-  if sat then false
-  else true;;
+  print_string (string_of_bool (sat) ^ "\n");
+  *)
+  sat ;;
+
 
 let rec getPureFromEffect effect = 
   match effect with
