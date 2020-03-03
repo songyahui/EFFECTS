@@ -270,11 +270,12 @@ let rec transitivity piL esL piR esR (del:context list) :bool =
 
 
 let entailConstrains pi1 pi2 = 
-  (*print_string (showPure pi1 ^" and " ^ showPure pi2 ^" ==> ");
-  print_string (string_of_bool (askZ3 (PureAnd (pi1, pi2))) ^ "\n");*)
-  let sat = askZ3 (Neg (PureOr (Neg pi1, pi2))) in
-  if sat then false
-  else true;;
+
+  let sat = not (askZ3 (Neg (PureOr (Neg pi1, pi2)))) in
+    (*print_string (showPure pi1 ^" -> " ^ showPure pi2 ^" == ");
+  print_string (string_of_bool (sat) ^ "\n");*)
+  sat;;
+
 
 let rec getPureFromEffect effect = 
   match effect with
@@ -673,7 +674,7 @@ let rec containment (effL:effect) (effR:effect) (delta:context) (varList:string 
         | Ttimes (esIn, term) -> 
             (match term with 
               Var s -> 
-                (match  entailConstrains piL (Eq (Var s, Number 0) ) with 
+                (match  entailConstrains (Eq (Var s, Number 0) ) piL  with 
                   true -> (*[CASE SPLIT]*) 
                             let zeroCase = PureAnd (piL, Eq (Var s, Number 0) ) in 
                             let nonZeroCase = PureAnd (piL, Gt (Var s, Number 0) ) in 
@@ -715,7 +716,7 @@ let rec containment (effL:effect) (effR:effect) (delta:context) (varList:string 
         | Cons (Ttimes (esIn, term), restES) -> 
             (match term with 
               Var s -> 
-                (match  entailConstrains piL (Eq (Var s, Number 0) ) with 
+                (match  entailConstrains (Eq (Var s, Number 0) ) piL with 
                           true -> (*CASE SPLIT*) 
                             let zeroCase = PureAnd (piL, Eq (Var s, Number 0) ) in 
                             let nonZeroCase = PureAnd (piL, Gt (Var s, Number 0) ) in 
@@ -759,7 +760,7 @@ let rec containment (effL:effect) (effR:effect) (delta:context) (varList:string 
                   Var s -> 
                         if quantified_in_LHS esL s then unfold delta piL esL piR esR
                         else 
-                        (match  entailConstrains piR (Eq (Var s, Number 0) ) with 
+                        (match  entailConstrains (Eq (Var s, Number 0) ) piL with 
                           true -> (*CASE SPLIT*) 
                             let zeroCase = PureAnd (piL, Eq (Var s, Number 0) ) in 
                             let nonZeroCase = PureAnd (piL, Gt (Var s, Number 0) ) in 
@@ -805,7 +806,7 @@ let rec containment (effL:effect) (effR:effect) (delta:context) (varList:string 
                   Var s -> 
                         if quantified_in_LHS esL s then unfold delta piL esL piR esR
                         else 
-                        (match  entailConstrains piL (Eq (Var s, Number 0) ) with 
+                        (match  entailConstrains (Eq (Var s, Number 0) ) piL with 
                           true -> (*CASE SPLIT*) 
                             let zeroCase = PureAnd (piR, Eq (Var s, Number 0) ) in 
                             let nonZeroCase = PureAnd (piR, Gt (Var s, Number 0) ) in 
