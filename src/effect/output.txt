@@ -2,7 +2,7 @@
 TRUE/\(Tick^n) |- TRUE/\(Tick^n)
 [Result] Succeed
 [Explored 4 States]
-[Verification Time: 0.013388 s]
+[Verification Time: 0.012951 s]
  
 
 * TRUE/\(Tick^n) |- TRUE/\(Tick^n)
