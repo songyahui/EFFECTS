@@ -1,7 +1,5 @@
 #include <stdio.h>
 
-
-
 void event (char * ev)
 
 {
