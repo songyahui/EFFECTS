@@ -6,6 +6,7 @@ open Parser
 open Lexer
 open Pretty
 open Rewriting 
+open Sys
 
 
 let rec printType (ty:_type) :string =
@@ -25,7 +26,7 @@ let rec printParam (params: param):string =
 
 let rec print_real_Param (params: expression list):string = 
   let rec printarg v = (match v with
-  Unit  -> "unit"
+    Unit  -> "unit"
   | Integer num -> string_of_int num
   | Bool b -> string_of_bool b 
   | Float f -> string_of_float f
@@ -46,9 +47,11 @@ let rec print_real_Param (params: expression list):string =
 let rec printExpr (expr: expression):string = 
   match expr with 
     Unit  -> "unit"
+  | Return  -> "return"
   | Integer num -> string_of_int num
   | Bool b -> string_of_bool b 
   | Float f -> string_of_float f
+  | String s -> "\"" ^ s^"\""
   | Variable v -> v 
   | LocalDel (t, v, e)->  printType t ^ v ^ " = " ^ printExpr e
   | Call (name, elist) -> name ^ "(" ^ print_real_Param elist ^ ")"
@@ -116,6 +119,8 @@ let rec substitutePureWithAgr (pi:pure) (realArg:expression) (formalArg: var):pu
   | FALSE ->pi
   | Gt (term, n) ->  Gt (substituteTermWithAgr term realArg formalArg, n)
   | Lt (term, n) ->  Lt (substituteTermWithAgr term realArg formalArg, n)
+  | GtEq (term, n) ->  GtEq (substituteTermWithAgr term realArg formalArg, n)
+  | LtEq (term, n) ->  LtEq (substituteTermWithAgr term realArg formalArg, n)
   | Eq (term, n) ->  Eq (substituteTermWithAgr term realArg formalArg, n)
   | PureOr (p1, p2) -> PureOr (substitutePureWithAgr p1 realArg formalArg, substitutePureWithAgr p2 realArg formalArg)
   | PureAnd (p1, p2) -> PureAnd (substitutePureWithAgr p1 realArg formalArg, substitutePureWithAgr p2 realArg formalArg)
@@ -192,7 +197,9 @@ let rec verifier (caller:string) (expr:expression) (state_H:effect) (state_C:eff
             
   | Call (name, exprList) -> 
     (match searMeth prog name with 
-      None -> raise (Foo ("Method: "^ name ^" not defined!"))
+      None -> 
+       if (String.compare name "printf" == 0) then state_C
+       else raise (Foo ("Method: "^ name ^" not defined!"))
     | Some me -> 
       (
 
@@ -259,6 +266,39 @@ let rec printProg (pram: declare list) :string =
     )in
     str ^ printProg xs ;;
 
+let getIncl (d:declare) :bool = 
+  match d with 
+    Include str -> (String.compare str "primitives.c") != 0
+  | _ -> false 
+  ;;
+
+
+
+let rec getIncludedFiles (p:program) :program = 
+  let readFromFile (name:string):declare list = 
+    let inputfile = (Sys.getcwd () ^ "/src/program/" ^ name) in
+    let ic = open_in inputfile in
+    try 
+      let lines =  (input_lines ic ) in  
+      let line = List.fold_right (fun x acc -> acc ^ "\n" ^ x) (List.rev lines) "" in 
+      let prog = Parser.prog Lexer.token (Lexing.from_string line) in
+  
+      close_in ic;                  (* 关闭输入通道 *) 
+      prog
+    with e ->                      (* 一些不可预见的异常发生 *)
+      close_in_noerr ic;           (* 紧急关闭 *)
+      raise e                      (* 以出错的形式退出: 文件已关闭,但通道没有写入东西 *)
+  in 
+  let incl = List.filter (fun x -> getIncl x) (p) in 
+  let getName = List.map (fun x -> 
+                              match x with 
+                              Include str -> str
+                            | _ -> "") incl in
+  let appendUp  = List.fold_right (fun x acc -> append acc (readFromFile x)) (getName) p in 
+ 
+  appendUp;;
+
+
 let () = 
     let inputfile = (Sys.getcwd () ^ "/" ^ Sys.argv.(1)) in 
     let outputfile = (Sys.getcwd ()^ "/" ^ Sys.argv.(2)) in
@@ -266,15 +306,19 @@ let () =
     try 
       let lines =  (input_lines ic ) in  
       let line = List.fold_right (fun x acc -> acc ^ "\n" ^ x) (List.rev lines) "" in 
-      let prog = Parser.prog Lexer.token (Lexing.from_string line) in
-      (*let testprintProg = printProg prog in 
-      print_string testprintProg;*)
+      let raw_prog = Parser.prog Lexer.token (Lexing.from_string line) in
+      let prog = getIncludedFiles raw_prog in 
+      let testprintProg = printProg prog in 
+      print_string testprintProg;
+
+      
       let verification_re = List.fold_right (fun dec acc -> acc ^ (verification dec prog)) prog ""  in
       let oc = open_out outputfile in    (* 新建或修改文件,返回通道 *)
       (*      let startTimeStamp = Sys.time() in*)
       fprintf oc "%s\n" verification_re;   (* 写一些东西 *)
       (*print_string (string_of_float(Sys.time() -. startTimeStamp)^"\n" );*)
       close_out oc;                (* 写入并关闭通道 *)
+      
       flush stdout;                (* 现在写入默认设备 *)
       close_in ic                  (* 关闭输入通道 *) 
   

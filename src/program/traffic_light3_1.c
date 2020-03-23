@@ -53,7 +53,7 @@ void yellow (int n)
 void controller(int n, int m)
     /*
     require (n>=0 /\ m > 0) /\ Ready._*
-    ensure (n>=0 /\ m >0)  /\ (Red^n.Yellow^m.Green^n)^w
+    ensure (n>=0 /\ m >0)  /\ (Red^n.Yellow^m.Green^n)^w //context sensitive grammar
     */
 {
     red(n);

@@ -1,14 +1,9 @@
 ====================================
-TRUE/\(Tick^n) |- TRUE/\(Tick^n)
-[Result] Succeed
-[Explored 4 States]
-[Verification Time: 0.012951 s]
+t>=0/\(Tick^w) |- t>0/\(Tick^t)
+[Result] Fail
+[Explored 1 States]
+[Verification Time: 0.002071 s]
  
 
-* TRUE/\(Tick^n) |- TRUE/\(Tick^n)
-* ├── n=0/\emp |- n=0/\emp   [Frame-Prove] with R = emp
-* └── n>0/\(Tick^n) |- n>0/\(Tick^n)
-*     └── n>0/\(Tick^n) |- n>0/\(Tick^n)   [Unfold with Fst = Tick]
-*         └── n>0/\(Tick^n-1) |- n>0/\(Tick^n-1)
-*             └── (t1=n-1/\((t1>0\/t1=0)/\n>0))/\(Tick^t1) |- (t1=n-1/\((t1>0\/t1=0)/\n>0))/\(Tick^t1)   [Reoccur-Prove] 
+* t>=0/\(Tick^w) |- t>0/\(Tick^t)   [Contradictory]
 

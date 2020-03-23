@@ -48,7 +48,12 @@ const int all[7] = {A, B, C, D, E, F, G};
 
 /* ----- SETUP ----- */
 
-void setup() {
+void setup() 
+    /*
+    require TRUE/\emp
+    ensure TRUE/\Ready
+    */
+{
   // Display outputs
   pinMode(A, OUTPUT);
   pinMode(B, OUTPUT);
@@ -64,23 +69,58 @@ void setup() {
   pinMode(DRUM, OUTPUT);
   pinMode(SWITCH2, OUTPUT);
   pinMode(SWITCH3, OUTPUT);
+  event ("Reday");
+
 }
 
 /* ----- END SETUP ----- */
 
 /* ----- DISPLAY ----- */
 
-void TurnOnLED(int led){
+
+void TurnOffLED(int led)
+    /*
+    require (led >=0) /\  LedOn._* 
+    ensure TRUE/\LedOff
+    */
+{
   digitalWrite(led, LOW);
+  event ("LedOff");
 }
 
-void TurnOffAllLED(){
+void TurnOnLED(int led)
+    /*
+    require (led >1 \/ led <8)/\ emp   
+    ensure TRUE/\LedOn
+    */
+{
+  digitalWrite(led, HIGH);
+  event ("LedOn");
+}
+
+void TurnOffAllLED(int n )
+    /*
+    require n >= 0 /\ emp   
+    ensure TRUE/\LedOff^n
+    */
+{
+  if (n < 0) return ;
+  else digitalWrite(all[n], LOW);
+       event ("LedOn");
+       TurnOffAllLED(n -1);
+/*
   for (int i = 0; i < sizeof(all); i++){
     digitalWrite(all[i], HIGH);
   }
+*/
 }
 
-void DisplayDigit(int digit, int time) {
+void DisplayDigit(int digit, int time, int n) 
+    /*
+    require (digit >=1 \/ digit <10) /\ time >=0 /\ n >= 0 /\ Ready._^*   
+    ensure TRUE/\(LedOn)^*.Delay^time.LedOff^n
+    */
+{
   event("DisplayDigit");
   switch (digit) {
     case 0:
@@ -158,7 +198,7 @@ void DisplayDigit(int digit, int time) {
   }
 
   delay(time);
-  TurnOffAllLED();    // remove digit
+  TurnOffAllLED(n);    // remove digit
 }
 
 /* ----- END DISPLAY ----- */
@@ -220,15 +260,20 @@ void turnBothSwitchesOff() {
 void forXSeconds(int seconds) {
   // Show display for given time
   for (int i = 0; i < seconds; i++) {
-    DisplayDigit(i, 1000);
+    DisplayDigit(i, 1000, sizeof(all));
   }
 }
 
-void blinkLed() {
+void blinkLed() 
+    /*
+    require TRUE/\emp
+    ensure TRUE/\HIGH.Delay.LOW.Delay
+    */
+{
   digitalWrite(YELLOW, HIGH);
-  delay(500);
+  delay(1);
   digitalWrite(YELLOW, LOW);
-  delay(500);
+  delay(1);
 }
 
 /* ----- END WASHING HELPER FUNCTIONS ----- */
@@ -273,7 +318,11 @@ void centrifuge(int time) {
   turnOffDrum();
 }
 
-void washingSequence() {
+/* ----- END WASHING CYCLE FUNCTIONS ----- */
+
+/* ----- LOOP ----- */
+
+void loop() {
   letWaterIn(3);
   wash(9);
   pumpWaterOut(3);
@@ -283,19 +332,13 @@ void washingSequence() {
   centrifuge(5);
   turnBothSwitchesOff();
   while (1) {
-    event("Done, please collect your laundry!");
+    event("Done");
     blinkLed();
   }
-  washingSequence();
 }
-
-/* ----- END WASHING CYCLE FUNCTIONS ----- */
-
-/* ----- LOOP ----- */
-
 
 /* ----- END LOOP ----- */
 
 int main (){
-    washingSequence();
+  while (1) loop();
 }

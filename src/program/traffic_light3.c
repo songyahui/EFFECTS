@@ -53,7 +53,7 @@ void yellow (int n)
 void controller(int n)
     /*
     require (n>=0 ) /\ Ready._*
-    ensure (n>=0 )  /\ (Red^n.Yellow^n.Green^n)^w
+    ensure (n>=0 )  /\ (Red^n.Yellow^n.Green^n)^w // unrestricted grammar 
     */
 {
     red(n);

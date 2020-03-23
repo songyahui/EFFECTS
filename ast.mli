@@ -26,6 +26,8 @@ type pure = TRUE
           | FALSE
           | Gt of terms * terms
           | Lt of terms * terms
+          | GtEq of terms * terms
+          | LtEq of terms * terms
           | Eq of terms * terms
           | PureOr of pure * pure
           | PureAnd of pure * pure
@@ -46,9 +48,11 @@ type var = string
 type includ = string 
 
 type expression = Unit 
+          | Return
           | Integer of int
           | Bool of bool
           | Float of float
+          | String of string
           | Variable of var
           | LocalDel of _type * var * expression 
           | Call of mn * expression list 

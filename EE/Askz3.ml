@@ -27,6 +27,14 @@ let rec convertPure (pi:pure) (acc:string):string =
       let temp1 = convertTerm t1 in
       let temp2 = convertTerm t2 in
       acc ^ "(<" ^ temp1 ^ temp2 ^")"
+  | GtEq (t1, t2) -> 
+      let temp1 = convertTerm t1 in
+      let temp2 = convertTerm t2 in
+      acc ^ "(>=" ^ temp1 ^ temp2 ^")"
+  | LtEq (t1, t2) -> 
+      let temp1 = convertTerm t1 in
+      let temp2 = convertTerm t2 in
+      acc ^ "(<=" ^ temp1 ^ temp2 ^")"
   | Eq (t1, t2) -> 
       let temp1 = convertTerm t1 in
       let temp2 = convertTerm t2 in
@@ -74,6 +82,12 @@ let rec getAllVarFromPure (pi:pure) (acc:string list):string list =
       let allVarFromTerm = getAllVarFromTerm term [] in
       append acc allVarFromTerm
   | Lt (term, num) -> 
+      let allVarFromTerm = getAllVarFromTerm term [] in
+      append acc allVarFromTerm
+  | GtEq (term, num) -> 
+      let allVarFromTerm = getAllVarFromTerm term [] in
+      append acc allVarFromTerm
+  | LtEq (term, num) -> 
       let allVarFromTerm = getAllVarFromTerm term [] in
       append acc allVarFromTerm
   | Eq (term, num) -> 

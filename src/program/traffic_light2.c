@@ -1,18 +1,18 @@
 #include "primitives.c"
 #include "traffic_primitives.c"
-
+ 
 void controller()
     /*
     require TRUE /\ Ready._*
-    ensure TRUE /\ (_._.Green)^w
+    ensure TRUE /\ (Green._._)^w  //every certain position 
     */
 {
+    turnGreen ();    
+   
     turnYellow ();
-    delay (2);
+    
     turnRed();
-    delay (2);
-    turnGreen (); 
-    delay (2);   
+    
     controller();
 }
 
@@ -21,4 +21,3 @@ int main()
     event ("Ready");
     controller();
 }
-

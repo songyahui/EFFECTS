@@ -32,7 +32,12 @@ void delay (int n)
     }
 } 
 
-void analogWrite(int a, int b){
+void analogWrite(int a, int b)
+    /*
+    require (a>=0)/\/\emp
+    ensure (b=1/\HIGH) \/ (b=0/\LOW)
+    */
+{
     return ;
 }
 
@@ -41,3 +46,6 @@ int  analogRead(int a){
     return 0;
 }
 
+int millis() {
+    return 0;
+}

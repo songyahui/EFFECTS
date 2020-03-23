@@ -8,8 +8,8 @@
 %token <bool> TRUEE  
 %token <bool> FALSEE
 %token EMPTY ASSERTKEY EVENTKEY CHOICE LPAR RPAR CONCAT OMEGA POWER PLUS MINUS TRUE FALSE DISJ CONJ   ENTIL INTT BOOLT VOIDT 
-%token LBRACK RBRACK COMMA SIMI  IF ELSE REQUIRE ENSURE LSPEC RSPEC
-%token EOF GT LT EQ  INCLUDE SHARP EQEQ GTEQ LTEQ UNDERLINE KLEENE NEGATION
+%token LBRACK RBRACK COMMA SIMI  IF ELSE REQUIRE ENSURE LSPEC RSPEC RETURN
+%token EOF GT LT EQ GTEQ LTEQ INCLUDE SHARP EQEQ UNDERLINE KLEENE NEGATION
 
 %left CHOICE
 %left CONCAT
@@ -46,10 +46,12 @@ real_param:
 
 expres_help : 
 | {Unit}
+| RETURN {Return}
 | t = INTE {Integer t}
 | b =  TRUEE {Bool b }
 | b =  FALSEE {Bool b }
 | v = VAR {Variable v}
+| s = STRING {String s}
 | t = type_ name = VAR EQ e = expres_help {LocalDel (t, name, e)}
 | name = VAR LPAR vlist = real_param RPAR {Call (name, vlist)}
 | v = VAR EQ e = expres_help{Assign (v, e)}
@@ -104,6 +106,8 @@ pure:
 | LPAR r = pure RPAR { r }
 | a = term GT b = term {Gt (a, b)}
 | a = term LT b = term {Lt (a, b)}
+| a = term GTEQ b = term {GtEq (a, b)}
+| a = term LTEQ b = term {LtEq (a, b)}
 | a = term EQ b = term {Eq (a, b)}
 | a = pure CONJ b = pure {PureAnd (a, b)}
 | a = pure DISJ b = pure {PureOr (a, b)}

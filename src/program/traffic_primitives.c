@@ -1,6 +1,8 @@
+#include "primitives.c"
+
 void delay (int n) 
     /*
-    require (n>=0)/\/\emp
+    require (n>=0)/\emp
     ensure (n>=0)/\(Delay^n)
     */
 {
@@ -12,7 +14,6 @@ void delay (int n)
         delay (n - 1);
     }
 } 
- 
 
 void turnRed ()
     /*
@@ -24,22 +25,20 @@ void turnRed ()
     printf("X Ave. - RED; Y Blvd. - RED\n");
 }
 
-
 void turnGreen ()
     /*
     require TRUE/\emp
-    ensure TRUE /\ Red
+    ensure TRUE /\ Green
     */
 {
     event ("Green"); 
-    printf("X Ave. - RED; Y Blvd. - GREEN\n");
 }
 
 
 void turnYellow ()
     /*
     require TRUE/\emp
-    ensure TRUE /\ Red
+    ensure TRUE /\ Yellow
     */
 {
     event ("Yellow"); 

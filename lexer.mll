@@ -36,6 +36,7 @@ rule token = parse
 | "void" {VOIDT}
 | "event" {EVENTKEY}
 | "assert" {ASSERTKEY}
+| "return" {RETURN}
 | "|-" {ENTIL}
 | "TRUE" { TRUE }
 | "FALSE" { FALSE }
@@ -50,6 +51,8 @@ rule token = parse
 | '"'      { read_string (Buffer.create 17) lexbuf }
 | ['A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']* as str { EVENT str }
 | id as str { VAR str }
+| ">=" {GTEQ}
+| "<=" {LTEQ}
 | '>' {GT}
 | '<' {LT}
 | '=' {EQ}

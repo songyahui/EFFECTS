@@ -4,7 +4,7 @@
 void controller()
     /*
     require TRUE /\ Ready._*
-    ensure (TRUE/\X \in {Yellow._*, Red._*, Green._*}) /\ (X.X.X)^w
+    ensure (TRUE/\ X \in {Yellow._*, Red._*, Green._*}) /\ (X.X.X)^w
     */
 {
     turnYellow ();
