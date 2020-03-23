@@ -137,8 +137,13 @@ let rec substituteEffWithAgr (eff:effect) (realArg:expression) (formalArg: var):
   ;;
 
 let substituteEffWithAgrs (eff:effect) (realArgs: expression list) (formal: (_type * var) list ) =
+  let realArgs' = List.filter (fun x -> 
+                                match x with 
+                                Unit -> false 
+                              | _-> true ) realArgs in 
+
   let formalArgs = List.map (fun (a, b) -> b) formal in 
-  let pairs = List.combine realArgs formalArgs in 
+  let pairs = List.combine realArgs' formalArgs in 
   let rec subArgOnebyOne (eff:effect) (pairs:(expression * var ) list): effect = 
     (match pairs with 
       [] -> eff 
@@ -294,7 +299,7 @@ let rec getIncludedFiles (p:program) :program =
                               match x with 
                               Include str -> str
                             | _ -> "") incl in
-  let appendUp  = List.fold_right (fun x acc -> append acc (readFromFile x)) (getName) p in 
+  let appendUp  = List.fold_right (fun x acc -> append (readFromFile x) acc ) (getName) p in 
  
   appendUp;;
 
