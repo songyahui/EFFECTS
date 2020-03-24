@@ -79,14 +79,15 @@ type rule = LHSOR   | RHSOR
 (*the effects entailment context*)
 type context =  ( pure * es * pure * es) list
 
+type hypotheses = (effect * effect) list
 
 (*To pretty print terms*)
 let rec showTerms (t:terms):string = 
   match t with
     Var name -> name
   | Number n -> string_of_int n
-  | Plus (t, num) -> (showTerms t) ^ ("+") ^ (string_of_int num)
-  | Minus (t, num) -> (showTerms t) ^ ("-") ^ (string_of_int num)
+  | Plus (t1, t2) -> (showTerms t1) ^ ("+") ^ (showTerms t2)
+  | Minus (t1, t2) -> (showTerms t1) ^ ("-") ^ (showTerms t2)
 
   ;;
 
@@ -148,8 +149,8 @@ let rec termToInt (t:terms) : int =
 match t with
       Var s -> encodeStrToInt s
     | Number num -> num 
-    | Plus (term, num) -> termToInt term + num
-    | Minus (term, num) -> termToInt term - num
+    | Plus (t1, t2) -> termToInt t1 + termToInt t2
+    | Minus (t1, t2) -> termToInt t1 - termToInt t2
   
 ;;
 
@@ -257,8 +258,8 @@ let rec substituteTermWithAgr (t:terms) (realArg:expression) (formalArg: var):te
       | Variable v -> Var v
       | Bool true -> Number 1
       | Bool false -> Number 0
-      | BinOp (Variable v, Integer n, "+") -> Plus (Var v,  n)
-      | BinOp (Variable v, Integer n, "-") -> Minus (Var v,  n)
+      | BinOp (Variable v, Integer n, "+") -> Plus (Var v, Number n)
+      | BinOp (Variable v, Integer n, "-") -> Minus (Var v, Number n)
       | _ -> raise (Foo "substituteTermWithAgr exception")
     )
     else Var str 
@@ -361,9 +362,9 @@ let rec existPi pi li =
 
 let rec normalTerms (t:terms):terms  = 
   match t with 
-    Minus (Minus(s, n1), n2) ->  Minus(s, n1 + n2)
-  | Minus (Number n1, n2) ->  Number (n1- n2) 
-  | Plus (Number n1, n2) -> Number (n1 + n2)
+    Minus (Minus(s, Number n1), Number n2) ->  Minus(s, Number (n1 + n2))
+  | Minus (Number n1, Number n2) ->  Number (n1- n2) 
+  | Plus (Number n1, Number n2) -> Number (n1 + n2)
   | _ -> t 
   ;;
 
@@ -510,11 +511,12 @@ let rec normalEffect eff =
   match noPureOr with
     Effect (p, es) -> 
       if (askZ3 p) == false then Effect (FALSE,  Bot)
-      else if normalES es p== Bot then Effect (FALSE,  Bot)
       else Effect (normalPure p , normalES es p)
   | Disj (eff1, eff2) -> 
       match (normalEffect eff1, normalEffect eff2) with
         (Effect (_,  Bot), _) -> normalEffect eff2
       | (_, Effect (_,  Bot)) -> normalEffect eff1
+      | (Effect (FALSE,  _), _) -> normalEffect eff2
+      | (_, Effect (FALSE,  _)) -> normalEffect eff1
       | _ -> Disj (normalEffect eff1, normalEffect eff2)
   ;;

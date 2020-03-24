@@ -1,2 +1,5 @@
-TRUE/\Tick |- TRUE/\Done
+t>0/\(Done^w) |- TRUE/\ (Done^w) 
+
+
+
 

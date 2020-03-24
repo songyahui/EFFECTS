@@ -91,11 +91,11 @@ term:
 | str = VAR { Var str }
 | n = INTE {Number n}
 | LPAR r = term RPAR { r }
-| a = term b = INTE {Minus (a, 0 -  b)}
-(*
-| a = term MINUS b = INTE {Minus (a, b )}
-*)
-| a = term PLUS b = INTE {Plus (a, b)}
+| a = term b = INTE {Minus (a, Number (0 -  b))}
+
+| LPAR a = term MINUS b = term RPAR {Minus (a, b )}
+
+| LPAR a = term PLUS b = term RPAR {Plus (a, b)}
 
 
 

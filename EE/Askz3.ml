@@ -11,8 +11,8 @@ let rec convertTerm (t:terms):string =
   match t with
     Var name -> " " ^ name ^ " "
   | Number n -> " " ^ string_of_int n ^ " "
-  | Plus (t, num) -> ("(+") ^ (convertTerm t) ^  (string_of_int num) ^ ")"
-  | Minus (t, num) -> ("(-") ^ (convertTerm t) ^  (string_of_int num) ^ ")"
+  | Plus (t1, t2) -> ("(+") ^ (convertTerm t1) ^  (convertTerm t2) ^ ")"
+  | Minus (t1, t2) -> ("(-") ^ (convertTerm t1) ^  (convertTerm t2) ^ ")"
   ;;
 
 let rec convertPure (pi:pure) (acc:string):string = 

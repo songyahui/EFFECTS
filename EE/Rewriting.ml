@@ -84,7 +84,7 @@ let rec derivative (p :pure) (es:es) (ev:string): effect =
   | Ttimes (es1, t) -> 
       let pi = PureAnd (Gt (t, Number 0), p) in
       let efF = derivative pi es1 ev in 
-      let esT_minus1 = Ttimes (es1,  Minus (t, 1)) in
+      let esT_minus1 = Ttimes (es1,  Minus (t, Number 1)) in
       appendEff_ES efF esT_minus1
   | Cons (es1 , es2) -> 
       if nullable p es1 
@@ -127,7 +127,8 @@ let rec compareES es1 es2 =
 
 let rec compareEff eff1 eff2 =
   match (eff1, eff2) with
-    (Effect (pi1, es1), Effect (pi2, es2)) -> compareES es1 es2
+  | (Effect(FALSE, Bot), Effect(FALSE, Bot)) -> true 
+  | (Effect (pi1, es1), Effect (pi2, es2)) -> compareES es1 es2
   | (Disj (eff11, eff12), Disj (eff21, eff22)) -> 
       let one =  (compareEff eff11  eff21) && (compareEff eff12  eff22) in
       let two =  (compareEff eff11  eff22) && (compareEff eff12  eff21 ) in
@@ -563,7 +564,88 @@ let getNewHypos (fstL:string list) (piL:pure) (esL:es) (piR:pure) (esR:es) : con
 This decision procedure returns a derivation tree and a boolean
 value indicating the validility of the effect entailment
 -------------------------------------------------------------*)
-    
+
+let rec splitEffects eff : (pure * es) list = 
+  match eff with 
+    Effect (p1, es1) -> [(p1, es1)]
+  | Disj (eff1, eff2) -> append (splitEffects eff1) (splitEffects eff2)
+  ;;
+
+let effectEntailSyntatically eff1 eff2 :bool =
+  let effsL = splitEffects eff1 in 
+  let effsR = splitEffects eff2 in
+  let rec checkSingle piL esL liR:bool = 
+    match liR with
+      [] -> false  
+    | (piR, esR)::xs -> if entailConstrains piL piR && compareES esL esR then true else checkSingle piL esL xs
+  in 
+  List.fold_right (fun (piL, esL) acc -> acc && checkSingle piL esL effsR) (effsL) true 
+  ;;
+
+let rec checkReoccur (effL:effect) (effR:effect) (delta:hypotheses) :bool =
+  let checkSingle (hypoL:effect) (hypoR:effect) = 
+    effectEntailSyntatically effL hypoL && effectEntailSyntatically hypoR effR 
+  in 
+  match delta with
+    [] -> false 
+  | (hyL, hyR)::xs -> 
+    if checkSingle hyL hyR then true else checkReoccur effL effR xs
+  ;;
+
+let rec checkNullable (eff:effect) :bool = 
+  match eff with
+    Effect (pi, es) -> nullable pi es
+  | Disj (eff1, eff2) -> checkNullable eff1 && checkNullable eff2 
+ ;;
+
+
+let rec checkFst (eff:effect) : event list = 
+  match eff with
+    Effect (pi, es) -> fst pi es
+  | Disj (eff1, eff2) -> append (checkFst eff1) (checkFst eff2) 
+ ;;
+
+let rec checkDerivative  (eff:effect) (ev:event): effect = 
+  match eff with 
+    Effect (pi, es) -> derivative pi es ev
+  | Disj (eff1, eff2) -> Disj (checkDerivative eff1 ev, checkDerivative eff2 ev)
+  ;;
+
+
+
+let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:string list): (binary_tree * bool * int) = 
+  let normalFormL = normalEffect effL in 
+  let normalFormR = normalEffect effR in
+  let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentEff normalFormL normalFormR in 
+  
+  let unfold eff1 eff2 del = 
+    let fstL = checkFst eff1 in 
+    let deltaNew = append del [(eff1, eff2)] in
+
+    let rec chceckResultAND li acc staacc:(bool *binary_tree list* int )=
+      (match li with 
+        [] -> (true, acc, staacc) 
+      | ev::fs -> 
+          let deriL = checkDerivative eff1 ev in
+          let deriR = checkDerivative eff2 ev in
+          let (tree, re, states) =  containment1 deriL deriR deltaNew varList in 
+          if re == false then (false , tree::acc, staacc+states)
+          else chceckResultAND fs (tree::acc) (staacc+states)
+      )
+    in 
+    let (resultFinal, trees, states) = chceckResultAND fstL [] 0 in 
+    (Node (showEntail ^ "   [UNFOLD]",trees ), resultFinal, states)    
+  
+  in 
+  match (normalFormL, normalFormR) with 
+    (Effect(FALSE, Bot), _) -> (Node(showEntail ^ "   [Bot-LHS]", []), true, 0)  
+  | (_, Effect(FALSE, Bot)) -> (Node(showEntail ^ "   [DISPROVE]", []), false, 1)  
+  | (_,_) ->
+    if checkReoccur normalFormL normalFormR delta then (Node(showEntail ^ "   [Reoccur]", []), true, 1) 
+    else if (checkNullable normalFormL) == true && (checkNullable normalFormR) == false then (Node(showEntail ^ "   [REFUTATION] "  , []), false, 1) 
+    else unfold normalFormL normalFormR delta 
+  
+  ;;
 
 
 let rec containment (effL:effect) (effR:effect) (delta:context) (varList:string list): (binary_tree * bool * int) = 
@@ -863,7 +945,7 @@ type entailment =  (effect * effect * expectation)
 
 
 
-let ttest = (Plus ((Var "song"),1));;
+let ttest = (Plus ((Var "song"),Number 1));;
 let ttest1 = (Var "t");;
 let estest = ESOr (Cons (Ttimes ((Event "a"), Var "t"),  (Event "a")), Cons ((Event "a"),(Event "b")));;
 let puretest =  Eq (ttest1, Number 0);;
@@ -904,9 +986,9 @@ let createT es = Ttimes (es, Var "t" );;
 
 let createS es = Ttimes (es, Var "s" );;
 
-let createT_1 es = Ttimes (es, Minus (Var "t", 1) );;
+let createT_1 es = Ttimes (es, Minus (Var "t", Number 1) );;
 
-let createS_1 es = Ttimes (es, Minus (Var "s", 1) );;
+let createS_1 es = Ttimes (es, Minus (Var "s", Number 1) );;
 
 
 let printReportHelper lhs rhs: (binary_tree * bool * int) = 
@@ -914,7 +996,7 @@ let printReportHelper lhs rhs: (binary_tree * bool * int) =
   let delta = getProductHypo lhs rhs in 
   *)
   let varList = append (getAllVarFromEff lhs) (getAllVarFromEff rhs) in  
-  containment lhs rhs [] varList 
+  containment1 lhs rhs [] varList 
   ;;
 
 

@@ -4,8 +4,8 @@
 
 type terms = Var of string
            | Number of int
-           | Plus of terms * int
-           | Minus of terms * int 
+           | Plus of terms * terms
+           | Minus of terms * terms 
 
 (* We use a string to represent an single event *)
 type event =  string 
@@ -34,7 +34,8 @@ type pure = TRUE
           | Neg of pure
 
 (*Effects*)
-type effect = Effect of pure * es
+type effect = 
+            Effect of pure * es
           | Disj of effect * effect
 
 type entilment = EE of effect * effect
