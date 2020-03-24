@@ -5,7 +5,7 @@
 [Postcondition: TRUE/\(((_^n).Green)^w)]
 [Result: Fail]
 [Explored 2 States]
-[Verification Time: 0.010945 s]
+[Verification Time: 0.011448 s]
 
 * TRUE/\(Ready.(((_^n).Green)^w)) |- TRUE/\(((_^n).Green)^w)
 * └── TRUE/\(Ready.(((_^n).Green)^w)) |- TRUE/\(((_^n).Green)^w)   [Unfold with Fst = Ready]
@@ -18,7 +18,7 @@
 [Postcondition: TRUE/\(((_^n).Green)^w)]
 [Result: Fail]
 [Explored 4 States]
-[Verification Time: 0.169358 s]
+[Verification Time: 0.173366 s]
 
 * (2>=0/\(6>=0/\4>=0))/\(Green.((Delay^4).(Yellow.((Delay^2).(Red.((Delay^6).(((_^n).Green)^w))))))) |- TRUE/\(((_^n).Green)^w)
 * └── (2>=0/\(6>=0/\4>=0))/\(Green.((Delay^4).(Yellow.((Delay^2).(Red.((Delay^6).(((_^n).Green)^w))))))) |- TRUE/\(((_^n).Green)^w)   [Unfold with Fst = Green]
@@ -35,7 +35,7 @@
 [Postcondition: TRUE/\Yellow]
 [Result: Succeed]
 [Explored 3 States]
-[Verification Time: 0.003703 s]
+[Verification Time: 0.003696 s]
 
 * TRUE/\Yellow |- TRUE/\Yellow
 * └── TRUE/\Yellow |- TRUE/\Yellow   [Unfold with Fst = Yellow]
@@ -48,7 +48,7 @@
 [Postcondition: TRUE/\Green]
 [Result: Succeed]
 [Explored 3 States]
-[Verification Time: 0.003623 s]
+[Verification Time: 0.003674 s]
 
 * TRUE/\Green |- TRUE/\Green
 * └── TRUE/\Green |- TRUE/\Green   [Unfold with Fst = Green]
@@ -61,7 +61,7 @@
 [Postcondition: TRUE/\Red]
 [Result: Succeed]
 [Explored 3 States]
-[Verification Time: 0.003634 s]
+[Verification Time: 0.003611 s]
 
 * TRUE/\Red |- TRUE/\Red
 * └── TRUE/\Red |- TRUE/\Red   [Unfold with Fst = Red]
@@ -74,7 +74,7 @@
 [Postcondition: n>=0/\(Delay^n)]
 [Result: Succeed]
 [Explored 5 States]
-[Verification Time: 0.023253 s]
+[Verification Time: 0.024687 s]
 
 * (n=0/\emp)\/((n-1>=0/\(~(n=0)))/\(Delay.(Delay^n-1))) |- n>=0/\(Delay^n) [LHSOR] 
 * ├── n=0/\emp |- n>=0/\(Delay^n)

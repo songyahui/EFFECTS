@@ -286,7 +286,8 @@ let rec getIncludedFiles (p:program) :program =
     try 
       let lines =  (input_lines ic ) in  
       let line = List.fold_right (fun x acc -> acc ^ "\n" ^ x) (List.rev lines) "" in 
-      let prog = Parser.prog Lexer.token (Lexing.from_string line) in
+      let raw_prog = Parser.prog Lexer.token (Lexing.from_string line) in
+      let prog = getIncludedFiles raw_prog in 
   
       close_in ic;                  (* 关闭输入通道 *) 
       prog
@@ -313,9 +314,11 @@ let () =
       let line = List.fold_right (fun x acc -> acc ^ "\n" ^ x) (List.rev lines) "" in 
       let raw_prog = Parser.prog Lexer.token (Lexing.from_string line) in
       let prog = getIncludedFiles raw_prog in 
+      
+      (*
       let testprintProg = printProg prog in 
       print_string testprintProg;
-
+*)
       
       let verification_re = List.fold_right (fun dec acc -> acc ^ (verification dec prog)) prog ""  in
       let oc = open_out outputfile in    (* 新建或修改文件,返回通道 *)
@@ -332,10 +335,3 @@ let () =
       raise e                      (* 以出错的形式退出: 文件已关闭,但通道没有写入东西 *)
   
    ;;
-
-
-(*
-1. why it takes so long
-2. gcc 
-3. comparaasion with antichain
-*)
