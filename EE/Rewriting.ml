@@ -689,9 +689,6 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
                 let newVar = getAfreeVar varList in 
                 let lhs = substituteEff normalFormL  (Plus  (Var t, num))  (Var newVar) in
                 let rhs = substituteEff normalFormR  (Plus  (Var t, num))  (Var newVar) in
-
-                print_string (showEntailmentEff  lhs rhs ^"\n----\n");
-
                 let cons = PureAnd( Eq (Var newVar, Plus (Var t, num) ), GtEq (Var newVar, Number 0)) in
                 let lhs' = addConstrain lhs cons in 
                 let rhs' = addConstrain rhs cons in 
@@ -703,10 +700,6 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
                 let lhs = substituteEff normalFormL  (Minus  (Var t, num)) (Var newVar) in
                 let rhs = substituteEff normalFormR  (Minus  (Var t, num)) (Var newVar) in
                 let cons = PureAnd( Eq (Var newVar, Minus (Var t, num) ), GtEq (Var newVar, Number 0))in
-
-                print_string (showEntailmentEff  lhs rhs ^"\n----\n");
-
-                
                 let lhs' = addConstrain lhs cons in 
                 let rhs' = addConstrain rhs cons in 
                 let (tree, re, states) = containment1 lhs' rhs' delta (newVar::varList)in
@@ -1069,7 +1062,7 @@ let printReportHelper lhs rhs: (binary_tree * bool * int) =
   let delta = getProductHypo lhs rhs in 
   *)
   let varList = append (getAllVarFromEff lhs) (getAllVarFromEff rhs) in  
-  containment lhs rhs [] varList 
+  containment1 lhs rhs [] varList 
   ;;
 
 

@@ -316,8 +316,8 @@ let rec compareTerm (term1:terms) (term2:terms) : bool =
   match (term1, term2) with 
     (Var s1, Var s2) -> true
   | (Number n1, Number n2) -> n1 == n2 
-  | (Plus (tIn1, num1), Plus (tIn2, num2)) -> compareTerm tIn1 tIn2 && num1 == num2
-  | (Minus (tIn1, num1), Minus (tIn2, num2)) -> compareTerm tIn1 tIn2 && num1 == num2
+  | (Plus (tIn1, num1), Plus (tIn2, num2)) -> compareTerm tIn1 tIn2 && compareTerm num1  num2
+  | (Minus (tIn1, num1), Minus (tIn2, num2)) -> compareTerm tIn1 tIn2 && compareTerm num1  num2
   | _ -> false 
   ;;
 
@@ -326,8 +326,8 @@ let rec stricTcompareTerm (term1:terms) (term2:terms) : bool =
   match (term1, term2) with 
     (Var s1, Var s2) -> String.compare s1 s2 == 0
   | (Number n1, Number n2) -> n1 == n2 
-  | (Plus (tIn1, num1), Plus (tIn2, num2)) -> stricTcompareTerm tIn1 tIn2 && num1 == num2
-  | (Minus (tIn1, num1), Minus (tIn2, num2)) -> stricTcompareTerm tIn1 tIn2 && num1 == num2
+  | (Plus (tIn1, num1), Plus (tIn2, num2)) -> stricTcompareTerm tIn1 tIn2 && stricTcompareTerm num1  num2
+  | (Minus (tIn1, num1), Minus (tIn2, num2)) -> stricTcompareTerm tIn1 tIn2 && stricTcompareTerm num1  num2
   | _ -> false 
   ;;
 
