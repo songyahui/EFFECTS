@@ -633,8 +633,18 @@ let rec pureUnion (eff :effect ):pure =
 let rec headEs (es:es) : es =
   match es with
     Cons (es1 , es2) -> headEs es1
+  | Kleene es1 -> headEs es1
+  | Omega es1 -> headEs es1
   | _ -> es
   ;;
+
+
+
+let rec headEff (eff:effect) : es list = 
+  match eff with 
+    Effect (pi, es) -> [headEs es]
+  | Disj (eff1, eff2) -> append (headEff eff1) (headEff eff2)
+  ;; 
 
 let rec addEntailConstrain (eff:effect) (pi:pure) :effect = 
   match eff with 
@@ -750,7 +760,29 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
             | _ -> print_endline (showEntailmentEff normalFormL normalFormR);
               raise ( Foo "term is too complicated exception1!")
             )
-        | _ -> unfold normalFormL (addEntailConstrain normalFormR (piL)) delta 
+      | _ -> 
+      let headsofRHS = headEff normalFormR in 
+      let subRHS (currentR:effect) (head:es):effect = 
+        match head with 
+          Ttimes (esIn, term) -> 
+            (match term with 
+              Plus  (Var t, num) -> 
+                let newVar = getAfreeVar varList in 
+                let rhs = substituteEff currentR  (Plus  (Var t, num))  (Var newVar) in
+                let cons = PureAnd( Eq (Var newVar, Plus (Var t, num) ), GtEq (Var newVar, Number 0)) in
+                addConstrain rhs cons
+            | Minus (Var t, num) -> 
+                let newVar = getAfreeVar varList in 
+                let rhs = substituteEff currentR  (Minus  (Var t, num)) (Var newVar) in
+                let cons = PureAnd( Eq (Var newVar, Minus (Var t, num) ), GtEq (Var newVar, Number 0))in
+                addConstrain rhs cons
+            | _ -> currentR
+            )
+          | _-> currentR
+      in 
+      let normalFormRNew = List.fold_left (subRHS) normalFormR headsofRHS in 
+      
+      unfold normalFormL (addEntailConstrain normalFormRNew (piL)) delta 
 
   
   ;;
@@ -1102,8 +1134,11 @@ let createS_1 es = Ttimes (es, Minus (Var "s", Number 1) );;
 let printReportHelper lhs rhs: (binary_tree * bool * int) = 
   (*
   let delta = getProductHypo lhs rhs in 
+    let varList = append (getAllVarFromEff lhs) (getAllVarFromEff rhs) in  
+
   *)
-  let varList = append (getAllVarFromEff lhs) (getAllVarFromEff rhs) in  
+  let varList = getAllVarFromEff lhs in  
+
   containment1 lhs rhs [] varList 
   ;;
 

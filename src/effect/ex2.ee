@@ -1,1 +1,1 @@
-(t>0)/\Tick.(Tick^t-1) |- (t>0)/\(Tick^t)
+5>0/\((Ready.((Send^5).Done))^w) |- TRUE/\((Ready.((Send^(n-1)).Done))^w)

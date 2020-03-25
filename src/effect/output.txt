@@ -1,10 +1,16 @@
 ====================================
-TRUE/\(Ready.(_^*)) |- n>0/\(Ready.(_^*))
+5>0/\((Ready.((Send^5).Done))^w) |- TRUE/\((Ready.((Send^n-1).Done))^w)
 [Result] Fail
 [Explored 2 States]
-[Verification Time: 0.002633 s]
+[Verification Time: 0.025156 s]
  
 
-* TRUE/\(Ready.(_^*)) |- n>0/\(Ready.(_^*))   [UNFOLD]
-* └── TRUE/\(_^*) |- FALSE/\_|_   [DISPROVE]
+* 5>0/\((Ready.((Send^5).Done))^w) |- TRUE/\((Ready.((Send^n-1).Done))^w)   [EXISTENTIAL]
+* └── 5>0/\((Ready.((Send^5).Done))^w) |- TRUE/\((Ready.((Send^4).Done))^w)   [UNFOLD]
+*     └── 5>0/\((Send^5).(Done.((Ready.((Send^5).Done))^w))) |- TRUE/\((Send^4).(Done.((Ready.((Send^4).Done))^w)))   [UNFOLD]
+*         └── 5>0/\((Send^4).(Done.((Ready.((Send^5).Done))^w))) |- 4>0/\((Send^3).(Done.((Ready.((Send^4).Done))^w)))   [UNFOLD]
+*             └── 4>0/\((Send^3).(Done.((Ready.((Send^5).Done))^w))) |- 3>0/\((Send^2).(Done.((Ready.((Send^4).Done))^w)))   [UNFOLD]
+*                 └── 3>0/\((Send^2).(Done.((Ready.((Send^5).Done))^w))) |- 2>0/\((Send^1).(Done.((Ready.((Send^4).Done))^w)))   [UNFOLD]
+*                     └── 2>0/\((Send^1).(Done.((Ready.((Send^5).Done))^w))) |- 1>0/\(Done.((Ready.((Send^4).Done))^w))   [UNFOLD]
+*                         └── 1>0/\(Done.((Ready.((Send^5).Done))^w)) |- FALSE/\_|_   [DISPROVE]
 
