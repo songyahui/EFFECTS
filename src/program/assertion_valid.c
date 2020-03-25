@@ -3,7 +3,7 @@
 void send (int n) 
     /*
     require TRUE/\Ready.(_^*)
-    ensure (n>0\/n=0)/\(Send^n).Done\/n<0/\(Send^w)
+    ensure (n>=0)/\(Send^n).Done\/n<0/\(Send^w)
     */
 {
 
