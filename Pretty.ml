@@ -487,6 +487,15 @@ let rec normalES es pi =
       | _ ->  Kleene normalInside)
   ;;
 
+let entailConstrains pi1 pi2 = 
+
+  let sat = not (askZ3 (Neg (PureOr (Neg pi1, pi2)))) in
+  (*
+  print_string (showPure pi1 ^" -> " ^ showPure pi2 ^" == ");
+  print_string (string_of_bool (sat) ^ "\n");
+  *)
+  sat;;
+
 let rec normalPure (pi:pure):pure = 
   let allPi = getAllPi pi [] in
   let rec clear_Pi pi li = 
@@ -498,12 +507,14 @@ let rec normalPure (pi:pure):pure =
   let rec connectPi li acc = 
     (match li with 
       [] -> acc 
-    | x :: xs -> PureAnd (x, (connectPi xs acc)) 
+    | x :: xs -> if entailConstrains TRUE x then (connectPi xs acc) else PureAnd (x, (connectPi xs acc)) 
     ) in 
   let filte_true = List.filter (fun ele-> not (comparePure ele TRUE)  ) finalPi in 
   if length filte_true == 0 then  TRUE
   else connectPi (tl filte_true) (hd filte_true)
   ;;
+
+
 
 
 let rec normalEffect eff =

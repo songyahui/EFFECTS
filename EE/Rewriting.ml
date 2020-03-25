@@ -270,14 +270,7 @@ let rec transitivity piL esL piR esR (del:context list) :bool =
   
 
 
-let entailConstrains pi1 pi2 = 
 
-  let sat = not (askZ3 (Neg (PureOr (Neg pi1, pi2)))) in
-  (*
-  print_string (showPure pi1 ^" -> " ^ showPure pi2 ^" == ");
-  print_string (string_of_bool (sat) ^ "\n");
-  *)
-  sat;;
 
 
 let rec getPureFromEffect effect = 
@@ -476,6 +469,14 @@ let existialRHS piL esL esR varList :bool =
   (not (checkExist esL str || checkEXISTinPure piL str)) && not (List.mem str varList)
   ;;
 
+let rec existialRHSEff piL esL effR varList :bool = 
+  match effR with 
+    Effect (piR, esR) -> existialRHS piL esL esR varList
+  | Disj (eff1, eff2) -> 
+      if existialRHSEff piL esL eff1 varList then true else  existialRHSEff piL esL eff2 varList
+
+;;
+
 let rec remove_dups lst= 
   match lst with
       | [] -> []
@@ -539,6 +540,16 @@ let instantiateEff (pi:pure) (es:es) (instances: int list): effect list =
     None -> []
   | Some (str) ->  
     map (fun n -> Effect (pi, substituteESWithVal es str n) ) instances 
+  ;;
+
+let rec instantiateEffR  (effR:effect) (instances: int list): effect list = 
+  match effR with 
+    Effect (piR, esR) ->  instantiateEff piR esR instances 
+  | Disj (eff1, eff2) -> 
+    List.fold_right (fun instance acc -> 
+      let temp:effect = Disj (hd (instantiateEffR eff1 [instance]), hd (instantiateEffR eff2 [instance])) in 
+      append acc [temp] ) (instances) [] 
+
   ;;
 
 let rec getProductHypo (eff1:effect) (eff2:effect) : context = 
@@ -673,6 +684,25 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
         (Node (showEntailmentEff normalFormL normalFormR ^ showRule LHSOR, [tree1; tree2] ), re2, states1+states2+1)
   | (Effect (piL, esL),_) ->
     if checkReoccur normalFormL normalFormR delta then (Node(showEntail ^ "   [Reoccur]", []), true, 1) 
+    else 
+      (*Existential*)
+        if existialRHSEff piL esL normalFormR varList == true then
+          let instanceFromLeft = getInstansVal piL esL in 
+          (*print_string (List.fold_left (fun acc a  -> acc ^ string_of_int a ^ "\n") ""  instanceFromLeft );*)
+          let instantiateRHS = instantiateEffR normalFormR instanceFromLeft in 
+
+          let rec chceckResultOR li acc staacc=
+            (match li with 
+              [] -> (false , acc, staacc) 
+            | rhs::rhss -> 
+                let (tree, re, states) = containment1 (Effect (piL, esL)) rhs delta varList in 
+                if re == true then (true , tree::acc, staacc+states)
+                else chceckResultOR rhss (tree::acc) (staacc+states)
+            )
+          in 
+          let (resultFinal, trees, states) = chceckResultOR instantiateRHS [] 0 in
+          (Node(showEntail ^ "   [EXISTENTIAL]", trees ), resultFinal, states) 
+
     (*
     else if (entailConstrains (pureUnion normalFormL) (pureUnion normalFormR)) == false then (Node(showEntail ^ "   [Contradictory] "  , []), false, 1) 
     *)

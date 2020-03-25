@@ -270,6 +270,7 @@ let rec verification (dec:declare) (prog: program): string =
     let precon = "[Precondition: "^(showEffect ( pre)) ^ "]\n" in
     let postcon = "[Postcondition: "^ (showEffect ( post)) ^ "]\n" in 
     let acc =  (verifier mn expression (pre) (Effect (TRUE, Emp)) prog) in 
+    
     let accumulated = "[Real Effect: " ^(showEffect ( normalEffect acc )) ^ "]\n" in 
     (*print_string((showEntailmentEff acc post) ^ "\n") ;*)
     
