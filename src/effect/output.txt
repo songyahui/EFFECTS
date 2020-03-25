@@ -1,13 +1,10 @@
 ====================================
-t>0/\(Tick.(Tick^t-1)) |- t>0/\(Tick^t)
-[Result] Succeed
+TRUE/\(Ready.(_^*)) |- n>0/\(Ready.(_^*))
+[Result] Fail
 [Explored 2 States]
-[Verification Time: 0.009201 s]
+[Verification Time: 0.002633 s]
  
 
-* t>0/\(Tick.(Tick^t-1)) |- t>0/\(Tick^t)   [UNFOLD]
-* └── t>0/\(Tick^t-1) |- t>0/\(Tick^t-1)
-*     └── (t1=t-1/\(t1>=0/\t>0))/\(Tick^t1) |- (t1=t-1/\(t1>=0/\t>0))/\(Tick^t1)   [UNFOLD]
-*         └── (t1=t-1/\(t1>=0/\(t>0/\t1>0)))/\(Tick^t1-1) |- (t1>=0/\(t1=t-1/\(t1>=0/\(t>0/\t1>0))))/\(Tick^t1-1)
-*             └── (t1>=0/\(t>0/\(t1>0/\(t2=t1-1/\(t2>=0/\t1=t-1)))))/\(Tick^t2) |- (t1=t-1/\(t1>=0/\(t>0/\(t1>0/\(t2=t1-1/\(t2>=0/\t1>=0))))))/\(Tick^t2)   [Reoccur]
+* TRUE/\(Ready.(_^*)) |- n>0/\(Ready.(_^*))   [UNFOLD]
+* └── TRUE/\(_^*) |- FALSE/\_|_   [DISPROVE]
 

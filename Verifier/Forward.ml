@@ -154,6 +154,29 @@ let substituteEffWithAgrs (eff:effect) (realArgs: expression list) (formal: (_ty
   in subArgOnebyOne eff pairs;;
 
 
+
+(*n >0 /\ A^n  -> n = 2 /\ n > 0 /\ A^n
+let substituteEffWithPure (eff:effect) (realArgs: expression list) (formal: (_type * var) list ) =
+    let exprToTerm (ex:expression):terms = 
+      match ex with 
+        Integer num -> Number num
+      | _ -> print_string (printExpr ex^"\n");
+      raise (Foo "substituteEffWithPure");
+    in 
+    let realArgs' = List.filter (fun x -> 
+                                match x with 
+                                Unit -> false 
+                              | _-> true ) realArgs in 
+    let formalArgs = List.map (fun (a, b) -> b) formal in 
+    let pairs = List.combine realArgs' formalArgs in 
+    let constrains = List.map (fun (a, b) -> Eq (Var b, exprToTerm a )) pairs in 
+
+    let consNew = List.fold_right (fun con acc -> PureAnd (acc, con ) ) (constrains) TRUE in 
+    addConstrain eff consNew
+    ;;
+
+*)
+
 let checkPrecondition (state:effect) (pre:effect)  = 
   let reverseState =  (reverseEff state) in
   let reversePre =  (reverseEff pre) in 
@@ -210,8 +233,14 @@ let rec verifier (caller:string) (expr:expression) (state_H:effect) (state_C:eff
 
         match me with 
           Meth (t, mn , list_parm, PrePost (pre, post), expression) -> 
+          
+            
             let subPre = substituteEffWithAgrs pre exprList list_parm in 
             let subPost = substituteEffWithAgrs post exprList list_parm in 
+            (*
+            let subPre = substituteEffWithPure pre exprList list_parm in 
+            let subPost = substituteEffWithPure post exprList list_parm in 
+*)
             let his_cur =  (concatEffEff state_H state_C) in 
 
             let (result, tree) = checkPrecondition (his_cur) subPre in 
@@ -245,7 +274,7 @@ let rec verification (dec:declare) (prog: program): string =
     (*print_string((showEntailmentEff acc post) ^ "\n") ;*)
     
     let varList = (*append*) (getAllVarFromEff acc) (*(getAllVarFromEff post)*) in  
-    let (result_tree, result, states) =  Rewriting.containment acc ( post) [] varList in 
+    let (result_tree, result, states) =  Rewriting.containment1 acc ( post) [] varList in 
     let result = "[Result: "^ (if result then "Succeed" else "Fail") ^"]\n" in 
     let states = "[Explored "^ string_of_int (states+1)  ^ " States]\n" in 
     let verification_time = "[Verification Time: " ^ string_of_float (Sys.time() -. startTimeStamp) ^ " s]\n" in

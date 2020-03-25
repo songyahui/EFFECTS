@@ -625,12 +625,23 @@ let rec headEs (es:es) : es =
   | _ -> es
   ;;
 
+let rec addEntailConstrain (eff:effect) (pi:pure) :effect = 
+  match eff with 
+    Effect (pi1, es1)  -> 
+      (match entailConstrains pi pi1 with 
+        true -> eff
+      | false -> Effect (FALSE, Bot)
+      )
+  | Disj (eff1, eff2) -> Disj(addEntailConstrain eff1 pi, addEntailConstrain eff2 pi)
+  ;;
 
 let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:string list): (binary_tree * bool * int) = 
   let normalFormL = normalEffect effL in 
   let normalFormR = normalEffect effR in
   let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentEff normalFormL normalFormR in 
+  (*
   print_string(showEntail ^"\n");
+  *)
   let unfold eff1 eff2 del = 
     let fstL = checkFst eff1 in 
     let deltaNew = append del [(eff1, eff2)] in
@@ -650,7 +661,8 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
     (Node (showEntail ^ "   [UNFOLD]",trees ), resultFinal, states)    
   in 
   match (normalFormL, normalFormR) with 
-    (Effect(FALSE, Bot), _) -> (Node(showEntail ^ "   [Bot-LHS]", []), true, 0)  
+      (*this means the assertion or precondition is already fail*)
+    (Effect(FALSE, Bot), _) -> (Node(showEntail ^ "   [Bot-LHS]", []), false, 1)  
   | (_, Effect(FALSE, Bot)) -> (Node(showEntail ^ "   [DISPROVE]", []), false, 1)  
   | (Disj (effL1, effL2), _) -> 
     (*[LHSOR]*)
@@ -682,7 +694,7 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
                     else
                     let (tree2, re2 , states2) = (containment1 leftNonZero normalFormR delta varList) in
                     (Node (showEntailmentEff normalFormL normalFormR ,[tree1; tree2] ), re1 && re2, states1+states2+1)
-                  | false -> (*[UNFOLD]*)unfold normalFormL (addConstrain normalFormR piL) delta 
+                  | false -> (*[UNFOLD]*)unfold normalFormL (addEntailConstrain normalFormR piL) delta 
                 )
             | Plus  (Var t, num) -> 
             (*[LHSSUB]*)
@@ -704,16 +716,16 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
                 let rhs' = addConstrain rhs cons in 
                 let (tree, re, states) = containment1 lhs' rhs' delta (newVar::varList)in
                 (Node (showEntailmentEff normalFormL normalFormR ,[tree] ), re, states)
-            | Number n -> unfold normalFormL (addConstrain normalFormR piL) delta 
+            | Number n -> unfold normalFormL (addEntailConstrain normalFormR piL) delta 
             | _ -> print_endline (showEntailmentEff normalFormL normalFormR);
               raise ( Foo "term is too complicated exception1!")
             )
-        | _ -> unfold normalFormL (addConstrain normalFormR piL) delta 
+        | _ -> unfold normalFormL (addEntailConstrain normalFormR (piL)) delta 
 
   
   ;;
 
-
+(*
 let rec containment (effL:effect) (effR:effect) (delta:context) (varList:string list): (binary_tree * bool * int) = 
   let normalFormL = normalEffect effL in 
   let normalFormR = normalEffect effR in
@@ -999,7 +1011,7 @@ let rec containment (effL:effect) (effR:effect) (delta:context) (varList:string 
             )
         )        
   ;;
-  
+  *)
 (*----------------------------------------------------
 ----------------------TESTING-------------------------
 ----------------------------------------------------*)
