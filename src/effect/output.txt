@@ -1,16 +1,16 @@
 ====================================
-5>0/\((Ready.((Send^5).Done))^w) |- TRUE/\((Ready.((Send^n-1).Done))^w)
-[Result] Fail
+5>0/\(((Send^5).Done)^w) |- TRUE/\(((Send^n).Done)^w)
+[Result] Succeed
 [Explored 2 States]
-[Verification Time: 0.025156 s]
+[Verification Time: 0.026891 s]
  
 
-* 5>0/\((Ready.((Send^5).Done))^w) |- TRUE/\((Ready.((Send^n-1).Done))^w)   [EXISTENTIAL]
-* └── 5>0/\((Ready.((Send^5).Done))^w) |- TRUE/\((Ready.((Send^4).Done))^w)   [UNFOLD]
-*     └── 5>0/\((Send^5).(Done.((Ready.((Send^5).Done))^w))) |- TRUE/\((Send^4).(Done.((Ready.((Send^4).Done))^w)))   [UNFOLD]
-*         └── 5>0/\((Send^4).(Done.((Ready.((Send^5).Done))^w))) |- 4>0/\((Send^3).(Done.((Ready.((Send^4).Done))^w)))   [UNFOLD]
-*             └── 4>0/\((Send^3).(Done.((Ready.((Send^5).Done))^w))) |- 3>0/\((Send^2).(Done.((Ready.((Send^4).Done))^w)))   [UNFOLD]
-*                 └── 3>0/\((Send^2).(Done.((Ready.((Send^5).Done))^w))) |- 2>0/\((Send^1).(Done.((Ready.((Send^4).Done))^w)))   [UNFOLD]
-*                     └── 2>0/\((Send^1).(Done.((Ready.((Send^5).Done))^w))) |- 1>0/\(Done.((Ready.((Send^4).Done))^w))   [UNFOLD]
-*                         └── 1>0/\(Done.((Ready.((Send^5).Done))^w)) |- FALSE/\_|_   [DISPROVE]
+* 5>0/\(((Send^5).Done)^w) |- TRUE/\(((Send^n).Done)^w)   [EXISTENTIAL]
+* └── 5>0/\(((Send^5).Done)^w) |- TRUE/\(((Send^5).Done)^w)   [UNFOLD]
+*     └── 5>0/\((Send^4).(Done.(((Send^5).Done)^w))) |- 5>0/\((Send^4).(Done.(((Send^5).Done)^w)))   [UNFOLD]
+*         └── 4>0/\((Send^3).(Done.(((Send^5).Done)^w))) |- 4>0/\((Send^3).(Done.(((Send^5).Done)^w)))   [UNFOLD]
+*             └── 3>0/\((Send^2).(Done.(((Send^5).Done)^w))) |- 3>0/\((Send^2).(Done.(((Send^5).Done)^w)))   [UNFOLD]
+*                 └── 2>0/\((Send^1).(Done.(((Send^5).Done)^w))) |- 2>0/\((Send^1).(Done.(((Send^5).Done)^w)))   [UNFOLD]
+*                     └── 1>0/\(Done.(((Send^5).Done)^w)) |- 1>0/\(Done.(((Send^5).Done)^w))   [UNFOLD]
+*                         └── 1>0/\(((Send^5).Done)^w) |- 1>0/\(((Send^5).Done)^w)   [Reoccur]
 

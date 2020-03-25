@@ -521,8 +521,17 @@ let rec normalEffect eff =
   let noPureOr  = deletePureOrInEff eff in 
   match noPureOr with
     Effect (p, es) -> 
-      if (askZ3 p) == false then Effect (FALSE,  Bot)
-      else Effect (normalPure p , normalES es p)
+      if (askZ3 p) == false then 
+        ( 
+          Effect (FALSE,  Bot)
+        )
+      else 
+        let p_normal = normalPure p in 
+        let es_normal  = normalES es p in
+        (match es_normal with 
+          ESOr (es_nor1, es_nor2) -> Disj (Effect (p_normal, es_nor1), Effect (p_normal, es_nor2))
+        | _ -> Effect ( p_normal, es_normal)
+        )
   | Disj (eff1, eff2) -> 
       match (normalEffect eff1, normalEffect eff2) with
         (Effect (_,  Bot), _) -> normalEffect eff2

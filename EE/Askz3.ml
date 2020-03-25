@@ -69,8 +69,12 @@ let rec checkRedundant (li:string list) : string list =
 let rec getAllVarFromTerm (t:terms) (acc:string list):string list = 
   match t with
   Var name -> append acc [name]
-| Plus (t, num) -> getAllVarFromTerm t acc
-| Minus (t, num) -> getAllVarFromTerm t acc
+| Plus (t1, t2) -> 
+    let cur = getAllVarFromTerm t1 acc in 
+    getAllVarFromTerm t2 cur
+| Minus (t1, t2) -> 
+    let cur = getAllVarFromTerm t1 acc in 
+    getAllVarFromTerm t2 cur
 | _ -> acc
 ;;
 
@@ -78,21 +82,26 @@ let rec getAllVarFromPure (pi:pure) (acc:string list):string list =
   match pi with
     TRUE -> acc
   | FALSE -> acc
-  | Gt (term, num) -> 
-      let allVarFromTerm = getAllVarFromTerm term [] in
-      append acc allVarFromTerm
-  | Lt (term, num) -> 
-      let allVarFromTerm = getAllVarFromTerm term [] in
-      append acc allVarFromTerm
-  | GtEq (term, num) -> 
-      let allVarFromTerm = getAllVarFromTerm term [] in
-      append acc allVarFromTerm
-  | LtEq (term, num) -> 
-      let allVarFromTerm = getAllVarFromTerm term [] in
-      append acc allVarFromTerm
-  | Eq (term, num) -> 
-      let allVarFromTerm = getAllVarFromTerm term [] in
-      append acc allVarFromTerm
+  | Gt (term1, term2) -> 
+      let allVarFromTerm1 = getAllVarFromTerm term1 [] in
+      let allVarFromTerm2 = getAllVarFromTerm term2 [] in
+      append acc (append allVarFromTerm1 allVarFromTerm2)
+  | Lt (term1, term2) -> 
+      let allVarFromTerm1 = getAllVarFromTerm term1 [] in
+      let allVarFromTerm2 = getAllVarFromTerm term2 [] in
+      append acc (append allVarFromTerm1 allVarFromTerm2)
+  | GtEq (term1, term2) -> 
+      let allVarFromTerm1 = getAllVarFromTerm term1 [] in
+      let allVarFromTerm2 = getAllVarFromTerm term2 [] in
+      append acc (append allVarFromTerm1 allVarFromTerm2)
+  | LtEq (term1, term2) -> 
+      let allVarFromTerm1 = getAllVarFromTerm term1 [] in
+      let allVarFromTerm2 = getAllVarFromTerm term2 [] in
+      append acc (append allVarFromTerm1 allVarFromTerm2)
+  | Eq (term1, term2) -> 
+      let allVarFromTerm1 = getAllVarFromTerm term1 [] in
+      let allVarFromTerm2 = getAllVarFromTerm term2 [] in
+      append acc (append allVarFromTerm1 allVarFromTerm2)
   | PureAnd (pi1,pi2) -> 
       let temp1 = getAllVarFromPure pi1 [] in
       let temp2 = getAllVarFromPure pi2 [] in
@@ -117,6 +126,8 @@ let askZ3 pi =
   let declear = List.fold_right (fun v acc ->acc ^ ("(declare-const " ^ v ^ " Int)\n") ) (checkRedundant (getAllVarFromPure pi [])) "" in
   let assertions = addAssert (convertPure (pi) "") in
   let oc = open_out inFile in    (* 新建或修改文件,返回通道 *)
+      (*print_string (declear^assertions^"\n************\n");   (* 写一些东西 *)
+*)
       fprintf oc "%s\n" (declear^assertions);   (* 写一些东西 *)
       close_out oc;                (* 写入并关闭通道 *)
       ignore (Sys.command ("z3 -smt2 "^ inFile ^" > " ^ outFile));
