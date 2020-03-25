@@ -3,7 +3,7 @@
 void send (int n) 
     /*
     require TRUE/\Ready.(_^*)
-    ensure (n>0\/n=0)/\(Send^n).Done\/n<0/\(Send^w)
+    ensure (n>=0)/\(Send^n).Done\/n<0/\(Send^w)
     */
 {
 
@@ -18,8 +18,8 @@ void send (int n)
 
 void server (int n)
     /*
-    require (n>0\/n=0)/\emp
-    ensure (n>0\/n=0)/\((Ready.(Send^n).Done)^w)
+    require (n>=0)/\emp
+    ensure (n>=0)/\((Ready.(Send^n).Done)^w)
     */
 {
     event("Ready");

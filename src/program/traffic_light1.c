@@ -3,7 +3,7 @@
 void controller()
     /*
     require TRUE/\Ready.(_^*) 
-    ensure TRUE /\ (((_^n).Green)^w)
+    ensure TRUE /\ (((_^*).Green)^w)
     */
 {
     turnGreen ();    
@@ -18,7 +18,7 @@ void controller()
 int main()
     /*
     require TRUE /\emp
-    ensure TRUE /\ (((_^n).Green)^w)
+    ensure TRUE /\ (((_^*).Green)^w)
     */
 {
     event ("Ready");

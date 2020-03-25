@@ -684,9 +684,9 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
   let normalFormL = normalEffect effL in 
   let normalFormR = normalEffect effR in
   let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentEff normalFormL normalFormR in 
-  
+  (*
   print_string(showEntail ^"\n");
-  
+  *)
   let unfold eff1 eff2 del = 
     let fstL = checkFst eff1 in 
     let deltaNew = append del [(eff1, eff2)] in
@@ -768,14 +768,8 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
               )
         | _ -> raise (Foo "bu ying gai a ");
 
-           (*
-           
-      else
-        print_string (showEffect normalFormRNew);
-        | _-> (currentR, currentVarLi)
-*)
     else 
-(*---------0-----------------------------------------------*)
+(*there is no extantial var on thr RHS already*)
       match headEs esL with
           Ttimes (esIn, term) -> 
             (match term with 
@@ -784,14 +778,12 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
                   true -> (*[CASE SPLIT]*) 
                     let zeroCase = PureAnd (piL, Eq (Var s, Number 0) ) in 
                     let nonZeroCase = PureAnd (piL, Gt (Var s, Number 0) ) in 
-                    let leftZero = addConstrain (Effect(piL, Emp)) zeroCase in
-                    let leftNonZero = addConstrain normalFormL nonZeroCase in
+                    let leftZero = normalEffect (addConstrain (normalFormL) zeroCase) in
+                    let leftNonZero = normalEffect (addConstrain normalFormL nonZeroCase) in
                     (*zhe li hao xiang ke yi gai*)
-                    let (tree1, re1, states1 ) = (containment1 leftZero normalFormR delta varList) in
-                    if re1 == false then (Node (showEntailmentEff normalFormL normalFormR ^ showRule LHSCASE ^ " *Pruning search*",[tree1] ), re1, states1)
-                    else
-                    let (tree2, re2 , states2) = (containment1 leftNonZero normalFormR delta varList) in
-                    (Node (showEntailmentEff normalFormL normalFormR ,[tree1; tree2] ), re1 && re2, states1+states2+1)
+
+                    let (tree, re, states) = (containment1 (Disj(leftZero, leftNonZero)) normalFormR delta varList) in
+                    (Node (showEntailmentEff (Disj(leftZero, leftNonZero)) normalFormR ^"   [CASE SPLIT]",[tree] ), re, states)
                   | false -> (*[UNFOLD]*)unfold normalFormL (addEntailConstrain normalFormR piL) delta 
                 )
             | Plus  (Var t, num) -> 

@@ -1,1 +1,1 @@
-5>0/\(((Send^5).Done)^w) |- TRUE/\(((Send^(n)).Done)^w)
+n>=0/\(Ready.((Send^n).(Done.((Ready.((Send^n).Done))^w)))) |- n>=0/\(((Ready.(Send^n)).Done)^w)
