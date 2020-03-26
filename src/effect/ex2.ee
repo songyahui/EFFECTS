@@ -1,1 +1,1 @@
-n>=0/\(Ready.((Send^n).(Done.((Ready.((Send^n).Done))^w)))) |- n>=0/\(((Ready.(Send^n)).Done)^w)
+n>0/\((Red^n).((Red^n)^w)) |- (n>0)/\((Red^n)^w)

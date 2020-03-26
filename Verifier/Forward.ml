@@ -261,6 +261,12 @@ let rec verifier (caller:string) (expr:expression) (state_H:effect) (state_C:eff
   | _ -> state_C
     ;;
 
+let rec extracPureFromPrecondition (eff:effect) :effect = 
+  match eff with 
+    Effect (pi, es) -> Effect (pi, Emp)
+  | Disj (eff1, eff2) -> Disj (extracPureFromPrecondition eff1, extracPureFromPrecondition eff2)
+  ;;
+
 let rec verification (decl:(bool * declare)) (prog: program): string = 
   let (isIn, dec) = decl in 
   if isIn == false then ""
@@ -272,7 +278,7 @@ let rec verification (decl:(bool * declare)) (prog: program): string =
     let head = "[Verification for method: "^mn^"]\n"in 
     let precon = "[Precondition: "^(showEffect ( pre)) ^ "]\n" in
     let postcon = "[Postcondition: "^ (showEffect ( post)) ^ "]\n" in 
-    let acc =  (verifier mn expression (pre) (Effect (TRUE, Emp)) prog) in 
+    let acc =  (verifier mn expression (pre) (extracPureFromPrecondition pre) prog) in 
     
     let accumulated = "[Real Effect: " ^(showEffect ( normalEffect acc )) ^ "]\n" in 
     (*print_string((showEntailmentEff acc post) ^ "\n") ;*)

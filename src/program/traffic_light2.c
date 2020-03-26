@@ -3,8 +3,8 @@
  
 void controller()
     /*
-    require TRUE /\ Ready._*
-    ensure TRUE /\ (Green._._)^w  //every certain position 
+    require TRUE/\Ready.(_^*) 
+    ensure TRUE /\ ((Green._._)^w)  
     */
 {
     turnGreen ();    
@@ -17,6 +17,10 @@ void controller()
 }
 
 int main()
+    /*
+    require TRUE /\emp
+    ensure TRUE /\ Ready.((Green._._)^w)  
+    */
 {
     event ("Ready");
     controller();

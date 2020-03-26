@@ -18,7 +18,7 @@ void controller()
 int main()
     /*
     require TRUE /\emp
-    ensure TRUE /\ (((_^*).Green)^w)
+    ensure TRUE /\ Ready.(((_^*).Green)^w)
     */
 {
     event ("Ready");
