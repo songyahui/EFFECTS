@@ -5,7 +5,7 @@
 [Postcondition: TRUE/\(((_^*).Green)^w)]
 [Result: Succeed]
 [Explored 17 States]
-[Verification Time: 0.076091 s]
+[Verification Time: 0.066563 s]
 
 * TRUE/\(Ready.(((_^*).Green)^w)) |- TRUE/\(((_^*).Green)^w)   [UNFOLD]
 * └── TRUE/\(((_^*).Green)^w) |- TRUE/\((_^*).(Green.(((_^*).Green)^w)))   [UNFOLD]
@@ -35,7 +35,7 @@
 [Postcondition: TRUE/\(((_^*).Green)^w)]
 [Result: Succeed]
 [Explored 17 States]
-[Verification Time: 0.43777 s]
+[Verification Time: 0.428195 s]
 
 * 4>=0/\(Green.((Delay^4).(Yellow.((Delay^2).(Red.((Delay^6).(((_^*).Green)^w))))))) |- TRUE/\(((_^*).Green)^w)   [UNFOLD]
 * └── 4>=0/\((Delay^4).(Yellow.((Delay^2).(Red.((Delay^6).(((_^*).Green)^w)))))) |- (TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\(((_^*).Green)^w))   [UNFOLD]
@@ -79,7 +79,7 @@
 [Postcondition: TRUE/\Yellow]
 [Result: Succeed]
 [Explored 2 States]
-[Verification Time: 0.003158 s]
+[Verification Time: 0.002839 s]
 
 * TRUE/\Yellow |- TRUE/\Yellow   [UNFOLD]
 * └── TRUE/\emp |- TRUE/\emp   [Frame-Prove] with R = emp
@@ -91,7 +91,7 @@
 [Postcondition: TRUE/\Green]
 [Result: Succeed]
 [Explored 2 States]
-[Verification Time: 0.003576 s]
+[Verification Time: 0.002816 s]
 
 * TRUE/\Green |- TRUE/\Green   [UNFOLD]
 * └── TRUE/\emp |- TRUE/\emp   [Frame-Prove] with R = emp
@@ -103,7 +103,7 @@
 [Postcondition: TRUE/\Red]
 [Result: Succeed]
 [Explored 2 States]
-[Verification Time: 0.003222 s]
+[Verification Time: 0.002836 s]
 
 * TRUE/\Red |- TRUE/\Red   [UNFOLD]
 * └── TRUE/\emp |- TRUE/\emp   [Frame-Prove] with R = emp
@@ -115,7 +115,7 @@
 [Postcondition: n>=0/\(Delay^n)]
 [Result: Succeed]
 [Explored 3 States]
-[Verification Time: 0.04293 s]
+[Verification Time: 0.037436 s]
 
 * (n=0/\emp)\/((n-1>=0/\(~(n=0)))/\(Delay.(Delay^n-1))) |- n>=0/\(Delay^n) [LHSOR] 
 * ├── n=0/\emp |- n>=0/\(Delay^n)   [UNFOLD]

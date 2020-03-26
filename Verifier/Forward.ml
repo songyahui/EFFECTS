@@ -311,7 +311,12 @@ let getIncl (d:declare) :bool =
 
 let rec getIncludedFiles (p:program) :program = 
   let readFromFile (name:string):declare list = 
-    let inputfile = (Sys.getcwd () ^ "/src/program/" ^ name) in
+    let currentP = split_on_char '/' (Sys.getcwd ()) in 
+    let serverOrNot = List.exists (fun a -> String.compare a "cgi-bin" == 0) currentP in 
+
+    let inputfile = if serverOrNot then (Sys.getcwd () ^ "/../src/program/" ^ name) 
+                    else (Sys.getcwd () ^ "/src/program/" ^ name) 
+    in
     let ic = open_in inputfile in
     try 
       let lines =  (input_lines ic ) in  
