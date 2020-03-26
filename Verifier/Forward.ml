@@ -261,7 +261,10 @@ let rec verifier (caller:string) (expr:expression) (state_H:effect) (state_C:eff
   | _ -> state_C
     ;;
 
-let rec verification (dec:declare) (prog: program): string = 
+let rec verification (decl:(bool * declare)) (prog: program): string = 
+  let (isIn, dec) = decl in 
+  if isIn == false then ""
+  else 
   let startTimeStamp = Sys.time() in
   match dec with 
     Include str -> ""
@@ -309,8 +312,8 @@ let getIncl (d:declare) :bool =
 
 
 
-let rec getIncludedFiles (p:program) :program = 
-  let readFromFile (name:string):declare list = 
+let rec getIncludedFiles (p:(bool * declare) list) :(bool * declare) list = 
+  let readFromFile (name:string):(bool * declare) list  = 
     let currentP = split_on_char '/' (Sys.getcwd ()) in 
     let serverOrNot = List.exists (fun a -> String.compare a "cgi-bin" == 0) currentP in 
 
@@ -321,7 +324,7 @@ let rec getIncludedFiles (p:program) :program =
     try 
       let lines =  (input_lines ic ) in  
       let line = List.fold_right (fun x acc -> acc ^ "\n" ^ x) (List.rev lines) "" in 
-      let raw_prog = Parser.prog Lexer.token (Lexing.from_string line) in
+      let raw_prog = List.map (fun a -> (false, a)) (Parser.prog Lexer.token (Lexing.from_string line)) in
       let prog = getIncludedFiles raw_prog in 
   
       close_in ic;                  (* 关闭输入通道 *) 
@@ -330,12 +333,12 @@ let rec getIncludedFiles (p:program) :program =
       close_in_noerr ic;           (* 紧急关闭 *)
       raise e                      (* 以出错的形式退出: 文件已关闭,但通道没有写入东西 *)
   in 
-  let incl = List.filter (fun x -> getIncl x) (p) in 
-  let getName = List.map (fun x -> 
+  let incl = List.filter (fun (ind, x) -> getIncl x) (p) in 
+  let getName:(string list ) = List.map (fun (ind, x) -> 
                               match x with 
                               Include str -> str
                             | _ -> "") incl in
-  let appendUp  = List.fold_right (fun x acc -> append (readFromFile x) acc ) (getName) p in 
+  let appendUp  = List.fold_right (fun (x) acc -> append (readFromFile x) acc ) (getName) p in 
  
   appendUp;;
 
@@ -347,15 +350,15 @@ let () =
     try 
       let lines =  (input_lines ic ) in  
       let line = List.fold_right (fun x acc -> acc ^ "\n" ^ x) (List.rev lines) "" in 
-      let raw_prog = Parser.prog Lexer.token (Lexing.from_string line) in
+      let raw_prog = List.map (fun a -> (true, a)) (Parser.prog Lexer.token (Lexing.from_string line)) in
       let prog = getIncludedFiles raw_prog in 
       
       (*
       let testprintProg = printProg prog in 
       print_string testprintProg;
 *)
-      
-      let verification_re = List.fold_right (fun dec acc -> acc ^ (verification dec prog)) prog ""  in
+      let evn = List.map (fun (ind, a) -> a) prog in 
+      let verification_re = List.fold_right (fun dec acc -> acc ^ (verification dec evn)) prog ""  in
       let oc = open_out outputfile in    (* 新建或修改文件,返回通道 *)
       (*      let startTimeStamp = Sys.time() in*)
       fprintf oc "%s\n" verification_re;   (* 写一些东西 *)
