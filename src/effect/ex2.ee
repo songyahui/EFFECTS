@@ -1,1 +1,3 @@
-TRUE /\ A.B|- TRUE /\ {(A^*),B}.{(A^*),B}
+TRUE/\Tick |- TRUE/\Done
+
+
