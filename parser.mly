@@ -112,6 +112,11 @@ pure:
 | a = pure CONJ b = pure {PureAnd (a, b)}
 | a = pure DISJ b = pure {PureOr (a, b)}
 
+es_range :
+| single = es {[single]}
+| e = es_range COMMA eddd = es {append e [eddd]}
+
+
 es:
 | EMPTY { Emp }
 | str = EVENT { Event str }
@@ -122,6 +127,7 @@ es:
 | UNDERLINE {Underline}
 | a = es CONCAT b = es { Cons(a, b) } 
 | LPAR a = es POWER KLEENE RPAR{Kleene a}
+| LBRACK a = es_range RBRACK {Range a}
 
 
 effect:

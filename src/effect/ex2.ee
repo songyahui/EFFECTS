@@ -1,1 +1,1 @@
-n>0/\((Red^n).((Red^n)^w)) |- (n>0)/\((Red^n)^w)
+TRUE /\ A.B|- TRUE /\ {(A^*),B}.{(A^*),B}

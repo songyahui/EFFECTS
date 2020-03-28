@@ -19,6 +19,7 @@ type es = Bot
         | Ttimes of es * terms
         | Kleene of es
         | Omega of es
+        | Range of (es list)
         | Underline
 
 (*Arithimetic pure formulae*)
@@ -37,6 +38,7 @@ type pure = TRUE
 type effect = 
             Effect of pure * es
           | Disj of effect * effect
+
 
 type entilment = EE of effect * effect
 

@@ -35,6 +35,10 @@ let rec nullable (pi :pure) (es:es) : bool=
   | Omega es1 -> false
   | Underline -> false
   | Kleene es1 -> true
+  | Range (esList) -> 
+    (let range = List.fold_left (fun acc a -> acc || (nullable pi a)) false esList in 
+    range 
+    )
 ;;
     
 let rec fst (pi :pure) (es:es): event list = 
@@ -48,6 +52,10 @@ let rec fst (pi :pure) (es:es): event list =
   | ESOr (es1, es2) -> append (fst pi es1) (fst pi es2)
   | Underline -> ["_"]
   | Kleene es1 -> fst pi es1
+  | Range (esList) -> 
+  (let range = List.fold_left (fun acc a -> append acc (fst pi a)) [] esList in 
+  range 
+  )
 ;;
 
 let rec appendEff_ES eff es = 
@@ -65,6 +73,87 @@ let ifShouldDisj (temp1:effect) (temp2:effect) : effect =
         else Disj (temp1, temp2 )
       | _ -> 
       Disj (temp1, temp2 )
+  ;;
+
+let rec compareES es1 es2 = 
+  let rec subESsetOf (small : es list) (big : es list) :bool = 
+    let rec oneOf a set :bool = 
+      match set with 
+        [] -> false 
+      | y:: ys -> if aCompareES a y then true else oneOf a ys
+    in 
+    match small with 
+      [] -> true 
+    | x :: xs -> if oneOf x big == false then false else subESsetOf xs big
+  in 
+  match (es1, es2) with 
+    (Bot, Bot) -> true
+  | (Emp, Emp) -> true
+  | (Event s1, Event s2) -> 
+    String.compare s1 s2 == 0
+  | (Cons (es1L, es1R), Cons (es2L, es2R)) -> (compareES es1L es2L) && (compareES es1R es2R)
+  | (ESOr (es1L, es1R), ESOr (es2L, es2R)) -> 
+      let one = ((compareES es1L es2L) && (compareES es1R es2R)) in
+      let two =  ((compareES es1L es2R) && (compareES es1R es2L)) in 
+      one || two
+  | (Omega esL, Omega esR) ->compareES esL esR
+  | (Ttimes (esL, termL), Ttimes (esR, termR)) -> 
+      let insideEq = (compareES esL esR) in
+      let termEq = compareTerm termL termR in
+      insideEq && termEq
+  | (Kleene esL, Kleene esR) -> compareES esL esR
+  | (Underline, Underline ) -> true
+  | (Range (esList1), Range (esList2)) ->  subESsetOf esList1 esList2 && subESsetOf esList2 esList1
+  | _ -> false
+;;
+
+let rec compareEff eff1 eff2 =
+  match (eff1, eff2) with
+  | (Effect(FALSE, Bot), Effect(FALSE, Bot)) -> true 
+  | (Effect (pi1, es1), Effect (pi2, es2)) -> compareES es1 es2
+  | (Disj (eff11, eff12), Disj (eff21, eff22)) -> 
+      let one =  (compareEff eff11  eff21) && (compareEff eff12  eff22) in
+      let two =  (compareEff eff11  eff22) && (compareEff eff12  eff21 ) in
+      one || two
+  | _ -> false
+  ;;
+
+let rec splitEffects eff : (pure * es) list = 
+  match eff with 
+    Effect (p1, es1) -> [(p1, es1)]
+  | Disj (eff1, eff2) -> append (splitEffects eff1) (splitEffects eff2)
+  ;;
+
+let rec normalEffect eff =
+  let noPureOr  = deletePureOrInEff eff in 
+  match noPureOr with
+    Effect (p, es) -> 
+      if (askZ3 p) == false then 
+        ( 
+          Effect (FALSE,  Bot)
+        )
+      else 
+        let p_normal = normalPure p in 
+        let es_normal  = normalES es p in
+        (match es_normal with 
+          ESOr (es_nor1, es_nor2) -> Disj (Effect (p_normal, es_nor1), Effect (p_normal, es_nor2))
+        | _ -> Effect ( p_normal, es_normal)
+        )
+  | Disj (eff1, eff2) -> 
+      match (normalEffect eff1, normalEffect eff2) with
+        (Effect (_,  Bot), _) -> normalEffect eff2
+      | (_, Effect (_,  Bot)) -> normalEffect eff1
+      | (Effect (FALSE,  _), _) -> normalEffect eff2
+      | (_, Effect (FALSE,  _)) -> normalEffect eff1
+
+      | (Disj(eff1In, eff2In), norml_eff2 ) ->
+        if compareEff norml_eff2 eff1In || compareEff norml_eff2 eff2In then Disj(eff1In, eff2In)
+        else Disj (Disj(eff1In, eff2In), norml_eff2 )
+      | (norml_eff2, Disj(eff1In, eff2In) ) ->
+        if compareEff norml_eff2 eff1In || compareEff norml_eff2 eff2In then Disj(eff1In, eff2In)
+        else Disj (norml_eff2, Disj(eff1In, eff2In))
+
+      | _ -> Disj (normalEffect eff1, normalEffect eff2)
   ;;
 
 
@@ -96,6 +185,11 @@ let rec derivative (p :pure) (es:es) (ev:string): effect =
           appendEff_ES efF es2    
           
   | Kleene es1 -> appendEff_ES  (derivative p es1 ev) es
+  | Range (esList) -> 
+      (let range = List.map (fun a -> derivative p a ev) esList in 
+      let final = List.fold_left (fun acc a -> Disj (acc, a)) (Effect(FALSE, Bot)) range in 
+      final 
+  )
 
 ;;
 
@@ -104,37 +198,7 @@ let rec derivative (p :pure) (es:es) (ev:string): effect =
 ----------------------CONTAINMENT--------------------
 ----------------------------------------------------*)
 
-let rec compareES es1 es2 = 
-  match (es1, es2) with 
-    (Bot, Bot) -> true
-  | (Emp, Emp) -> true
-  | (Event s1, Event s2) -> 
-    String.compare s1 s2 == 0
-  | (Cons (es1L, es1R), Cons (es2L, es2R)) -> (compareES es1L es2L) && (compareES es1R es2R)
-  | (ESOr (es1L, es1R), ESOr (es2L, es2R)) -> 
-      let one = ((compareES es1L es2L) && (compareES es1R es2R)) in
-      let two =  ((compareES es1L es2R) && (compareES es1R es2L)) in 
-      one || two
-  | (Omega esL, Omega esR) ->compareES esL esR
-  | (Ttimes (esL, termL), Ttimes (esR, termR)) -> 
-      let insideEq = (compareES esL esR) in
-      let termEq = compareTerm termL termR in
-      insideEq && termEq
-  | (Kleene esL, Kleene esR) -> compareES esL esR
-  | (Underline, Underline ) -> true
-  | _ -> false
-;;
 
-let rec compareEff eff1 eff2 =
-  match (eff1, eff2) with
-  | (Effect(FALSE, Bot), Effect(FALSE, Bot)) -> true 
-  | (Effect (pi1, es1), Effect (pi2, es2)) -> compareES es1 es2
-  | (Disj (eff11, eff12), Disj (eff21, eff22)) -> 
-      let one =  (compareEff eff11  eff21) && (compareEff eff12  eff22) in
-      let two =  (compareEff eff11  eff22) && (compareEff eff12  eff21 ) in
-      one || two
-  | _ -> false
-  ;;
 
 let rec reoccurCtxSet (esL:CS.t) (esR:CS.t) (ctx:ctxSet) = 
   match ctx with 
@@ -533,6 +597,11 @@ let rec substituteESWithVal (es:es) (var1:string) (val1: int):es =
   | Kleene esIn -> Kleene (substituteESWithVal esIn var1 val1)
   | Omega esIn -> Omega (substituteESWithVal esIn var1 val1)
   | Underline -> es
+  | Range (esList) -> 
+      (let range = List.map (fun a -> substituteESWithVal a var1 val1) esList in 
+      let final = List.fold_left (fun acc a -> ESOr (acc, a)) Bot range in 
+      final 
+  )
   ;;
 
 let instantiateEff (pi:pure) (es:es) (instances: int list): effect list = 
@@ -578,11 +647,7 @@ This decision procedure returns a derivation tree and a boolean
 value indicating the validility of the effect entailment
 -------------------------------------------------------------*)
 
-let rec splitEffects eff : (pure * es) list = 
-  match eff with 
-    Effect (p1, es1) -> [(p1, es1)]
-  | Disj (eff1, eff2) -> append (splitEffects eff1) (splitEffects eff2)
-  ;;
+
 
 let effectEntailSyntatically eff1 eff2 :bool =
   let effsL = splitEffects eff1 in 
@@ -680,13 +745,16 @@ let rec addEntailConstrain (eff:effect) (pi:pure) :effect =
   | Disj (eff1, eff2) -> Disj(addEntailConstrain eff1 pi, addEntailConstrain eff2 pi)
   ;;
 
+
+  
+
 let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:string list): (binary_tree * bool * int) = 
   let normalFormL = normalEffect effL in 
   let normalFormR = normalEffect effR in
   let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentEff normalFormL normalFormR in 
-  (*
+  
   print_string(showEntail ^"\n");
-  *)
+  
   let unfold eff1 eff2 del = 
     let fstL = checkFst eff1 in 
     let deltaNew = append del [(eff1, eff2)] in

@@ -103,6 +103,15 @@ let rec showES (es:es):string =
   | Omega es -> "("^(showES es) ^ "^" ^  "w" ^")"
   | Underline -> "_"
   | Kleene es -> "(" ^ (showES es) ^ "^" ^ "*"^")"
+  | Range (esList) -> 
+      let rec helperHere acc esL =
+        match esL with
+          [] -> acc ^ "}"
+        | [x] -> acc ^ showES x ^"}"
+        | x::xs ->  (helperHere (acc ^  showES x ^ ", ") xs)
+      in
+      let range = helperHere "{" esList in 
+      range 
   ;;
 
 
@@ -166,6 +175,10 @@ let rec regToInt (esIn:es):int32  =
     | Kleene es ->  (helper es) * 11
     | Ttimes (esIn, t) -> (helper esIn (*+ termToInt t*) ) * 13
     | Omega esIn -> (helper esIn ) * 17
+    | Range (esList) -> 
+        (let range = List.fold_left (fun acc a -> acc + (helper a)) 0 esList in 
+        range 
+        )
   in 
   let temp =  (helper esIn) in 
   
@@ -241,6 +254,10 @@ let rec reverseEs (es:es) : es =
   | Omega (es1) ->  Omega (reverseEs es1) 
   | Underline -> Underline
   | Kleene es1 ->  Kleene (reverseEs es1)
+  | Range (esList) -> 
+    (let range = List.map (fun a -> reverseEs a) esList in 
+    Range range 
+  )
   ;;
 
 let rec reverseEff (eff:effect) : effect =
@@ -279,6 +296,10 @@ let rec substituteESWithAgr (es:es) (realArg:expression) (formalArg: var):es =
   | Kleene esIn -> Kleene (substituteESWithAgr esIn realArg formalArg)
   | Omega esIn -> Omega (substituteESWithAgr esIn realArg formalArg)
   | Underline -> es
+  | Range (esList) -> 
+    (let range = List.map (fun a -> substituteESWithAgr a realArg formalArg) esList in 
+    Range range 
+    )
   ;;
 
 
@@ -371,7 +392,18 @@ let rec normalTerms (t:terms):terms  =
   ;;
 
 
+
 let rec aCompareES es1 es2 = 
+  let rec subESsetOf (small : es list) (big : es list) :bool = 
+    let rec oneOf a set :bool = 
+      match set with 
+        [] -> false 
+      | y:: ys -> if aCompareES a y then true else oneOf a ys
+    in 
+    match small with 
+      [] -> true 
+    | x :: xs -> if oneOf x big == false then false else subESsetOf xs big
+  in 
 
   match (es1, es2) with 
     (Bot, Bot) -> true
@@ -385,6 +417,7 @@ let rec aCompareES es1 es2 =
       if ((aCompareES es1L es2L) && (aCompareES es1R es2R)) then true 
       else ((aCompareES es1L es2R) && (aCompareES es1R es2L))
   | (Kleene esL, Kleene esR) -> aCompareES esL esR
+  | (Range (esList1), Range (esList2)) ->  subESsetOf esList1 esList2 && subESsetOf esList2 esList1
   | _ -> false
 ;;
  
@@ -487,6 +520,11 @@ let rec normalES es pi =
       | Kleene esIn1 ->  Kleene (normalES esIn1 pi)
       | ESOr(Emp, aa) -> Kleene aa
       | _ ->  Kleene normalInside)
+
+  | Range (esList) -> 
+      (let range = List.map (fun a -> normalES a pi) esList in 
+      Range range 
+      )
   ;;
 
 let entailConstrains pi1 pi2 = 
@@ -518,27 +556,3 @@ let rec normalPure (pi:pure):pure =
 
 
 
-
-let rec normalEffect eff =
-  let noPureOr  = deletePureOrInEff eff in 
-  match noPureOr with
-    Effect (p, es) -> 
-      if (askZ3 p) == false then 
-        ( 
-          Effect (FALSE,  Bot)
-        )
-      else 
-        let p_normal = normalPure p in 
-        let es_normal  = normalES es p in
-        (match es_normal with 
-          ESOr (es_nor1, es_nor2) -> Disj (Effect (p_normal, es_nor1), Effect (p_normal, es_nor2))
-        | _ -> Effect ( p_normal, es_normal)
-        )
-  | Disj (eff1, eff2) -> 
-      match (normalEffect eff1, normalEffect eff2) with
-        (Effect (_,  Bot), _) -> normalEffect eff2
-      | (_, Effect (_,  Bot)) -> normalEffect eff1
-      | (Effect (FALSE,  _), _) -> normalEffect eff2
-      | (_, Effect (FALSE,  _)) -> normalEffect eff1
-      | _ -> Disj (normalEffect eff1, normalEffect eff2)
-  ;;
