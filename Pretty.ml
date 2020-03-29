@@ -99,6 +99,7 @@ let rec showES (es:es):string =
   | Event ev -> ev 
   | Cons (es1, es2) -> "("^(showES es1) ^ "." ^ (showES es2)^")"
   | ESOr (es1, es2) -> "("^(showES es1) ^ "|" ^ (showES es2)^")"
+  | ESAnd (es1, es2) -> "("^(showES es1) ^ "/\\" ^ (showES es2)^")"
   | Ttimes (es, t) -> "("^(showES es) ^ "^" ^ (showTerms t)^")"
   | Omega es -> "("^(showES es) ^ "^" ^  "w" ^")"
   | Underline -> "_"
@@ -172,6 +173,7 @@ let rec regToInt (esIn:es):int32  =
     | Event ev ->  encodeStrToInt ev
     | Cons (es1, es2) -> 5 * (helper es1) + (helper es2)
     | ESOr (es1, es2) -> (helper es1) + 7* (helper es2) 
+    | ESAnd (es1, es2) -> (helper es1) + 9* (helper es2) 
     | Kleene es ->  (helper es) * 11
     | Ttimes (esIn, t) -> (helper esIn (*+ termToInt t*) ) * 13
     | Omega esIn -> (helper esIn ) * 17
@@ -250,6 +252,7 @@ let rec reverseEs (es:es) : es =
   | Event ev -> Event ev 
   | Cons (es1, es2) -> Cons (reverseEs es2, reverseEs es1)
   | ESOr (es1, es2) -> ESOr (reverseEs es1, reverseEs es2)
+  | ESAnd (es1, es2) -> ESAnd (reverseEs es1, reverseEs es2)
   | Ttimes (es1, t) -> Ttimes (reverseEs es1, t)
   | Omega (es1) ->  Omega (reverseEs es1) 
   | Underline -> Underline
@@ -292,6 +295,7 @@ let rec substituteESWithAgr (es:es) (realArg:expression) (formalArg: var):es =
   | Event ev  -> es
   | Cons (es1, es2) ->  Cons (substituteESWithAgr es1 realArg formalArg, substituteESWithAgr es2 realArg formalArg)
   | ESOr (es1, es2) ->  ESOr (substituteESWithAgr es1 realArg formalArg, substituteESWithAgr es2 realArg formalArg)
+  | ESAnd (es1, es2) ->  ESAnd (substituteESWithAgr es1 realArg formalArg, substituteESWithAgr es2 realArg formalArg)
   | Ttimes (esIn, t) -> Ttimes (substituteESWithAgr esIn realArg formalArg, substituteTermWithAgr t realArg formalArg)
   | Kleene esIn -> Kleene (substituteESWithAgr esIn realArg formalArg)
   | Omega esIn -> Omega (substituteESWithAgr esIn realArg formalArg)
@@ -416,116 +420,16 @@ let rec aCompareES es1 es2 =
   | (ESOr (es1L, es1R), ESOr (es2L, es2R)) -> 
       if ((aCompareES es1L es2L) && (aCompareES es1R es2R)) then true 
       else ((aCompareES es1L es2R) && (aCompareES es1R es2L))
+  | (ESAnd (es1L, es1R), ESAnd (es2L, es2R)) -> 
+      if ((aCompareES es1L es2L) && (aCompareES es1R es2R)) then true 
+      else ((aCompareES es1L es2R) && (aCompareES es1R es2L))
   | (Kleene esL, Kleene esR) -> aCompareES esL esR
   | (Range (esList1), Range (esList2)) ->  subESsetOf esList1 esList2 && subESsetOf esList2 esList1
   | _ -> false
 ;;
  
 
-let rec normalES es pi = 
-  match es with
-    Bot -> es
-  | Emp -> es
-  | Event ev -> es
-  | Underline -> Underline
-  | Cons (Cons (esIn1, esIn2), es2)-> normalES (Cons (esIn1, Cons (esIn2, es2))) pi
-  | Cons (es1, es2) -> 
-      let normalES1 = normalES es1 pi in
-      let normalES2 = normalES es2 pi in
-      (match (normalES1, normalES2) with 
-        (Emp, _) -> normalES2
-      | (_, Emp) -> normalES1
-      | (Bot, _) -> Bot
-      | (Omega _, _ ) -> normalES1
 
-      | (Kleene (esIn1), Kleene (esIn2)) -> 
-          if aCompareES esIn1 esIn2 == true then normalES2
-          else Cons (normalES1, normalES2)
-      | (Kleene (esIn1), Cons(Kleene (esIn2), es2)) -> 
-          if aCompareES esIn1 esIn2 == true then normalES2
-          else Cons (normalES1, normalES2) 
-
-      | (normal_es1, normal_es2) -> 
-        match (normal_es1, normal_es2) with 
-        |  (Cons (esIn1, esIn2), es2)-> normalES (Cons (esIn1, Cons (esIn2, es2))) pi 
-        |  (ESOr (or1, or2), es2) -> normalES (ESOr ( (Cons (or1, es2)),  (Cons (or2, es2)))) pi
-        |  (es1, ESOr (or1, or2)) -> normalES (ESOr ( (Cons (es1, or1)),  (Cons (es1, or2)))) pi
-        | _-> Cons (normal_es1, normal_es2)
-      ;)
-  | ESOr (es1, es2) -> 
-      (match (normalES es1 pi, normalES es2 pi) with 
-        (Bot, Bot) -> Bot
-      | (Bot, norml_es2) -> norml_es2
-      | (norml_es1, Bot) -> norml_es1
-      | (ESOr(es1In, es2In), norml_es2 ) ->
-        if aCompareES norml_es2 es1In || aCompareES norml_es2 es2In then ESOr(es1In, es2In)
-        else ESOr (ESOr(es1In, es2In), norml_es2 )
-      | (norml_es2, ESOr(es1In, es2In) ) ->
-        if aCompareES norml_es2 es1In || aCompareES norml_es2 es2In then ESOr(es1In, es2In)
-        else ESOr (norml_es2, ESOr(es1In, es2In))
-      | (Emp, Kleene norml_es2) ->  Kleene norml_es2
-      | (Kleene norml_es2, Emp) ->  Kleene norml_es2
-
-      | (norml_es1, norml_es2) -> 
-        if aCompareES  norml_es1 norml_es2 == true then norml_es1
-        else 
-        (match (norml_es1, norml_es2) with
-          (norml_es1, Kleene norml_es2) ->  
-          if aCompareES norml_es1 norml_es2 == true then Kleene norml_es2
-          else ESOr (norml_es1, Kleene norml_es2)
-        | (Kleene norml_es2, norml_es1) ->  
-          if aCompareES norml_es1 norml_es2 == true then Kleene norml_es2
-          else ESOr (Kleene norml_es2, norml_es1)
-        |  _-> ESOr (norml_es1, norml_es2)
-        )
-      ;)
-  (*
-  | Cons (es1, es2) -> 
-      let normalES1 = normalES es1 pi in
-      let normalES2 = normalES es2 pi in
-      (match (normalES1, normalES2) with 
-        (Emp, _) -> normalES2
-      | (_, Emp) -> normalES1
-      | (Bot, _) -> Bot
-      | (Omega _, _ ) -> normalES1
-      | (normal_es1, normal_es2) -> Cons (normal_es1, normal_es2)
-      ;)
-      
-  | ESOr (es1, es2) -> 
-      (match (normalES es1 pi, normalES es2 pi) with 
-        (Bot, Bot) -> Bot
-      | (Bot, norml_es2) -> norml_es2
-      | (norml_es1, Bot) -> norml_es1
-      | (norml_es1, norml_es2) -> ESOr (norml_es1, norml_es2)
-      ;)
-      *)
-  | Ttimes (es1, terms) -> 
-      let t = normalTerms terms in 
-      let normalInside = normalES es1 pi in 
-      (match normalInside with
-        Emp -> Emp
-      | _ -> 
-        let allPi = getAllPi pi [] in 
-        if (existPi (Eq (terms, Number 0)) allPi) || (compareTerm t (Number 0 )) then Emp else Ttimes (normalInside, t))
-        (*else if (existPi (Eq (terms, n)) allPi)) then Emp else Ttimes (normalInside, t))*)
-  | Omega es1 -> 
-      let normalInside = normalES es1 pi in 
-      (match normalInside with
-        Emp -> Emp
-      | _ ->  Omega normalInside)
-  | Kleene es1 -> 
-      let normalInside = normalES es1 pi in 
-      (match normalInside with
-        Emp -> Emp
-      | Kleene esIn1 ->  Kleene (normalES esIn1 pi)
-      | ESOr(Emp, aa) -> Kleene aa
-      | _ ->  Kleene normalInside)
-
-  | Range (esList) -> 
-      (let range = List.map (fun a -> normalES a pi) esList in 
-      Range range 
-      )
-  ;;
 
 let entailConstrains pi1 pi2 = 
 

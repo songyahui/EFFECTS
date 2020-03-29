@@ -1,11 +1,11 @@
 ====================================
-TRUE/\(A.B) |- TRUE/\({(A^*), B}.{(A^*), B})
+TRUE/\(A.B) |- TRUE/\(((A.B).(C^*))/\((A.B).(A^*)))
 [Result] Succeed
-[Explored 2 States]
-[Verification Time: 0.017594 s]
+[Explored 1 States]
+[Verification Time: 0.006567 s]
  
 
-* TRUE/\(A.B) |- TRUE/\({(A^*), B}.{(A^*), B})   [UNFOLD]
-* └── TRUE/\B |- (TRUE/\((A^*).{(A^*), B}))\/(TRUE/\(A^*))   [UNFOLD]
-*     └── TRUE/\emp |- TRUE/\emp   [Frame-Prove] with R = emp
+* TRUE/\(A.B) |- TRUE/\((A.(B.(C^*)))/\(A.(B.(A^*))))   [UNFOLD]
+* └── TRUE/\B |- TRUE/\((B.(C^*))/\(B.(A^*)))   [UNFOLD]
+*     └── TRUE/\emp |- TRUE/\((C^*)/\(A^*))   [UNFOLD]
 

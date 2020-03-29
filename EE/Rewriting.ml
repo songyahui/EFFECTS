@@ -31,6 +31,7 @@ let rec nullable (pi :pure) (es:es) : bool=
   | Event ev -> false 
   | Cons (es1 , es2) -> (nullable pi es1) && (nullable pi es2)
   | ESOr (es1 , es2) -> (nullable pi es1) || (nullable pi es2)
+  | ESAnd (es1 , es2) -> (nullable pi es1) && (nullable pi es2)
   | Ttimes (es1, t) -> askZ3 (PureAnd (pi, Eq (t, Number 0))) 
   | Omega es1 -> false
   | Underline -> false
@@ -42,6 +43,18 @@ let rec nullable (pi :pure) (es:es) : bool=
 ;;
     
 let rec fst (pi :pure) (es:es): event list = 
+  let rec common (left:string list) (right:string list) (acc:string list): string list =
+    match left with 
+      [] -> acc 
+    | x :: xs -> 
+      let rec oneOF (ele:string) (li:string list):bool =
+        (match li with 
+          [] -> false 
+        | y::ys -> if String.compare ele y == 0 then true else oneOF ele ys
+        )
+      in 
+      if oneOF x right then common xs right (append acc [x]) else common xs right acc
+  in 
   match es with
     Bot -> []
   | Emp -> []
@@ -50,6 +63,7 @@ let rec fst (pi :pure) (es:es): event list =
   | Ttimes (es1, t) -> fst pi es1
   | Cons (es1 , es2) ->  if nullable pi es1 then append (fst pi es1) (fst pi es2) else fst pi es1
   | ESOr (es1, es2) -> append (fst pi es1) (fst pi es2)
+  | ESAnd (es1, es2) -> common (fst pi es1) (fst pi es2) []
   | Underline -> ["_"]
   | Kleene es1 -> fst pi es1
   | Range (esList) -> 
@@ -74,6 +88,13 @@ let ifShouldDisj (temp1:effect) (temp2:effect) : effect =
       | _ -> 
       Disj (temp1, temp2 )
   ;;
+let ifShouldConj (temp1:effect) (temp2:effect) : effect = 
+  match (temp1, temp2) with
+      (Effect(pure1, evs1), Effect(pure2, evs2)) -> 
+        Effect (PureAnd (pure1, pure2), ESAnd (evs1, evs2))
+      | _ -> raise (Foo "wo bu zhidao za zheng ifShouldConj")
+      (*Disj (temp1, temp2 )*)
+  ;;
 
 let rec compareES es1 es2 = 
   let rec subESsetOf (small : es list) (big : es list) :bool = 
@@ -93,6 +114,10 @@ let rec compareES es1 es2 =
     String.compare s1 s2 == 0
   | (Cons (es1L, es1R), Cons (es2L, es2R)) -> (compareES es1L es2L) && (compareES es1R es2R)
   | (ESOr (es1L, es1R), ESOr (es2L, es2R)) -> 
+      let one = ((compareES es1L es2L) && (compareES es1R es2R)) in
+      let two =  ((compareES es1L es2R) && (compareES es1R es2L)) in 
+      one || two
+  | (ESAnd (es1L, es1R), ESAnd (es2L, es2R)) -> 
       let one = ((compareES es1L es2L) && (compareES es1R es2R)) in
       let two =  ((compareES es1L es2R) && (compareES es1R es2L)) in 
       one || two
@@ -122,6 +147,130 @@ let rec splitEffects eff : (pure * es) list =
   match eff with 
     Effect (p1, es1) -> [(p1, es1)]
   | Disj (eff1, eff2) -> append (splitEffects eff1) (splitEffects eff2)
+  ;;
+
+let rec normalES es pi = 
+  match es with
+    Bot -> es
+  | Emp -> es
+  | Event ev -> es
+  | Underline -> Underline
+  | Cons (Cons (esIn1, esIn2), es2)-> normalES (Cons (esIn1, Cons (esIn2, es2))) pi
+  | Cons (es1, es2) -> 
+      let normalES1 = normalES es1 pi in
+      let normalES2 = normalES es2 pi in
+      (match (normalES1, normalES2) with 
+        (Emp, _) -> normalES2
+      | (_, Emp) -> normalES1
+      | (Bot, _) -> Bot
+      | (Omega _, _ ) -> normalES1
+
+      | (Kleene (esIn1), Kleene (esIn2)) -> 
+          if aCompareES esIn1 esIn2 == true then normalES2
+          else Cons (normalES1, normalES2)
+      | (Kleene (esIn1), Cons(Kleene (esIn2), es2)) -> 
+          if aCompareES esIn1 esIn2 == true then normalES2
+          else Cons (normalES1, normalES2) 
+
+      | (normal_es1, normal_es2) -> 
+        match (normal_es1, normal_es2) with 
+        |  (Cons (esIn1, esIn2), es2)-> normalES (Cons (esIn1, Cons (esIn2, es2))) pi 
+        |  (ESOr (or1, or2), es2) -> normalES (ESOr ( (Cons (or1, es2)),  (Cons (or2, es2)))) pi
+        |  (es1, ESOr (or1, or2)) -> normalES (ESOr ( (Cons (es1, or1)),  (Cons (es1, or2)))) pi
+        | _-> Cons (normal_es1, normal_es2)
+      ;)
+  | ESOr (es1, es2) -> 
+      (match (normalES es1 pi, normalES es2 pi) with 
+        (Bot, Bot) -> Bot
+      | (Bot, norml_es2) -> norml_es2
+      | (norml_es1, Bot) -> norml_es1
+      | (ESOr(es1In, es2In), norml_es2 ) ->
+        if aCompareES norml_es2 es1In || aCompareES norml_es2 es2In then ESOr(es1In, es2In)
+        else ESOr (ESOr(es1In, es2In), norml_es2 )
+      | (norml_es2, ESOr(es1In, es2In) ) ->
+        if aCompareES norml_es2 es1In || aCompareES norml_es2 es2In then ESOr(es1In, es2In)
+        else ESOr (norml_es2, ESOr(es1In, es2In))
+      | (Emp, Kleene norml_es2) ->  Kleene norml_es2
+      | (Kleene norml_es2, Emp) ->  Kleene norml_es2
+
+      | (norml_es1, norml_es2) -> 
+        if aCompareES  norml_es1 norml_es2 == true then norml_es1
+        else 
+        (match (norml_es1, norml_es2) with
+          (norml_es1, Kleene norml_es2) ->  
+          if aCompareES norml_es1 norml_es2 == true then Kleene norml_es2
+          else ESOr (norml_es1, Kleene norml_es2)
+        | (Kleene norml_es2, norml_es1) ->  
+          if aCompareES norml_es1 norml_es2 == true then Kleene norml_es2
+          else ESOr (Kleene norml_es2, norml_es1)
+        |  _-> ESOr (norml_es1, norml_es2)
+        )
+      ;)
+
+  | ESAnd (es1, es2) -> 
+      (match (normalES es1 pi, normalES es2 pi) with 
+
+      | (Bot, norml_es2) -> Bot
+      | (norml_es1, Bot) -> Bot
+      | (Event x, Event y) -> if String.compare x y == 0 then Event x else Bot
+
+      | (Emp, norml_es2) -> if nullable pi norml_es2 then Emp else Bot 
+      | (norml_es1, Emp) -> if nullable pi norml_es1 then Emp else Bot 
+
+      | (norml_es1, norml_es2) -> 
+        if aCompareES  norml_es1 norml_es2 == true then norml_es1
+        else ESAnd (norml_es1, norml_es2)
+
+      )
+
+
+
+  (*
+  | Cons (es1, es2) -> 
+      let normalES1 = normalES es1 pi in
+      let normalES2 = normalES es2 pi in
+      (match (normalES1, normalES2) with 
+        (Emp, _) -> normalES2
+      | (_, Emp) -> normalES1
+      | (Bot, _) -> Bot
+      | (Omega _, _ ) -> normalES1
+      | (normal_es1, normal_es2) -> Cons (normal_es1, normal_es2)
+      ;)
+      
+  | ESOr (es1, es2) -> 
+      (match (normalES es1 pi, normalES es2 pi) with 
+        (Bot, Bot) -> Bot
+      | (Bot, norml_es2) -> norml_es2
+      | (norml_es1, Bot) -> norml_es1
+      | (norml_es1, norml_es2) -> ESOr (norml_es1, norml_es2)
+      ;)
+      *)
+  | Ttimes (es1, terms) -> 
+      let t = normalTerms terms in 
+      let normalInside = normalES es1 pi in 
+      (match normalInside with
+        Emp -> Emp
+      | _ -> 
+        let allPi = getAllPi pi [] in 
+        if (existPi (Eq (terms, Number 0)) allPi) || (compareTerm t (Number 0 )) then Emp else Ttimes (normalInside, t))
+        (*else if (existPi (Eq (terms, n)) allPi)) then Emp else Ttimes (normalInside, t))*)
+  | Omega es1 -> 
+      let normalInside = normalES es1 pi in 
+      (match normalInside with
+        Emp -> Emp
+      | _ ->  Omega normalInside)
+  | Kleene es1 -> 
+      let normalInside = normalES es1 pi in 
+      (match normalInside with
+        Emp -> Emp
+      | Kleene esIn1 ->  Kleene (normalES esIn1 pi)
+      | ESOr(Emp, aa) -> Kleene aa
+      | _ ->  Kleene normalInside)
+
+  | Range (esList) -> 
+      (let range = List.map (fun a -> normalES a pi) esList in 
+      Range range 
+      )
   ;;
 
 let rec normalEffect eff =
@@ -170,6 +319,10 @@ let rec derivative (p :pure) (es:es) (ev:string): effect =
     let temp1 = normalEffect (derivative p es1 ev) in
     let temp2 = normalEffect (derivative p es2 ev) in 
     ifShouldDisj temp1 temp2
+  | ESAnd (es1 , es2) -> 
+    let temp1 = normalEffect (derivative p es1 ev) in
+    let temp2 = normalEffect (derivative p es2 ev) in 
+    ifShouldConj temp1 temp2
   | Ttimes (es1, t) -> 
       let pi = PureAnd (Gt (t, Number 0), p) in
       let efF = derivative pi es1 ev in 
@@ -593,6 +746,8 @@ let rec substituteESWithVal (es:es) (var1:string) (val1: int):es =
   | Event ev  -> es
   | Cons (es1, es2) ->  Cons (substituteESWithVal es1 var1 val1, substituteESWithVal es2 var1 val1)
   | ESOr (es1, es2) ->  ESOr (substituteESWithVal es1 var1 val1, substituteESWithVal es2 var1 val1)
+  | ESAnd (es1, es2) ->  ESAnd (substituteESWithVal es1 var1 val1, substituteESWithVal es2 var1 val1)
+
   | Ttimes (esIn, t) -> Ttimes (substituteESWithVal esIn var1 val1, substituteTermWithVal t var1 val1)
   | Kleene esIn -> Kleene (substituteESWithVal esIn var1 val1)
   | Omega esIn -> Omega (substituteESWithVal esIn var1 val1)

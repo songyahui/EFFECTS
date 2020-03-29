@@ -122,12 +122,14 @@ es:
 | str = EVENT { Event str }
 | LPAR r = es RPAR { r }
 | a = es CHOICE b = es { ESOr(a, b) }
+| a = es CONJ b = es { ESAnd(a, b) }
 | LPAR r = es POWER t = term RPAR { Ttimes(r, t )}
 | LPAR r = es POWER OMEGA RPAR{ Omega r }
 | UNDERLINE {Underline}
 | a = es CONCAT b = es { Cons(a, b) } 
 | LPAR a = es POWER KLEENE RPAR{Kleene a}
 | LBRACK a = es_range RBRACK {Range a}
+
 
 
 effect:
