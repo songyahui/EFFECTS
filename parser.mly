@@ -55,7 +55,7 @@ expres_help :
 | t = type_ name = VAR EQ e = expres_help {LocalDel (t, name, e)}
 | name = VAR LPAR vlist = real_param RPAR {Call (name, vlist)}
 | v = VAR EQ e = expres_help{Assign (v, e)}
-| EVENTKEY LPAR ev = STRING RPAR {EventRaise ev}
+| EVENTKEY LPAR ev = STRING p=parm RPAR {EventRaise (ev,p)}
 | ASSERTKEY LPAR eff = effect RPAR {Assertion eff}
 
 cond:
@@ -116,10 +116,14 @@ es_range :
 | single = es {[single]}
 | e = es_range COMMA eddd = es {append e [eddd]}
 
+parm:
+| {None}
+| LPAR i=INTE RPAR {Some i}
+
 
 es:
 | EMPTY { Emp }
-| str = EVENT { Event str }
+| str = EVENT p=parm { Event (str, p) }
 | LPAR r = es RPAR { r }
 | a = es CHOICE b = es { ESOr(a, b) }
 | a = es CONJ b = es { ESAnd(a, b) }

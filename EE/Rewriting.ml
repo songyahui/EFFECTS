@@ -28,7 +28,7 @@ let rec nullable (pi :pure) (es:es) : bool=
   match es with
     Bot -> false 
   | Emp -> true
-  | Event ev -> false 
+  | Event _ -> false 
   | Cons (es1 , es2) -> (nullable pi es1) && (nullable pi es2)
   | ESOr (es1 , es2) -> (nullable pi es1) || (nullable pi es2)
   | ESAnd (es1 , es2) -> (nullable pi es1) && (nullable pi es2)
@@ -42,15 +42,15 @@ let rec nullable (pi :pure) (es:es) : bool=
     )
 ;;
     
-let rec fst (pi :pure) (es:es): event list = 
-  let rec common (left:string list) (right:string list) (acc:string list): string list =
+let rec fst (pi :pure) (es:es): (event* int option) list = 
+  let rec common (left:(string* int option) list) (right:(string*int option) list) (acc:(string*int option) list): (string*int option) list =
     match left with 
       [] -> acc 
     | x :: xs -> 
-      let rec oneOF (ele:string) (li:string list):bool =
+      let rec oneOF (ele:(string*int option )) (li:(string*int option) list):bool =
         (match li with 
           [] -> false 
-        | y::ys -> if String.compare ele y == 0 then true else oneOF ele ys
+        | y::ys -> if compareEvent ele y then true else oneOF ele ys
         )
       in 
       if oneOF x right then common xs right (append acc [x]) else common xs right acc
@@ -58,13 +58,13 @@ let rec fst (pi :pure) (es:es): event list =
   match es with
     Bot -> []
   | Emp -> []
-  | Event ev ->  [ev]
+  | Event (str, p) ->  [(str, p)]
   | Omega es1 -> fst pi es1
   | Ttimes (es1, t) -> fst pi es1
   | Cons (es1 , es2) ->  if nullable pi es1 then append (fst pi es1) (fst pi es2) else fst pi es1
   | ESOr (es1, es2) -> append (fst pi es1) (fst pi es2)
   | ESAnd (es1, es2) -> common (fst pi es1) (fst pi es2) []
-  | Underline -> ["_"]
+  | Underline -> [("_",None)]
   | Kleene es1 -> fst pi es1
   | Range (esList) -> 
   (let range = List.fold_left (fun acc a -> append acc (fst pi a)) [] esList in 
@@ -110,8 +110,8 @@ let rec compareES es1 es2 =
   match (es1, es2) with 
     (Bot, Bot) -> true
   | (Emp, Emp) -> true
-  | (Event s1, Event s2) -> 
-    String.compare s1 s2 == 0
+  | (Event (s1,p1), Event (s2,p2)) -> 
+    compareEvent (s1,p1) (s2,p2)
   | (Cons (es1L, es1R), Cons (es2L, es2R)) -> (compareES es1L es2L) && (compareES es1R es2R)
   | (ESOr (es1L, es1R), ESOr (es2L, es2R)) -> 
       let one = ((compareES es1L es2L) && (compareES es1R es2R)) in
@@ -153,7 +153,7 @@ let rec normalES es pi =
   match es with
     Bot -> es
   | Emp -> es
-  | Event ev -> es
+  | Event _ -> es
   | Underline -> Underline
   | Cons (Cons (esIn1, esIn2), es2)-> normalES (Cons (esIn1, Cons (esIn2, es2))) pi
   | Cons (es1, es2) -> 
@@ -212,7 +212,7 @@ let rec normalES es pi =
 
       | (Bot, norml_es2) -> Bot
       | (norml_es1, Bot) -> Bot
-      | (Event x, Event y) -> if String.compare x y == 0 then Event x else Bot
+      | (Event (s1, p1), Event (s2, p2)) -> if compareEvent (s1, p1) (s2, p2) then Event (s1, p1) else Bot
 
       | (Emp, norml_es2) -> if nullable pi norml_es2 then Emp else Bot 
       | (norml_es1, Emp) -> if nullable pi norml_es1 then Emp else Bot 
@@ -306,14 +306,14 @@ let rec normalEffect eff =
   ;;
 
 
-let rec derivative (p :pure) (es:es) (ev:string): effect =
+let rec derivative (p :pure) (es:es) (ev:(string*int option)): effect =
   match es with
     Bot -> Effect (FALSE,  Bot)
   | Emp -> Effect (FALSE,  Bot)
   | Underline -> Effect (p, Emp)
-  | Event ev1 -> 
-      if (String.compare ev "_") == 0 then  Effect (p, Emp)
-      else if (String.compare ev1 ev) == 0 then Effect (p, Emp) else Effect (FALSE, Bot)
+  | Event (ev1, p1) -> 
+      if compareEvent ev ("_", None) then  Effect (p, Emp)
+      else if compareEvent (ev1, p1) ev then Effect (p, Emp) else Effect (FALSE, Bot)
   | Omega es1 -> appendEff_ES (derivative p es1 ev) es
   | ESOr (es1 , es2) -> 
     let temp1 = normalEffect (derivative p es1 ev) in
@@ -743,7 +743,7 @@ let rec substituteESWithVal (es:es) (var1:string) (val1: int):es =
   match es with 
     Bot  -> es
   | Emp  -> es
-  | Event ev  -> es
+  | Event _  -> es
   | Cons (es1, es2) ->  Cons (substituteESWithVal es1 var1 val1, substituteESWithVal es2 var1 val1)
   | ESOr (es1, es2) ->  ESOr (substituteESWithVal es1 var1 val1, substituteESWithVal es2 var1 val1)
   | ESAnd (es1, es2) ->  ESAnd (substituteESWithVal es1 var1 val1, substituteESWithVal es2 var1 val1)
@@ -788,13 +788,14 @@ let rec getProductHypo (eff1:effect) (eff2:effect) : context =
   | Disj (eff1InL, eff1InR) -> append (getProductHypo eff1InL eff2) (getProductHypo eff1InR eff2) 
 ;;
 
+(*
 let getNewHypos (fstL:string list) (piL:pure) (esL:es) (piR:pure) (esR:es) : context = 
   let effPair  = map (fun ev -> ( (derivative piL esL ev), (derivative piR esR ev))) fstL in 
   let pi_EsPair = flatten (map (fun (eff1, eff2) -> getProductHypo eff1 eff2 ) effPair) in 
   pi_EsPair
   ;;
 
-
+*)
 (*-------------------------------------------------------------
 --------------------Main Entrance------------------------------
 ---------------------------------------------------------------
@@ -832,13 +833,13 @@ let rec checkNullable (eff:effect) :bool =
  ;;
 
 
-let rec checkFst (eff:effect) : event list = 
+let rec checkFst (eff:effect) : (event*int option) list = 
   match eff with
     Effect (pi, es) -> fst pi es
   | Disj (eff1, eff2) -> append (checkFst eff1) (checkFst eff2) 
  ;;
 
-let rec checkDerivative  (eff:effect) (ev:event): effect = 
+let rec checkDerivative  (eff:effect) (ev:(event*int option)): effect = 
   match eff with 
     Effect (pi, es) -> derivative pi es ev
   | Disj (eff1, eff2) -> Disj (checkDerivative eff1 ev, checkDerivative eff2 ev)
@@ -1338,17 +1339,17 @@ type entailment =  (effect * effect * expectation)
 
 let ttest = (Plus ((Var "song"),Number 1));;
 let ttest1 = (Var "t");;
-let estest = ESOr (Cons (Ttimes ((Event "a"), Var "t"),  (Event "a")), Cons ((Event "a"),(Event "b")));;
+let estest = ESOr (Cons (Ttimes ((Event ("a",None)), Var "t"),  (Event ("a",None))), Cons ((Event ("a",None)),(Event ("b",None))));;
 let puretest =  Eq (ttest1, Number 0);;
 let testes = Effect (puretest, estest);; 
 let testcontext =  [testes; testes];;
-let testD = derivative puretest estest "a";;
-let leftEff = Effect (TRUE, ESOr (Omega (Event "a"), Omega (Event "b"))) ;;
-let rightEff = Effect (TRUE, Omega (Event "b")) ;;
-let leftEff1 = Effect (TRUE, Cons (Event "a", Cons (Event "b", Event "c"))) ;;
-let rightEff2 = Effect (TRUE, Cons (Event "a", Cons (Event "d", Event "c"))) ;;
-let lhsss = Effect (TRUE, Cons (Ttimes ((Event "a"), Var "t"), Event "c"));;
-let rhsss = Effect (TRUE, Omega ((Event "a")));;
+let testD = derivative puretest estest ("a",None);;
+let leftEff = Effect (TRUE, ESOr (Omega (Event ("a",None)), Omega (Event ("b",None)))) ;;
+let rightEff = Effect (TRUE, Omega (Event ("b",None))) ;;
+let leftEff1 = Effect (TRUE, Cons (Event ("a",None), Cons (Event ("b",None), Event ("c",None)))) ;;
+let rightEff2 = Effect (TRUE, Cons (Event ("a",None), Cons (Event ("d",None), Event ("c",None)))) ;;
+let lhsss = Effect (TRUE, Cons (Ttimes ((Event ("a",None)), Var "t"), Event ("c",None)));;
+let rhsss = Effect (TRUE, Omega ((Event ("a",None))));;
 
 
 
@@ -1361,9 +1362,9 @@ Printf.printf "%s" (showPure puretest);;
 Printf.printf "%s" (showEffect testes);;
 Printf.printf "%s" (showContext testcontext );;*)
 
-let a = Event "Tick" ;;
-let b = Event "b" ;;
-let c = Event "c" ;;
+let a = Event ("Tick",None) ;;
+let b = Event ("b",None) ;;
+let c = Event ("c",None) ;;
 let ab = Cons (a,b) ;;
 let bc = Cons (b,c) ;;
 let aOrb = ESOr (a, b) ;;
@@ -1407,26 +1408,6 @@ let printReport lhs rhs:string =
 let testcases : entailment list= 
   [
 
-  (Effect(Gt (Var "t", Number 0), Cons (createT (Event "a"),omegaA))
-  ,Effect(Gt (Var "t", Number 0), Cons (createT (Event "a"),omegaB))
-  ,true)
-  ;
-  (Effect(TRUE, Cons (Cons (Event "a",createT_1 (Event "a")),omegaA))
-  ,Effect(TRUE, Cons (createT (Event "a"),omegaB))
-  ,true)
-  ;
-  (Effect(TRUE, Cons (Event "b", Ttimes (Cons (Event "a", Event "b"),Var "t")))
-  ,Effect(TRUE, Cons (Ttimes (Cons (Event "a", Event "b"),Var "t"), Event "b"))
-  ,true)
-  ;
-  (Effect(Gt (Var "t", Number 0), Cons (Event "b", Ttimes (Cons (Event "a", Event "b"),Var "t")))
-  ,Effect(Gt (Var "t", Number 0), Cons (Ttimes (Cons (Event "a", Event "b"),Var "t"), Event "b"))
-  ,true)
-  ;
-  (Effect(TRUE, Event "a")
-  ,Effect(TRUE, Event "a")
-  ,true)
-  ;
   (Effect(TRUE, ab)
   ,Effect(TRUE, bc)
   ,true)
@@ -1476,21 +1457,7 @@ let testcases : entailment list=
   ,true
   )
   ;
-  (Effect(TRUE, Cons (Event "a" ,createT_1 a))
-  ,Effect(TRUE, createT a)
-  ,true
-  )
-  ;
-  (Effect(TRUE, createT a)
-  ,Effect(TRUE, Cons (Event "a" ,createT_1 a))
-  ,true
-  )
-  ;
-  (Effect(Gt(Var "t", Number (-1)), createT a)
-  ,Effect(TRUE, Cons (Event "a" ,createT_1 a))
-  ,true
-  )
-  ;
+
   (Effect(Gt(Var "t", Number 0), createT a)
   ,Effect(TRUE, createT_1 a)
   ,true
@@ -1506,16 +1473,7 @@ let testcases : entailment list=
   ,Effect(TRUE, createT_1 a)
   ,true
   )
-  ;
-  (Effect(TRUE, Cons (Event "Tick" ,createT_1 a))
-  ,Effect(TRUE, createT a)
-  ,true
-  )
-  ;
-  (Effect(TRUE, Cons (Event "a" ,createT_1 a)) 
-  ,Effect(TRUE, createT a)
-  ,true
-  )
+
   
   ];;
 

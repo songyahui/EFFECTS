@@ -57,7 +57,9 @@ let rec printExpr (expr: expression):string =
   | Call (name, elist) -> name ^ "(" ^ print_real_Param elist ^ ")"
   | Assign (v, e) -> v ^ " = " ^ printExpr e
   | Seq (e1, e2) -> printExpr e1 ^ ";" ^ printExpr e2
-  | EventRaise ev -> ev
+  | EventRaise (ev,None) -> ev
+  | EventRaise (ev,Some n) -> ev ^"(" ^string_of_int n ^")"
+
   | IfElse (e1, e2, e3) -> "if " ^ printExpr e1 ^ " then " ^ printExpr e2 ^ " else " ^ printExpr e3 
   | Cond (e1, e2, str) -> printExpr e1 ^ str ^ printExpr e2 
   | BinOp (e1, e2, str) -> printExpr e1 ^ str ^ printExpr e2 
@@ -205,7 +207,7 @@ let condToPure (expr :expression) :pure =
 
 let rec verifier (caller:string) (expr:expression) (state_H:effect) (state_C:effect) (prog: program): effect = 
   match expr with 
-    EventRaise ev -> concatEffEs state_C (Event ev)
+    EventRaise (ev,p) -> concatEffEs state_C (Event (ev,p))
   | Seq (e1, e2) -> 
     let state_C' = verifier caller e1 state_H state_C prog in 
     verifier caller e2 state_H state_C' prog

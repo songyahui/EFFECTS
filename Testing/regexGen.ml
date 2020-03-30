@@ -45,7 +45,7 @@ let getRandomEvent (s:int): string =
   ;;
 
 let rec regexGen (h:int) (s:int) : es = 
-  if h <= 1 then Event (getRandomEvent s)
+  if h <= 1 then Event ((getRandomEvent s),None)
   else 
     (Random.self_init ();
     let num = Random.int 10 in 

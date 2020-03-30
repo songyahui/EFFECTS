@@ -1,11 +1,11 @@
 ====================================
-TRUE/\(A.B) |- TRUE/\(((A.B).(C^*))/\((A.B).(A^*)))
+TRUE/\(A(1).B) |- TRUE/\(((A(1).B).(C^*))/\((A(1).B).(A^*)))
 [Result] Succeed
 [Explored 1 States]
-[Verification Time: 0.006567 s]
+[Verification Time: 0.006873 s]
  
 
-* TRUE/\(A.B) |- TRUE/\((A.(B.(C^*)))/\(A.(B.(A^*))))   [UNFOLD]
+* TRUE/\(A(1).B) |- TRUE/\((A(1).(B.(C^*)))/\(A(1).(B.(A^*))))   [UNFOLD]
 * └── TRUE/\B |- TRUE/\((B.(C^*))/\(B.(A^*)))   [UNFOLD]
 *     └── TRUE/\emp |- TRUE/\((C^*)/\(A^*))   [UNFOLD]
 

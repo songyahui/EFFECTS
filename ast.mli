@@ -13,7 +13,7 @@ type event =  string
 (*E vent sequence *)
 type es = Bot 
         | Emp 
-        | Event of event
+        | Event of event * int option 
         | Cons of es * es
         | ESOr of es * es
         | ESAnd of es * es
@@ -62,7 +62,7 @@ type expression = Unit
           | Call of mn * expression list 
           | Assign of var * expression
           | Seq of expression * expression
-          | EventRaise of event
+          | EventRaise of (event*int option)
           | IfElse of expression * expression * expression
           | Cond of expression * expression * string
           | BinOp of expression * expression * string

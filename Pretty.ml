@@ -12,6 +12,19 @@ open Int32
 
 exception Foo of string
 
+let compareParm (p1:int option ) (p2:int option ) :bool = 
+  match (p1, p2) with 
+    (None, None) -> true 
+  | (Some n1, Some n2) -> n1 == n2
+  | _ -> false 
+  ;;
+
+let compareEvent (ev1:(string* int option)) (ev2:(string* int option)):bool =
+  let (str1, p1) = ev1 in
+  let (str2, p2) = ev2 in
+  String.compare str1 str2 == 0 && compareParm p1 p2
+  ;;
+
 let rec iter f = function
   | [] -> ()
   | [x] ->
@@ -96,7 +109,8 @@ let rec showES (es:es):string =
   match es with
     Bot -> "_|_"
   | Emp -> "emp"
-  | Event ev -> ev 
+  | Event (ev, None) -> ev  
+  | Event (ev, Some num) -> ev ^"("^string_of_int num^")"
   | Cons (es1, es2) -> "("^(showES es1) ^ "." ^ (showES es2)^")"
   | ESOr (es1, es2) -> "("^(showES es1) ^ "|" ^ (showES es2)^")"
   | ESAnd (es1, es2) -> "("^(showES es1) ^ "/\\" ^ (showES es2)^")"
@@ -120,7 +134,7 @@ let rec showESReg (es:es):string =
   match es with
   | Bot -> "false"
   | Emp -> ""
-  | Event ev -> ev 
+  | Event (ev,None) -> ev 
   | Cons (es1, es2) -> (showESReg es1) ^ (showESReg es2)
   | ESOr (es1, es2) -> "("^(showESReg es1) ^ "|" ^ (showESReg es2)^")"
   | Kleene es -> "(" ^"(" ^ (showESReg es) ^")" ^ "*"^")"
@@ -170,7 +184,8 @@ let rec regToInt (esIn:es):int32  =
     | Bot -> -1
     | Emp -> 0
     | Underline -> 5
-    | Event ev ->  encodeStrToInt ev
+    | Event (ev, None) ->  encodeStrToInt ev
+    | Event (ev, Some num) ->  encodeStrToInt ev + num
     | Cons (es1, es2) -> 5 * (helper es1) + (helper es2)
     | ESOr (es1, es2) -> (helper es1) + 7* (helper es2) 
     | ESAnd (es1, es2) -> (helper es1) + 9* (helper es2) 
@@ -249,7 +264,7 @@ let rec reverseEs (es:es) : es =
   match es with 
     Bot -> Bot
   | Emp -> Emp
-  | Event ev -> Event ev 
+  | Event _ -> es
   | Cons (es1, es2) -> Cons (reverseEs es2, reverseEs es1)
   | ESOr (es1, es2) -> ESOr (reverseEs es1, reverseEs es2)
   | ESAnd (es1, es2) -> ESAnd (reverseEs es1, reverseEs es2)
@@ -292,7 +307,7 @@ let rec substituteESWithAgr (es:es) (realArg:expression) (formalArg: var):es =
   match es with 
     Bot  -> es
   | Emp  -> es
-  | Event ev  -> es
+  | Event _  -> es
   | Cons (es1, es2) ->  Cons (substituteESWithAgr es1 realArg formalArg, substituteESWithAgr es2 realArg formalArg)
   | ESOr (es1, es2) ->  ESOr (substituteESWithAgr es1 realArg formalArg, substituteESWithAgr es2 realArg formalArg)
   | ESAnd (es1, es2) ->  ESAnd (substituteESWithAgr es1 realArg formalArg, substituteESWithAgr es2 realArg formalArg)
@@ -412,8 +427,8 @@ let rec aCompareES es1 es2 =
   match (es1, es2) with 
     (Bot, Bot) -> true
   | (Emp, Emp) -> true
-  | (Event s1, Event s2) -> 
-    String.compare s1 s2 == 0
+  | (Event (s1, p1), Event (s2,p2)) -> 
+    String.compare s1 s2 == 0 && compareParm p1 p2 
   | (Cons (es1L, es1R), Cons (es2L, es2R)) -> 
     if (aCompareES es1L es2L) == false then false
     else (aCompareES es1R es2R)

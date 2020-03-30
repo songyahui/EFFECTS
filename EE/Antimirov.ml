@@ -29,7 +29,7 @@ let rec esLength (es:es) : int =
   match es with
     Bot -> 0 
   | Emp -> 1 
-  | Event s1 -> 1
+  | Event _ -> 1
   | Cons (es1L, es1R) -> (esLength es1L) + (esLength es1R )
   | Kleene esL -> esLength esL 
   | ESOr (es1L, es1R) -> (esLength es1L) + (esLength es1R )
@@ -58,17 +58,17 @@ let rec aNullable (es:es) : bool=
   match es with
     Emp -> true
   | Bot -> false 
-  | Event ev -> false 
+  | Event _ -> false 
   | Cons (es1 , es2) -> (aNullable es1) && (aNullable es2)
   | ESOr (es1 , es2) -> (aNullable es1) || (aNullable es2)
   | Kleene es1 -> true
   | _ -> raise (Foo "aNullable exeption")
 ;;
 
-let rec aFst (es:es): event list = 
+let rec aFst (es:es): (event *int option) list = 
   match es with
     Emp -> []
-  | Event ev ->  [ev]
+  | Event (ev,p) ->  [(ev,p)]
   | Cons (es1 , es2) ->  if aNullable es1 then append (aFst es1) (aFst es2) else aFst es1
   | ESOr (es1, es2) -> append (aFst es1) (aFst es2)
   | Kleene es1 -> aFst es1
@@ -131,12 +131,12 @@ let rec aReoccur esL esR (del:evn) =
   ;;
 
 
-let rec aDerivative (es:es) (ev:string): es =
+let rec aDerivative (es:es) (ev:string*int option): es =
   match es with
     Emp -> Bot
   | Bot -> Bot
-  | Event ev1 -> 
-      if (String.compare ev1 ev) == 0 then Emp else Bot
+  | Event (ev1,p1) -> 
+      if compareEvent (ev1,p1) ev then Emp else Bot
   | ESOr (es1 , es2) -> ESOr (aDerivative es1 ev, aDerivative es2 ev)
   | Cons (es1 , es2) -> 
       if aNullable es1 
@@ -155,8 +155,7 @@ let rec aNormalES es:es  =
   match es with
     Bot -> es
   | Emp -> es
-  | Event ev -> es
-
+  | Event _ -> es
   | Cons (es1, es2) -> 
       let normalES1 = aNormalES es1 in
       let normalES2 = aNormalES es2 in
