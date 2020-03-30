@@ -96,11 +96,15 @@ cd ../src/
 
 sudo rm -r effect/
 
+sudo mkdir effect/
+
 sudo cp ../cgi-bin/EFFECTS/src/effect/* effect/
 
 sudo chown www-data:www-data -R effect/
 
 sudo rm -r program/
+
+sudo mkdir program/
 
 sudo cp ../cgi-bin/EFFECTS/src/program/* program/
 
