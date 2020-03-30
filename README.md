@@ -64,7 +64,7 @@ git ls-files | xargs wc -l
 
 sudo rm -r EFFECTS/
 
-mkdir EFFECTS
+sudo mkdir EFFECTS
 
 sudo cp -r  ~yahui/EFFECTS/* /home/project/public_html/Effect/cgi-bin/EFFECTS
 
@@ -94,9 +94,13 @@ yahui:repo
 
 cd ../src/
 
+sudo rm -r effect/
+
 sudo cp ../cgi-bin/EFFECTS/src/effect/* effect/
 
 sudo chown www-data:www-data -R effect/
+
+sudo rm -r program/
 
 sudo cp ../cgi-bin/EFFECTS/src/program/* program/
 
