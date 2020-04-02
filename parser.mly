@@ -133,6 +133,8 @@ es:
 | a = es CONCAT b = es { Cons(a, b) } 
 | LPAR a = es POWER KLEENE RPAR{Kleene a}
 | LBRACK a = es_range RBRACK {Range a}
+| NEGATION LPAR a = es RPAR {Not a}
+
 
 
 

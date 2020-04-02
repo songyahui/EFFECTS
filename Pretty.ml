@@ -118,6 +118,7 @@ let rec showES (es:es):string =
   | Omega es -> "("^(showES es) ^ "^" ^  "w" ^")"
   | Underline -> "_"
   | Kleene es -> "(" ^ (showES es) ^ "^" ^ "*"^")"
+  | Not es -> "~(" ^ (showES es) ^")"
   | Range (esList) -> 
       let rec helperHere acc esL =
         match esL with
@@ -190,6 +191,7 @@ let rec regToInt (esIn:es):int32  =
     | ESOr (es1, es2) -> (helper es1) + 7* (helper es2) 
     | ESAnd (es1, es2) -> (helper es1) + 9* (helper es2) 
     | Kleene es ->  (helper es) * 11
+    | Not es ->  (helper es) * (-1)
     | Ttimes (esIn, t) -> (helper esIn (*+ termToInt t*) ) * 13
     | Omega esIn -> (helper esIn ) * 17
     | Range (esList) -> 
@@ -272,6 +274,7 @@ let rec reverseEs (es:es) : es =
   | Omega (es1) ->  Omega (reverseEs es1) 
   | Underline -> Underline
   | Kleene es1 ->  Kleene (reverseEs es1)
+  | Not es1 ->  Kleene (reverseEs es1)
   | Range (esList) -> 
     (let range = List.map (fun a -> reverseEs a) esList in 
     Range range 
@@ -314,6 +317,7 @@ let rec substituteESWithAgr (es:es) (realArg:expression) (formalArg: var):es =
   | Ttimes (esIn, t) -> Ttimes (substituteESWithAgr esIn realArg formalArg, substituteTermWithAgr t realArg formalArg)
   | Kleene esIn -> Kleene (substituteESWithAgr esIn realArg formalArg)
   | Omega esIn -> Omega (substituteESWithAgr esIn realArg formalArg)
+  | Not esIn -> Not (substituteESWithAgr esIn realArg formalArg)
   | Underline -> es
   | Range (esList) -> 
     (let range = List.map (fun a -> substituteESWithAgr a realArg formalArg) esList in 
@@ -439,6 +443,7 @@ let rec aCompareES es1 es2 =
       if ((aCompareES es1L es2L) && (aCompareES es1R es2R)) then true 
       else ((aCompareES es1L es2R) && (aCompareES es1R es2L))
   | (Kleene esL, Kleene esR) -> aCompareES esL esR
+  | (Not esL, Not esR) -> aCompareES esL esR
   | (Range (esList1), Range (esList2)) ->  subESsetOf esList1 esList2 && subESsetOf esList2 esList1
   | _ -> false
 ;;

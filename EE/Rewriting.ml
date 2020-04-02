@@ -36,6 +36,7 @@ let rec nullable (pi :pure) (es:es) : bool=
   | Omega es1 -> false
   | Underline -> false
   | Kleene es1 -> true
+  | Not es1 -> not (nullable pi es1)
   | Range (esList) -> 
     (let range = List.fold_left (fun acc a -> acc || (nullable pi a)) false esList in 
     range 
@@ -66,6 +67,7 @@ let rec fst (pi :pure) (es:es): (event* int option) list =
   | ESAnd (es1, es2) -> common (fst pi es1) (fst pi es2) []
   | Underline -> [("_",None)]
   | Kleene es1 -> fst pi es1
+  | Not es1 -> fst pi es1
   | Range (esList) -> 
   (let range = List.fold_left (fun acc a -> append acc (fst pi a)) [] esList in 
   range 
@@ -127,6 +129,7 @@ let rec compareES es1 es2 =
       let termEq = compareTerm termL termR in
       insideEq && termEq
   | (Kleene esL, Kleene esR) -> compareES esL esR
+  | (Not esL, Not esR) -> compareES esL esR
   | (Underline, Underline ) -> true
   | (Range (esList1), Range (esList2)) ->  subESsetOf esList1 esList2 && subESsetOf esList2 esList1
   | _ -> false
@@ -134,7 +137,11 @@ let rec compareES es1 es2 =
 
 let rec compareEff eff1 eff2 =
   match (eff1, eff2) with
-  | (Effect(FALSE, Bot), Effect(FALSE, Bot)) -> true 
+  | (Effect(FALSE, _), Effect(FALSE, _)) -> true 
+  | (Effect(FALSE, _), Effect(_, Bot)) -> true 
+  | (Effect(_, Bot), Effect(FALSE, _)) -> true 
+  | (Effect(_, Bot), Effect(_, Bot)) -> true 
+
   | (Effect (pi1, es1), Effect (pi2, es2)) -> compareES es1 es2
   | (Disj (eff11, eff12), Disj (eff21, eff22)) -> 
       let one =  (compareEff eff11  eff21) && (compareEff eff12  eff22) in
@@ -269,8 +276,17 @@ let rec normalES es pi =
 
   | Range (esList) -> 
       (let range = List.map (fun a -> normalES a pi) esList in 
-      Range range 
+       List.fold_left (fun acc a -> ESOr (acc, a)) Bot range 
       )
+
+  | Not esIn -> 
+      match esIn with 
+        ESOr (esIn1, esIn2) -> ESAnd (Not esIn1, Not esIn2)
+      | ESAnd (esIn1, esIn2) -> ESOr (Not esIn1, Not esIn2)
+      | Not esIn1 -> esIn1
+      | Bot -> Underline
+      | Emp -> Bot
+      | _ -> Not esIn (*raise (Foo "I have not thought through! Not in normal")*)
   ;;
 
 let rec normalEffect eff =
@@ -279,7 +295,7 @@ let rec normalEffect eff =
     Effect (p, es) -> 
       if (askZ3 p) == false then 
         ( 
-          Effect (FALSE,  Bot)
+          Effect (FALSE, es)
         )
       else 
         let p_normal = normalPure p in 
@@ -305,15 +321,42 @@ let rec normalEffect eff =
       | _ -> Disj (normalEffect eff1, normalEffect eff2)
   ;;
 
+let trunItIntoWideCard (pi:pure) (esIn: es) : es = 
+  let rec helper (esI: es) : es = 
+    match esI with 
+      Event (ev1, p1) -> Underline 
+    | Underline -> Underline
+    | Ttimes (es1, t) -> Ttimes (helper es1, t)
+    | Omega es1 -> Omega (helper es1)
+    | Kleene es1 -> Kleene (helper es1)
+    | Cons (es1, es2) -> Cons (helper es1, helper es2)
+    | Range _ -> raise (Foo "trunItIntoWideCard Range")
+    | Bot -> raise (Foo "trunItIntoWideCard Bot")
+    | ESAnd (es1 , es2) -> raise (Foo "trunItIntoWideCard ESAnd")
+    | ESOr (es1 , es2) -> raise (Foo "trunItIntoWideCard ESOr")
+    | Emp -> Bot
+    | Not _ -> raise (Foo "trunItIntoWideCard Not")
+  in 
+  
+  match normalES esIn pi with
+    Cons (Bot, essss) ->   helper essss
+  | Bot -> Emp
+  | _ -> 
+  print_string (showES esIn);
+  raise (Foo "trunItIntoWideCard")
+;;
+    
+
+
 
 let rec derivative (p :pure) (es:es) (ev:(string*int option)): effect =
   match es with
-    Bot -> Effect (FALSE,  Bot)
-  | Emp -> Effect (FALSE,  Bot)
+    Bot -> Effect (p,  Bot)
+  | Emp -> Effect (p,  Bot)
   | Underline -> Effect (p, Emp)
   | Event (ev1, p1) -> 
       if compareEvent ev ("_", None) then  Effect (p, Emp)
-      else if compareEvent (ev1, p1) ev then Effect (p, Emp) else Effect (FALSE, Bot)
+      else if compareEvent (ev1, p1) ev then Effect (p, Emp) else Effect (p, Bot)
   | Omega es1 -> appendEff_ES (derivative p es1 ev) es
   | ESOr (es1 , es2) -> 
     let temp1 = normalEffect (derivative p es1 ev) in
@@ -338,6 +381,26 @@ let rec derivative (p :pure) (es:es) (ev:(string*int option)): effect =
           appendEff_ES efF es2    
           
   | Kleene es1 -> appendEff_ES  (derivative p es1 ev) es
+  | Not es1 -> 
+    (let tryder =  (derivative p es1 ev) in 
+    match normalEffect tryder with
+      Effect (_,Bot) -> 
+        (match tryder with 
+          Effect (pi, esnot) ->  
+            print_string (showES esnot^"\n----\n");
+            print_string (showES (trunItIntoWideCard pi esnot)^"\n======\n");
+            print_string (showEffect (tryder)^"\n*****\n");
+            Effect (pi, trunItIntoWideCard pi esnot)
+        | _ -> raise (Foo "tryder cannot be ba...")
+        )
+    | _ -> 
+      (let rec helper (noteffect:effect) : effect = 
+        match noteffect with 
+          Effect (pi, esnot) ->  Effect (pi, Not esnot)
+        | Disj (eff11, eff22) -> Disj (helper eff11, helper eff22)
+      in 
+      helper (normalEffect tryder))
+    )
   | Range (esList) -> 
       (let range = List.map (fun a -> derivative p a ev) esList in 
       let final = List.fold_left (fun acc a -> Disj (acc, a)) (Effect(FALSE, Bot)) range in 
@@ -751,6 +814,7 @@ let rec substituteESWithVal (es:es) (var1:string) (val1: int):es =
   | Ttimes (esIn, t) -> Ttimes (substituteESWithVal esIn var1 val1, substituteTermWithVal t var1 val1)
   | Kleene esIn -> Kleene (substituteESWithVal esIn var1 val1)
   | Omega esIn -> Omega (substituteESWithVal esIn var1 val1)
+  | Not esIn -> Not (substituteESWithVal esIn var1 val1)
   | Underline -> es
   | Range (esList) -> 
       (let range = List.map (fun a -> substituteESWithVal a var1 val1) esList in 
@@ -896,7 +960,7 @@ let rec addEntailConstrain (eff:effect) (pi:pure) :effect =
     Effect (pi1, es1)  -> 
       (match entailConstrains pi pi1 with 
         true -> eff
-      | false -> Effect (FALSE, Bot)
+      | false -> Effect (FALSE, es1)
       )
   | Disj (eff1, eff2) -> Disj(addEntailConstrain eff1 pi, addEntailConstrain eff2 pi)
   ;;
@@ -908,9 +972,9 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
   let normalFormL = normalEffect effL in 
   let normalFormR = normalEffect effR in
   let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentEff normalFormL normalFormR in 
-  (*
+  
   print_string(showEntail ^"\n");
-  *)
+  
   let unfold eff1 eff2 del = 
     let fstL = checkFst eff1 in 
     let deltaNew = append del [(eff1, eff2)] in
@@ -931,8 +995,10 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
   in 
   match (normalFormL, normalFormR) with 
       (*this means the assertion or precondition is already fail*)
-    (Effect(FALSE, Bot), _) -> (Node(showEntail ^ "   [Bot-LHS]", []), false, 1)  
-  | (_, Effect(FALSE, Bot)) -> (Node(showEntail ^ "   [DISPROVE]", []), false, 1)  
+    (Effect(FALSE, _), _) -> (Node(showEntail ^ "   [Bot-LHS]", []), false, 1)  
+  | (Effect(_, Bot), _) -> (Node(showEntail ^ "   [Bot-LHS]", []), false, 1)  
+  | (_, Effect(FALSE, _)) -> (Node(showEntail ^ "   [DISPROVE]", []), false, 1)  
+  | (_, Effect(_, Bot)) -> (Node(showEntail ^ "   [DISPROVE]", []), false, 1)  
   | (Disj (effL1, effL2), _) -> 
     (*[LHSOR]*)
       let (tree1, re1, states1 ) = (containment1 effL1 effR delta varList) in

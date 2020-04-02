@@ -21,6 +21,7 @@ type es = Bot
         | Kleene of es
         | Omega of es
         | Range of (es list)
+        | Not of es
         | Underline
 
 (*Arithimetic pure formulae*)
