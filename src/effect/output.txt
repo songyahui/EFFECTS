@@ -1,11 +1,10 @@
 ====================================
-TRUE/\(A.D) |- TRUE/\~(((A.D)/\(A.D)))
+TRUE/\(A.(B^*)) |- TRUE/\~((A.(B^*)))
 [Result] Fail
 [Explored 2 States]
-[Verification Time: 0.011849 s]
+[Verification Time: 0.00366 s]
  
 
-* TRUE/\(A.D) |- (TRUE/\~((A.D)))\/(TRUE/\~((A.D)))   [UNFOLD]
-* └── TRUE/\D |- (TRUE/\~(D))\/(TRUE/\~(D))   [UNFOLD]
-*     └── TRUE/\emp |- TRUE/\_|_   [DISPROVE]
+* TRUE/\(A.(B^*)) |- TRUE/\~((A.(B^*)))   [UNFOLD]
+* └── TRUE/\(B^*) |- TRUE/\~((B^*))   [REFUTATION] 
 

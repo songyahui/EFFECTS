@@ -342,7 +342,7 @@ let trunItIntoWideCard (pi:pure) (esIn: es) : es =
     Cons (Bot, essss) ->   helper essss
   | Bot -> Emp
   | _ -> 
-  print_string (showES esIn);
+  (*print_string (showES esIn);*)
   raise (Foo "trunItIntoWideCard")
 ;;
     
@@ -387,9 +387,10 @@ let rec derivative (p :pure) (es:es) (ev:(string*int option)): effect =
       Effect (_,Bot) -> 
         (match tryder with 
           Effect (pi, esnot) ->  
-            print_string (showES esnot^"\n----\n");
+            (*print_string (showES esnot^"\n----\n");
             print_string (showES (trunItIntoWideCard pi esnot)^"\n======\n");
             print_string (showEffect (tryder)^"\n*****\n");
+            *)
             Effect (pi, trunItIntoWideCard pi esnot)
         | _ -> raise (Foo "tryder cannot be ba...")
         )
@@ -972,9 +973,9 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
   let normalFormL = normalEffect effL in 
   let normalFormR = normalEffect effR in
   let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentEff normalFormL normalFormR in 
-  
+  (*
   print_string(showEntail ^"\n");
-  
+  *)
   let unfold eff1 eff2 del = 
     let fstL = checkFst eff1 in 
     let deltaNew = append del [(eff1, eff2)] in
