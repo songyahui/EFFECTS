@@ -49,7 +49,7 @@ rule token = parse
 | "true" { TRUEE (bool_of_string (Lexing.lexeme lexbuf))}
 | "false" { FALSEE (bool_of_string (Lexing.lexeme lexbuf))}
 | '"'      { read_string (Buffer.create 17) lexbuf }
-| ['A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']* as str { EVENT str }
+| ['A'-'T' 'V' 'W' 'Y' 'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']* as str { EVENT str }
 | id as str { VAR str }
 | ">=" {GTEQ}
 | "<=" {LTEQ}
@@ -80,6 +80,13 @@ rule token = parse
 | "==" {EQEQ}
 | ">=" {GTEQ}
 | "<=" {LTEQ}
+| "<>" {FUTURE}  
+| "[]" {GLOBAL}
+| "->" {IMPLY}
+| '!' {LTLNOT}
+| 'X' {NEXT}
+| 'U' {UNTIL}
+| "&&" {LILAND}
 | _ { raise (SyntaxError ("Unexpected char: " ^ Lexing.lexeme lexbuf)) }
 | eof { EOF }
 

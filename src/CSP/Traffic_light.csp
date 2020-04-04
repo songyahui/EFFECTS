@@ -9,16 +9,18 @@
 #assert Light |= <>[]green;
 
 
+//Liveness: “traffic light is green infinitely often”
 #assert Light |= []<>green;
 
+//Chronological ordering: “once red, the light cannot become green immediately”
 #assert Light |= [] (red ->(! X green)) ;
 
 #assert Light |= [] (red -> (<> green));
 
 #assert Light |= [] (red -> (! (green U yellow)));
 
+//More detailed: “once red, the light always becomes green eventually after being yellow for some time”
 #assert Light |= [] (red -> (<> green) && (! (green U yellow)));
-
 #assert Light |= [] (red-> X (red U (yellow && X (yellow U green))));
 
  

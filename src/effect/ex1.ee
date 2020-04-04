@@ -1,1 +1,1 @@
-TRUE /\  (Tick^n) |- TRUE /\ (Tick^n)
+TRUE /\  ((Green.Green . Green . Yellow . Yellow . Yellow . Red . Red . Red)^w) |- TRUE /\ (((_^*).Green)^w)

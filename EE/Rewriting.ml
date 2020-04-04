@@ -992,7 +992,7 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
       )
     in 
     let (resultFinal, trees, states) = chceckResultAND fstL [] 0 in 
-    (Node (showEntail ^ "   [UNFOLD]",trees ), resultFinal, states)    
+    (Node (showEntail ^ "   [UNFOLD]",trees ), resultFinal, states+1)    
   in 
   match (normalFormL, normalFormR) with 
       (*this means the assertion or precondition is already fail*)

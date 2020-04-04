@@ -78,6 +78,13 @@ type declare = Include of string | Method of meth
 type program = declare list
 
 
-
+type ltl = Lable of string 
+        | Next of ltl
+        | Until of ltl * ltl
+        | Global of ltl
+        | Future of ltl
+        | NotLTL of ltl
+        | Imply of ltl * ltl
+        | AndLTL of ltl * ltl
 
 

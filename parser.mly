@@ -10,21 +10,25 @@
 %token EMPTY ASSERTKEY EVENTKEY CHOICE LPAR RPAR CONCAT OMEGA POWER PLUS MINUS TRUE FALSE DISJ CONJ   ENTIL INTT BOOLT VOIDT 
 %token LBRACK RBRACK COMMA SIMI  IF ELSE REQUIRE ENSURE LSPEC RSPEC RETURN
 %token EOF GT LT EQ GTEQ LTEQ INCLUDE SHARP EQEQ UNDERLINE KLEENE NEGATION
+%token FUTURE GLOBAL IMPLY LTLNOT NEXT UNTIL LILAND
 
 %left CHOICE
 %left CONCAT
 %left DISJ
 %left CONJ
 
-%start prog ee es_p
+%start prog ee es_p ltl_p
 %type <Ast.entilment> ee
 %type <Ast.program> prog
 %type <Ast.es> es_p
+%type <Ast.ltl> ltl_p
 %%
 
 ee: r = entailment EOF { r }
 
 es_p: r = es EOF { r }
+
+ltl_p: r = ltl EOF{ r }
 
 type_: 
 | INTT {INT}
@@ -145,3 +149,16 @@ effect:
 
 entailment:
 | lhs = effect   ENTIL   rhs = effect {EE (lhs, rhs)}
+
+
+ltl : 
+| s = STRING {Lable s} 
+| LPAR r = ltl RPAR { r }
+| NEXT p = ltl  {Next p}
+| LPAR p1= ltl UNTIL p2= ltl RPAR {Until (p1, p2)}
+| GLOBAL p = ltl {Global p}
+| FUTURE p = ltl {Future p}
+| LTLNOT p = ltl {NotLTL p}
+| LPAR p1= ltl IMPLY p2= ltl RPAR {Imply (p1, p2)}
+| LPAR p1= ltl LILAND p2= ltl RPAR {AndLTL (p1, p2)}  
+
