@@ -1,13 +1,19 @@
-(red.(_.((red^*).(yellow/\(_.((yellow^*).green))))))
+((red.(_.((red^*).(yellow/\(_.((yellow^*).green))))))^w)
 
 ((red.(((_^*).green)/\~(((green^*).yellow))))^w)
 
-(red.~(((green^*).yellow)))
+((red.~(((green^*).yellow)))^w)
 
 ((red.((_^*).green))^w)
 
 ((red.~((_.green)))^w)
 
 (((_^*).green)^w)
+
+((_^*).(green^w))
+
+((_^*).green)
+
+(green^w)
 
 

@@ -21,21 +21,16 @@
 %type <Ast.entilment> ee
 %type <Ast.program> prog
 %type <Ast.es> es_p
-%type <(Ast.ltl) > ltl_p
+%type <(Ast.ltl) list > ltl_p
 %%
 
 ee: r = entailment EOF { r }
 
 es_p: r = es EOF { r }
 
-(*ltl_p: 
+ltl_p: 
 | EOF {[]}
 | a = ltl SIMI r = ltl_p { append [a] r }
-*)
-
-ltl_p: 
-| a = ltl SIMI EOF  { a }
-
 
 
 
