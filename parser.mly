@@ -28,7 +28,7 @@ ee: r = entailment EOF { r }
 
 es_p: r = es EOF { r }
 
-ltl_p: r = ltl EOF{ r }
+ltl_p: r = ltl SIMI EOF{ r }
 
 type_: 
 | INTT {INT}
@@ -152,7 +152,7 @@ entailment:
 
 
 ltl : 
-| s = STRING {Lable s} 
+| s = VAR {Lable s} 
 | LPAR r = ltl RPAR { r }
 | NEXT p = ltl  {Next p}
 | LPAR p1= ltl UNTIL p2= ltl RPAR {Until (p1, p2)}
