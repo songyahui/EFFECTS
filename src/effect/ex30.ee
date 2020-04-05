@@ -1,2 +1,11 @@
 TRUE /\ B.(B^*) |- TRUE /\ ~(A.(B^*));
 
+TRUE /\ A |- TRUE /\ ~(A/\B);
+
+TRUE /\ A |- TRUE /\ ~(A | B);
+
+TRUE /\ F.B.C |- TRUE /\ ~(A.B.C);
+
+TRUE /\ A.C.C |- TRUE /\ ~(A.B.C);
+
+TRUE /\ A.B.D |- TRUE /\ ~(A.B.C);

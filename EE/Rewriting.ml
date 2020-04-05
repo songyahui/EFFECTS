@@ -156,6 +156,139 @@ let rec splitEffects eff : (pure * es) list =
   | Disj (eff1, eff2) -> append (splitEffects eff1) (splitEffects eff2)
   ;;
 
+(*this is use to keep the bot in head for negation usage *)
+let rec normalES_Bot es pi = 
+  match es with
+    Bot -> es
+  | Emp -> es
+  | Event _ -> es
+  | Underline -> Underline
+  | Cons (Cons (esIn1, esIn2), es2)-> normalES_Bot (Cons (esIn1, Cons (esIn2, es2))) pi
+  | Cons (es1, es2) -> 
+      let normalES1 = normalES_Bot es1 pi in
+      let normalES2 = normalES_Bot es2 pi in
+      (match (normalES1, normalES2) with 
+        (Emp, _) -> normalES2
+      | (_, Emp) -> normalES1
+      | (Omega _, _ ) -> normalES1
+
+      | (Kleene (esIn1), Kleene (esIn2)) -> 
+          if aCompareES esIn1 esIn2 == true then normalES2
+          else Cons (normalES1, normalES2)
+      | (Kleene (esIn1), Cons(Kleene (esIn2), es2)) -> 
+          if aCompareES esIn1 esIn2 == true then normalES2
+          else Cons (normalES1, normalES2) 
+
+      | (normal_es1, normal_es2) -> 
+        match (normal_es1, normal_es2) with 
+        |  (Cons (esIn1, esIn2), es2)-> normalES_Bot (Cons (esIn1, Cons (esIn2, es2))) pi 
+        |  (ESOr (or1, or2), es2) -> normalES_Bot (ESOr ( (Cons (or1, es2)),  (Cons (or2, es2)))) pi
+        |  (es1, ESOr (or1, or2)) -> normalES_Bot (ESOr ( (Cons (es1, or1)),  (Cons (es1, or2)))) pi
+        | _-> Cons (normal_es1, normal_es2)
+      ;)
+  | ESOr (es1, es2) -> 
+      (match (normalES_Bot es1 pi, normalES_Bot es2 pi) with 
+        (Bot, Bot) -> Bot
+      | (Bot, norml_es2) -> norml_es2
+      | (norml_es1, Bot) -> norml_es1
+      | (ESOr(es1In, es2In), norml_es2 ) ->
+        if aCompareES norml_es2 es1In || aCompareES norml_es2 es2In then ESOr(es1In, es2In)
+        else ESOr (ESOr(es1In, es2In), norml_es2 )
+      | (norml_es2, ESOr(es1In, es2In) ) ->
+        if aCompareES norml_es2 es1In || aCompareES norml_es2 es2In then ESOr(es1In, es2In)
+        else ESOr (norml_es2, ESOr(es1In, es2In))
+      | (Emp, Kleene norml_es2) ->  Kleene norml_es2
+      | (Kleene norml_es2, Emp) ->  Kleene norml_es2
+
+      | (norml_es1, norml_es2) -> 
+        if aCompareES  norml_es1 norml_es2 == true then norml_es1
+        else 
+        (match (norml_es1, norml_es2) with
+          (norml_es1, Kleene norml_es2) ->  
+          if aCompareES norml_es1 norml_es2 == true then Kleene norml_es2
+          else ESOr (norml_es1, Kleene norml_es2)
+        | (Kleene norml_es2, norml_es1) ->  
+          if aCompareES norml_es1 norml_es2 == true then Kleene norml_es2
+          else ESOr (Kleene norml_es2, norml_es1)
+        |  _-> ESOr (norml_es1, norml_es2)
+        )
+      ;)
+
+  | ESAnd (es1, es2) -> 
+      (match (normalES_Bot es1 pi, normalES_Bot es2 pi) with 
+
+      | (Bot, norml_es2) -> Bot
+      | (norml_es1, Bot) -> Bot
+      | (Event (s1, p1), Event (s2, p2)) -> if compareEvent (s1, p1) (s2, p2) then Event (s1, p1) else Bot
+
+      | (Emp, norml_es2) -> if nullable pi norml_es2 then Emp else Bot 
+      | (norml_es1, Emp) -> if nullable pi norml_es1 then Emp else Bot 
+
+      | (norml_es1, norml_es2) -> 
+        if aCompareES  norml_es1 norml_es2 == true then norml_es1
+        else ESAnd (norml_es1, norml_es2)
+
+      )
+
+
+
+  (*
+  | Cons (es1, es2) -> 
+      let normalES1 = normalES es1 pi in
+      let normalES2 = normalES es2 pi in
+      (match (normalES1, normalES2) with 
+        (Emp, _) -> normalES2
+      | (_, Emp) -> normalES1
+      | (Bot, _) -> Bot
+      | (Omega _, _ ) -> normalES1
+      | (normal_es1, normal_es2) -> Cons (normal_es1, normal_es2)
+      ;)
+      
+  | ESOr (es1, es2) -> 
+      (match (normalES es1 pi, normalES es2 pi) with 
+        (Bot, Bot) -> Bot
+      | (Bot, norml_es2) -> norml_es2
+      | (norml_es1, Bot) -> norml_es1
+      | (norml_es1, norml_es2) -> ESOr (norml_es1, norml_es2)
+      ;)
+      *)
+  | Ttimes (es1, terms) -> 
+      let t = normalTerms terms in 
+      let normalInside = normalES_Bot es1 pi in 
+      (match normalInside with
+        Emp -> Emp
+      | _ -> 
+        let allPi = getAllPi pi [] in 
+        if (existPi (Eq (terms, Number 0)) allPi) || (compareTerm t (Number 0 )) then Emp else Ttimes (normalInside, t))
+        (*else if (existPi (Eq (terms, n)) allPi)) then Emp else Ttimes (normalInside, t))*)
+  | Omega es1 -> 
+      let normalInside = normalES_Bot es1 pi in 
+      (match normalInside with
+        Emp -> Emp
+      | _ ->  Omega normalInside)
+  | Kleene es1 -> 
+      let normalInside = normalES_Bot es1 pi in 
+      (match normalInside with
+        Emp -> Emp
+      | Kleene esIn1 ->  Kleene (normalES_Bot esIn1 pi)
+      | ESOr(Emp, aa) -> Kleene aa
+      | _ ->  Kleene normalInside)
+
+  | Range (esList) -> 
+      (let range = List.map (fun a -> normalES_Bot a pi) esList in 
+       List.fold_left (fun acc a -> ESOr (acc, a)) Bot range 
+      )
+
+  | Not esIn -> 
+      match esIn with 
+        ESOr (esIn1, esIn2) -> ESAnd (Not esIn1, Not esIn2)
+      | ESAnd (esIn1, esIn2) -> ESOr (Not esIn1, Not esIn2)
+      | Not esIn1 -> esIn1
+      | Bot -> Underline
+      | Emp -> Bot
+      | _ -> Not esIn (*raise (Foo "I have not thought through! Not in normal")*)
+  ;;
+
 let rec normalES es pi = 
   match es with
     Bot -> es
@@ -337,8 +470,7 @@ let trunItIntoWideCard (pi:pure) (esIn: es) : es =
     | Emp -> Bot
     | Not _ -> raise (Foo "trunItIntoWideCard Not")
   in 
-  
-  match normalES esIn pi with
+  match normalES_Bot esIn pi with
     Cons (Bot, essss) ->   helper essss
   | Bot -> Emp
   | _ -> 
