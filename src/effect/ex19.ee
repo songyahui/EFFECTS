@@ -1,1 +1,1 @@
-(~(n=0))/\(Send.((_^*).Ready)) |- TRUE/\((_^*).Ready)
+(~(n=0))/\(Send.((_^*).Ready)) |- TRUE/\((_^*).Ready);

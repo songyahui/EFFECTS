@@ -1,5 +1,7 @@
 open Rewriting
 open Printf
+open List 
+open Ast
 
 let rec input_lines file =
   match try [input_line file] with End_of_file -> [] with
@@ -13,13 +15,16 @@ let () =
   let ic = open_in inputfile in
   try 
     let lines =  (input_lines ic ) in  
-    let line = List.fold_right (fun x acc -> acc ^ "\n" ^ x) (List.rev lines) "" in 
-    let EE (lhs, rhs) = Parser.ee Lexer.token (Lexing.from_string line) in
-    let result = printReport lhs rhs in 
+    let line = List.fold_right (fun x acc -> acc ^ "\n" ^ x) (lines) "" in 
+    let eeList = Parser.ee Lexer.token (Lexing.from_string line) in
+    let result = List.map (fun parm ->  
+                            match parm with 
+                              EE (lhs, rhs) -> printReport lhs rhs) eeList in 
+    let final_result = List.fold_right (fun x acc -> acc ^ "\n" ^ x) ( result) "" in 
     let oc = open_out outputfile in    (* 新建或修改文件,返回通道 *)
-    fprintf oc "%s\n" result;   (* 写一些东西 *)
+    fprintf oc "%s\n" final_result;   (* 写一些东西 *)
     close_out oc;                (* 写入并关闭通道 *)
-    print_string result;
+    print_string final_result;
     flush stdout;                (* 现在写入默认设备 *)
     close_in ic                  (* 关闭输入通道 *) 
 

@@ -1,3 +1,3 @@
-TRUE/\B.((A.B)^t) |- TRUE/\((B.A)^t).B
+TRUE/\B.((A.B)^t) |- TRUE/\((B.A)^t).B;
 
 

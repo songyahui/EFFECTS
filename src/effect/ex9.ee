@@ -1,2 +1,1 @@
-TRUE/\((B)^w) |- TRUE/\((A|B)^w)
-
+TRUE/\((B)^w) |- TRUE/\((A|B)^w);

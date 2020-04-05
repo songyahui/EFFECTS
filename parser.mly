@@ -18,13 +18,16 @@
 %left CONJ
 
 %start prog ee es_p ltl_p
-%type <Ast.entilment> ee
+%type <(Ast.entilment) list > ee
 %type <Ast.program> prog
 %type <Ast.es> es_p
 %type <(Ast.ltl) list > ltl_p
 %%
 
-ee: r = entailment EOF { r }
+ee: 
+| EOF {[]}
+| a = entailment SIMI r = ee { append [a] r }
+
 
 es_p: r = es EOF { r }
 

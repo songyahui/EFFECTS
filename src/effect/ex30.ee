@@ -1,2 +1,2 @@
-TRUE /\ B.(B^*) |- TRUE /\ ~(A.(B^*))
+TRUE /\ B.(B^*) |- TRUE /\ ~(A.(B^*));
 
