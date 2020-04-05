@@ -1,28 +1,32 @@
 
 ====================================
-TRUE/\(Tick1^t) |- TRUE/\(Tick^t)
-[Result] Fail
-[Explored 5 States]
-[Verification Time: 0.01166 s]
+TRUE/\(((((((((Green.Green).Green).Yellow).Yellow).Yellow).Red).Red).Red)^w) |- TRUE/\(((_^*).Green)^w)
+[Result] Succeed
+[Explored 12 States]
+[Verification Time: 0.159801 s]
  
 
-* (t=0/\emp)\/(t>0/\(Tick1^t)) |- TRUE/\(Tick^t)   [CASE SPLIT]
-* └── (t=0/\emp)\/(t>0/\(Tick1^t)) |- TRUE/\(Tick^t) [LHSOR] 
-*     ├── t=0/\emp |- TRUE/\(Tick^t)   [UNFOLD]
-*     └── t>0/\(Tick1^t) |- TRUE/\(Tick^t)   [UNFOLD]
-*         └── t>0/\(Tick1^t-1) |- t>0/\_|_   [DISPROVE]
+* TRUE/\((Green.(Green.(Green.(Yellow.(Yellow.(Yellow.(Red.(Red.Red))))))))^w) |- TRUE/\(((_^*).Green)^w)   [UNFOLD]
+* └── TRUE/\(Green.(Green.(Yellow.(Yellow.(Yellow.(Red.(Red.(Red.((Green.(Green.(Green.(Yellow.(Yellow.(Yellow.(Red.(Red.Red))))))))^w))))))))) |- (TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\(((_^*).Green)^w))   [UNFOLD]
+*     └── TRUE/\(Green.(Yellow.(Yellow.(Yellow.(Red.(Red.(Red.((Green.(Green.(Green.(Yellow.(Yellow.(Yellow.(Red.(Red.Red))))))))^w)))))))) |- ((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\(((_^*).Green)^w)))\/((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\(((_^*).Green)^w)))   [UNFOLD]
+*         └── TRUE/\(Yellow.(Yellow.(Yellow.(Red.(Red.(Red.((Green.(Green.(Green.(Yellow.(Yellow.(Yellow.(Red.(Red.Red))))))))^w))))))) |- (((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\(((_^*).Green)^w)))\/((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\(((_^*).Green)^w))))\/(((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\(((_^*).Green)^w)))\/((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\(((_^*).Green)^w))))   [UNFOLD]
+*             └── TRUE/\(Yellow.(Yellow.(Red.(Red.(Red.((Green.(Green.(Green.(Yellow.(Yellow.(Yellow.(Red.(Red.Red))))))))^w)))))) |- (((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\((_^*).(Green.(((_^*).Green)^w)))))\/((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\((_^*).(Green.(((_^*).Green)^w))))))\/(((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\((_^*).(Green.(((_^*).Green)^w)))))\/((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\((_^*).(Green.(((_^*).Green)^w))))))   [UNFOLD]
+*                 └── TRUE/\(Yellow.(Red.(Red.(Red.((Green.(Green.(Green.(Yellow.(Yellow.(Yellow.(Red.(Red.Red))))))))^w))))) |- (((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\((_^*).(Green.(((_^*).Green)^w)))))\/((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\((_^*).(Green.(((_^*).Green)^w))))))\/(((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\((_^*).(Green.(((_^*).Green)^w)))))\/((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\((_^*).(Green.(((_^*).Green)^w))))))   [UNFOLD]
+*                     └── TRUE/\(Red.(Red.(Red.((Green.(Green.(Green.(Yellow.(Yellow.(Yellow.(Red.(Red.Red))))))))^w)))) |- (((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\((_^*).(Green.(((_^*).Green)^w)))))\/((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\((_^*).(Green.(((_^*).Green)^w))))))\/(((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\((_^*).(Green.(((_^*).Green)^w)))))\/((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\((_^*).(Green.(((_^*).Green)^w))))))   [UNFOLD]
+*                         └── TRUE/\(Red.(Red.((Green.(Green.(Green.(Yellow.(Yellow.(Yellow.(Red.(Red.Red))))))))^w))) |- (((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\((_^*).(Green.(((_^*).Green)^w)))))\/((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\((_^*).(Green.(((_^*).Green)^w))))))\/(((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\((_^*).(Green.(((_^*).Green)^w)))))\/((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\((_^*).(Green.(((_^*).Green)^w))))))   [UNFOLD]
+*                             └── TRUE/\(Red.((Green.(Green.(Green.(Yellow.(Yellow.(Yellow.(Red.(Red.Red))))))))^w)) |- (((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\((_^*).(Green.(((_^*).Green)^w)))))\/((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\((_^*).(Green.(((_^*).Green)^w))))))\/(((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\((_^*).(Green.(((_^*).Green)^w)))))\/((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\((_^*).(Green.(((_^*).Green)^w))))))   [UNFOLD]
+*                                 └── TRUE/\((Green.(Green.(Green.(Yellow.(Yellow.(Yellow.(Red.(Red.Red))))))))^w) |- (((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\((_^*).(Green.(((_^*).Green)^w)))))\/((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\((_^*).(Green.(((_^*).Green)^w))))))\/(((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\((_^*).(Green.(((_^*).Green)^w)))))\/((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\((_^*).(Green.(((_^*).Green)^w))))))   [UNFOLD]
+*                                     └── TRUE/\(Green.(Green.(Yellow.(Yellow.(Yellow.(Red.(Red.(Red.((Green.(Green.(Green.(Yellow.(Yellow.(Yellow.(Red.(Red.Red))))))))^w))))))))) |- ((((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\(((_^*).Green)^w)))\/((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\(((_^*).Green)^w))))\/(((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\(((_^*).Green)^w)))\/((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\(((_^*).Green)^w)))))\/((((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\(((_^*).Green)^w)))\/((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\(((_^*).Green)^w))))\/(((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\(((_^*).Green)^w)))\/((TRUE/\((_^*).(Green.(((_^*).Green)^w))))\/(TRUE/\(((_^*).Green)^w)))))   [Reoccur]
 
 ====================================
-TRUE/\(Tick^t) |- TRUE/\(Tick^t)
-[Result] Succeed
+n>0/\((((((Yellow.Yellow).Yellow).Red).Red).Red)^w) |- n>0/\(((_^n).Green)^w)
+[Result] Fail
 [Explored 5 States]
-[Verification Time: 0.017336 s]
+[Verification Time: 0.010938 s]
  
 
-* (t=0/\emp)\/(t>0/\(Tick^t)) |- TRUE/\(Tick^t)   [CASE SPLIT]
-* └── (t=0/\emp)\/(t>0/\(Tick^t)) |- TRUE/\(Tick^t) [LHSOR] 
-*     ├── t=0/\emp |- TRUE/\(Tick^t)   [UNFOLD]
-*     └── t>0/\(Tick^t) |- TRUE/\(Tick^t)   [UNFOLD]
-*         └── t>0/\(Tick^t-1) |- t>0/\(Tick^t-1)
-*             └── (t1=t-1/\(t1>=0/\t>0))/\(Tick^t1) |- (t1=t-1/\(t1>=0/\t>0))/\(Tick^t1)   [Reoccur]
+* n>0/\((Yellow.(Yellow.(Yellow.(Red.(Red.Red)))))^w) |- n>0/\(((_^n).Green)^w)   [UNFOLD]
+* └── n>0/\(Yellow.(Yellow.(Red.(Red.(Red.((Yellow.(Yellow.(Yellow.(Red.(Red.Red)))))^w)))))) |- n>0/\((_^n-1).(Green.(((_^n).Green)^w)))   [UNFOLD]
+*     └── n>0/\(Yellow.(Red.(Red.(Red.((Yellow.(Yellow.(Yellow.(Red.(Red.Red)))))^w))))) |- (n-1>0/\n>0)/\((_^n-2).(Green.(((_^n).Green)^w)))   [UNFOLD]
+*         └── n>0/\(Red.(Red.(Red.((Yellow.(Yellow.(Yellow.(Red.(Red.Red)))))^w)))) |- FALSE/\((emp.(_^n-2-1)).(Green.(((_^n).Green)^w)))   [DISPROVE]
 

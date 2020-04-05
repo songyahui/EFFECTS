@@ -1,1 +1,3 @@
 TRUE /\  ((Green.Green . Green . Yellow . Yellow . Yellow . Red . Red . Red)^w) |- TRUE /\ (((_^*).Green)^w);
+
+n >0 /\  ((Yellow . Yellow . Yellow . Red . Red . Red)^w) |- n >0 /\ (((_^n).Green)^w);

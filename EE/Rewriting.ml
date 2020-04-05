@@ -560,6 +560,29 @@ let rec getPureFromEffect effect =
   | Disj (eff1, eff2) -> PureOr ((getPureFromEffect eff1), (getPureFromEffect eff2))
   ;;
 
+let rec getAllVarFromTerm term = 
+  match term with 
+    Var str -> [str]
+  | Number _ -> []
+  | Plus (t1, t2) -> append (getAllVarFromTerm t1) (getAllVarFromTerm t2)
+  | Minus (t1, t2) -> append (getAllVarFromTerm t1) (getAllVarFromTerm t2)
+  ;;
+
+let rec getAllVarFromPi (pi:pure): string list  = 
+    match pi with 
+      TRUE -> []
+    | FALSE -> []
+    | Gt (t1, t2) -> append (getAllVarFromTerm t1) (getAllVarFromTerm t2)
+    | Lt (t1, t2) -> append (getAllVarFromTerm t1) (getAllVarFromTerm t2)
+    | GtEq (t1, t2) -> append (getAllVarFromTerm t1) (getAllVarFromTerm t2)
+    | LtEq (t1, t2) -> append (getAllVarFromTerm t1) (getAllVarFromTerm t2)
+    | Eq (t1, t2) -> append (getAllVarFromTerm t1) (getAllVarFromTerm t2)
+    | PureOr (p1, p2) -> append (getAllVarFromPi p1) (getAllVarFromPi p2)
+    | PureAnd (p1, p2) -> append (getAllVarFromPi p1) (getAllVarFromPi p2)
+    | Neg p1 -> getAllVarFromPi p1
+;;
+
+
 let rec getAllVarFromES es = 
   match es with
   | Ttimes (_, Var s) -> [s]
@@ -574,7 +597,7 @@ let rec getAllVarFromES es =
 
 let rec getAllVarFromEff (eff:effect): string list = 
   match eff with 
-    Effect (pi, es) -> getAllVarFromES es
+    Effect (pi, es) -> append (getAllVarFromES es) (getAllVarFromPi pi)
   | Disj(eff1, eff2) -> append (getAllVarFromEff eff1) (getAllVarFromEff eff2)
 (*match effect with 
     Effect (pi, es) -> getAllVarFromES es
@@ -970,6 +993,7 @@ let rec addEntailConstrain (eff:effect) (pi:pure) :effect =
   
 
 let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:string list): (binary_tree * bool * int) = 
+  
   let normalFormL = normalEffect effL in 
   let normalFormR = normalEffect effR in
   let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentEff normalFormL normalFormR in 
