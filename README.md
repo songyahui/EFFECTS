@@ -114,7 +114,7 @@ sudo rm -r CSP/
 
 sudo mkdir CSP/
 
-sudo cp ../cgi-bin/EFFECTS/src/program/* CSP/
+sudo cp ../cgi-bin/EFFECTS/src/CSP/* CSP/
 
 sudo chown www-data:www-data -R CSP/
 
