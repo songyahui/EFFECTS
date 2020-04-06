@@ -1152,8 +1152,8 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
   in 
   match (normalFormL, normalFormR) with 
       (*this means the assertion or precondition is already fail*)
-    (Effect(FALSE, _), _) -> (Node(showEntail ^ "   [Bot-LHS]", []), false, 1)  
-  | (Effect(_, Bot), _) -> (Node(showEntail ^ "   [Bot-LHS]", []), false, 1)  
+    (Effect(FALSE, _), _) -> (Node(showEntail ^ "   [Bot-LHS]", []), true, 1)  
+  | (Effect(_, Bot), _) -> (Node(showEntail ^ "   [Bot-LHS]", []), true, 1)  
   | (_, Effect(FALSE, _)) -> (Node(showEntail ^ "   [DISPROVE]", []), false, 1)  
   | (_, Effect(_, Bot)) -> (Node(showEntail ^ "   [DISPROVE]", []), false, 1)  
   | (Disj (effL1, effL2), _) -> 

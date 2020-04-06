@@ -1,9 +1,40 @@
 
 ====================================
+TRUE/\(B.(B^*)) |- TRUE/\~((A.(B^*)))
+[Result] Succeed
+[Explored 4 States]
+[Verification Time: 0.004623 s]
+ 
+
+* TRUE/\(B.(B^*)) |- TRUE/\~((A.(B^*)))   [UNFOLD]
+* └── TRUE/\(B^*) |- TRUE/\(_^*)   [UNFOLD]
+*     └── TRUE/\(B^*) |- TRUE/\(_^*)   [Reoccur]
+
+====================================
+TRUE/\A |- TRUE/\~((A/\B))
+[Result] Succeed
+[Explored 3 States]
+[Verification Time: 0.005692 s]
+ 
+
+* TRUE/\A |- (TRUE/\~(A))\/(TRUE/\~(B))   [UNFOLD]
+* └── TRUE/\emp |- TRUE/\emp   [Frame-Prove] with R = emp
+
+====================================
+TRUE/\A |- TRUE/\~((A|B))
+[Result] Fail
+[Explored 3 States]
+[Verification Time: 0.004956 s]
+ 
+
+* TRUE/\A |- TRUE/\(~(A)/\~(B))   [UNFOLD]
+* └── TRUE/\emp |- TRUE/\_|_   [DISPROVE]
+
+====================================
 TRUE/\((F.B).C) |- TRUE/\~(((A.B).C))
 [Result] Succeed
 [Explored 5 States]
-[Verification Time: 0.006499 s]
+[Verification Time: 0.006166 s]
  
 
 * TRUE/\(F.(B.C)) |- TRUE/\~(((A.B).C))   [UNFOLD]
@@ -15,7 +46,7 @@ TRUE/\((F.B).C) |- TRUE/\~(((A.B).C))
 TRUE/\((A.C).C) |- TRUE/\~(((A.B).C))
 [Result] Succeed
 [Explored 5 States]
-[Verification Time: 0.007206 s]
+[Verification Time: 0.007471 s]
  
 
 * TRUE/\(A.(C.C)) |- TRUE/\~(((A.B).C))   [UNFOLD]
@@ -27,11 +58,35 @@ TRUE/\((A.C).C) |- TRUE/\~(((A.B).C))
 TRUE/\((A.B).D) |- TRUE/\~(((A.B).C))
 [Result] Succeed
 [Explored 5 States]
-[Verification Time: 0.008406 s]
+[Verification Time: 0.008436 s]
  
 
 * TRUE/\(A.(B.D)) |- TRUE/\~(((A.B).C))   [UNFOLD]
 * └── TRUE/\(B.D) |- TRUE/\~((B.C))   [UNFOLD]
 *     └── TRUE/\D |- TRUE/\~(C)   [UNFOLD]
 *         └── TRUE/\emp |- TRUE/\emp   [Frame-Prove] with R = emp
+
+====================================
+TRUE/\~(((A.B).C)) |- TRUE/\~(((A.B).C))
+[Result] Succeed
+[Explored 5 States]
+[Verification Time: 0.012483 s]
+ 
+
+* TRUE/\~(((A.B).C)) |- TRUE/\~(((A.B).C))   [UNFOLD]
+* └── TRUE/\~((B.C)) |- TRUE/\~((B.C))   [UNFOLD]
+*     └── TRUE/\~(C) |- TRUE/\~(C)   [UNFOLD]
+*         └── TRUE/\_|_ |- TRUE/\_|_   [Bot-LHS]
+
+====================================
+TRUE/\~(((A.B).C)) |- TRUE/\(_^*)
+[Result] Succeed
+[Explored 5 States]
+[Verification Time: 0.009556 s]
+ 
+
+* TRUE/\~(((A.B).C)) |- TRUE/\(_^*)   [UNFOLD]
+* └── TRUE/\~((B.C)) |- TRUE/\(_^*)   [UNFOLD]
+*     └── TRUE/\~(C) |- TRUE/\(_^*)   [UNFOLD]
+*         └── TRUE/\_|_ |- TRUE/\(_^*)   [Bot-LHS]
 
