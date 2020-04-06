@@ -110,4 +110,12 @@ sudo cp ../cgi-bin/EFFECTS/src/program/* program/
 
 sudo chown www-data:www-data -R program/
 
+sudo rm -r CSP/
+
+sudo mkdir CSP/
+
+sudo cp ../cgi-bin/EFFECTS/src/program/* CSP/
+
+sudo chown www-data:www-data -R CSP/
+
 
