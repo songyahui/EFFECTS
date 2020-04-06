@@ -44,9 +44,9 @@ let rec translateLTL (ltl:ltl) (varList:string list) :(es * string list) =
     (Cons (Underline, ess), varList')
   | Until (l1, l2) -> 
       let newVar = getAfreeVar varList in 
-      let (ess1, varList1) =  translateLTL l1 varList in 
+      let (ess1, varList1) =  translateLTL l1 (newVar :: varList) in 
       let (ess2, varList2) =  translateLTL l2 varList1 in 
-      let prefix = Ttimes (ess2, Var newVar) in 
+      let prefix = Ttimes (ess1, Var newVar) in 
       (Cons (prefix, ess2), varList2)
   | Global l -> 
       let (ess, varList') =  translateLTL l varList in 
@@ -66,9 +66,7 @@ let rec translateLTL (ltl:ltl) (varList:string list) :(es * string list) =
   | AndLTL (l1, l2) -> 
       let (ess1, varList1) =  translateLTL l1 varList in 
       let (ess2, varList2) =  translateLTL l2 varList1 in 
-  
       (ESAnd (ess1, ess2), varList2)
-
   ;;
 
 let rec input_lines file =
