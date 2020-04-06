@@ -82,11 +82,15 @@ sudo cp trs ../
 
 sudo cp verify ../
 
+sudo cp ltl ../
+
 cd ..
 
 sudo chown www-data:www-data trs 
 
 sudo chown www-data:www-data verify
+
+sudo chown www-data:www-data ltl
 
 yahui:repo
 
