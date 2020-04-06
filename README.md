@@ -76,6 +76,8 @@ chmod 755 clean
 
 chmod 755 compile
 
+chmod 755 ltl
+
 ./compile
 
 sudo cp trs ../
