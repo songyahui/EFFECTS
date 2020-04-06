@@ -1,19 +1,21 @@
 ([] green) ==> (green^w)
 
-(<> green) ==> ((_^*).green)
+(<> green) ==> ((_^t1).green)
 
-(<> ([] green)) ==> ((_^*).(green^w))
+((<> green) && (<> red)) ==> (((_^t1).green)/\((_^t2).red))
 
-([] (<> green)) ==> (((_^*).green)^w)
+(<> ([] green)) ==> ((_^t1).(green^w))
+
+([] (<> green)) ==> (((_^t1).green)^w)
 
 ([] (red -> (! (Xgreen)))) ==> ((~(red)|(red/\~((_.green))))^w)
 
-([] (red -> (<> green))) ==> ((~(red)|(red/\((_^*).green)))^w)
+([] (red -> (<> green))) ==> ((~(red)|(red/\((_^t1).green)))^w)
 
-([] (red -> (! (green U yellow)))) ==> ((~(red)|(red/\~(((green^*).yellow))))^w)
+([] (red -> (! (green U yellow)))) ==> ((~(red)|(red/\~(((yellow^t1).yellow))))^w)
 
-([] (red -> ((<> green) && (! (green U yellow))))) ==> ((~(red)|(red/\(((_^*).green)/\~(((green^*).yellow)))))^w)
+([] (red -> ((<> green) && (! (green U yellow))))) ==> ((~(red)|(red/\(((_^t1).green)/\~(((yellow^t2).yellow)))))^w)
 
-([] (red -> (X(red U (yellow && (X(yellow U green))))))) ==> ((~(red)|(red/\(_.((red^*).(yellow/\(_.((yellow^*).green)))))))^w)
+([] (red -> (X(red U (yellow && (X(yellow U green))))))) ==> ((~(red)|(red/\(_.(((yellow/\(_.((green^t1).green)))^t1).(yellow/\(_.((green^t1).green)))))))^w)
 
 
