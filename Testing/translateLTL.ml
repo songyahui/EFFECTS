@@ -38,24 +38,25 @@ let rec input_lines file =
   | _ -> failwith "Weird input_line return value"
 
 
-
 let main = 
   let inputfile = (Sys.getcwd () ^ "/" ^ Sys.argv.(1)) in 
   let outputfile = (Sys.getcwd ()^ "/" ^ Sys.argv.(2)) in
   let ic = open_in inputfile in
   try 
     let specs:(string list) =  (input_lines ic) in 
-    let lines = List.fold_right (fun x acc -> acc ^ "\n" ^ x) (List.rev specs) "" in 
-
+    let lines = List.fold_right (fun x acc -> acc ^ "\n" ^ x) ( specs) "" in 
     let ltlList:(ltl list) = Parser.ltl_p Lexer.token (Lexing.from_string  lines)  in
-    let showLTLListToES = List.fold_right (fun l acc -> acc ^ (showES (translateLTL l)) ^"\n\n") (ltlList)  "" in 
+
+    let esList=List.map (fun ltl-> translateLTL ltl) (ltlList)  in 
+    let producte = List.combine ltlList esList in
+    let result = List.fold_right (fun (l,e) acc -> acc ^ showLTL l ^ " ==> "^(showES e) ^"\n\n") (producte)  "" in 
     let oc = open_out outputfile in    (* 新建或修改文件,返回通道 *)
-    fprintf oc "%s\n" showLTLListToES;   (* 写一些东西 *)
+    fprintf oc "%s\n" result;   (* 写一些东西 *)
+
     (*
-    let showLTLList = List.fold_right (fun l acc -> acc ^ showLTL l ^"\n") (ltlList)  "" in 
     print_string (showLTLList ^ "\n==============\n");
     *)
-    print_string (showLTLListToES^"\n");
+    print_string (result^"\n");
 
     close_out oc;                (* 写入并关闭通道 *)
     flush stdout;                (* 现在写入默认设备 *)
