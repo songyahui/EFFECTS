@@ -4,7 +4,7 @@ Existing approaches to temporal verification have either sacrificed compositiona
 
 ## Online demo
 
-The easiest way to try the code is to use the [web UI](http://loris-5.d2.comp.nus.edu.sg/Effect/index.html?ex=send&type=c&options=sess) written
+The easiest way to try the code is to use the [Web UI](http://loris-5.d2.comp.nus.edu.sg/Effect/index.html?ex=send_valid&type=c&options=sess) written
 by [Yahui Song](https://www.comp.nus.edu.sg/~yahuis/).
 
 ### To Compile:
@@ -75,6 +75,8 @@ cd EFFECTS
 chmod 755 clean
 
 chmod 755 compile
+
+chmod 755 ltl
 
 ./compile
 
