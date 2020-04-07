@@ -35,7 +35,7 @@ let rec iter f = function
 
 let rec addConstrain effect addPi =
   match effect with
-    Effect (pi, eff) -> Effect ( (PureAnd (pi, addPi)), eff)
+    Effect (pi, eff, exVarL) -> Effect ( (PureAnd (pi, addPi)), eff, exVarL)
   | Disj (effL1, effL2) -> Disj (addConstrain effL1 addPi, addConstrain effL2 addPi)
   ;;
 
@@ -224,7 +224,7 @@ let rec showPure (p:pure):string =
 (*To pretty print effects*)
 let rec showEffect (e:effect) :string = 
   match e with
-    Effect (p, es) -> 
+    Effect (p, es, exVarL) -> 
       showPure p ^ "/\\" ^ showES es
   | Disj (es1, es2) -> "(" ^ showEffect es1 ^ ")\\/("  ^ showEffect es2^")"
   ;;
@@ -255,12 +255,13 @@ let showRule (r:rule):string =
   | FRAME  -> " [FRAME] "
   | REOCCUR -> " [REOCCUR] "
 
-(*To pretty print all the context entailments*)
+(*To pretty print all the context entailments
 let rec showContext (d:context):string = 
   match d with
     [] -> ""
   | (piL, esL, piR, esR)::rest -> (showEntailmentEff (Effect (piL, esL)) (Effect (piR, esR)) )^ ("\n") ^ showContext rest
   ;;
+  *)
 
 let rec reverseEs (es:es) : es = 
   match es with 
@@ -283,7 +284,7 @@ let rec reverseEs (es:es) : es =
 
 let rec reverseEff (eff:effect) : effect =
   match eff with 
-    Effect (p,es) ->  Effect (p, reverseEs es)
+    Effect (p,es, exVarL) ->  Effect (p, reverseEs es, exVarL)
   | Disj (eff1, eff2) -> Disj ((reverseEff eff1), (reverseEff eff2)) 
   ;;
 
@@ -326,10 +327,10 @@ let rec substituteESWithAgr (es:es) (realArg:expression) (formalArg: var):es =
   ;;
 
 
-let rec splitDisj (p:pure) (es:es) :effect =
+let rec splitDisj (p:pure) (es:es) (exVarL : var list):effect =
   match p with 
-    PureOr (p1, p2) -> Disj (splitDisj p1 es, splitDisj p2 es) 
-  | _ -> Effect (p, es) 
+    PureOr (p1, p2) -> Disj (splitDisj p1 es exVarL, splitDisj p2 es exVarL) 
+  | _ -> Effect (p, es, exVarL) 
   ;;
 
 let rec normalPureToDisj (p:pure):pure = 
@@ -350,9 +351,9 @@ let rec normalPureToDisj (p:pure):pure =
 
 let rec deletePureOrInEff (eff:effect):effect = 
   match eff with 
-    Effect (pi, es) -> 
+    Effect (pi, es, exVarL) -> 
       let disjPure = normalPureToDisj pi in
-      splitDisj disjPure es
+      splitDisj disjPure es exVarL
   | Disj (eff1, eff2) -> Disj ((deletePureOrInEff eff1), (deletePureOrInEff eff2))
   ;;
 

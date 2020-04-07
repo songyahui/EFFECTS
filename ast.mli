@@ -9,6 +9,9 @@ type terms = Var of string
 
 (* We use a string to represent an single event *)
 type event =  string 
+type mn = string
+type var = string 
+type includ = string 
 
 (*E vent sequence *)
 type es = Bot 
@@ -38,7 +41,7 @@ type pure = TRUE
 
 (*Effects*)
 type effect = 
-            Effect of pure * es
+            Effect of pure * es * (var list )
           | Disj of effect * effect
 
 
@@ -48,9 +51,7 @@ type spec = PrePost of effect * effect
 
 type _type = INT | FLOAT | BOOL | VOID
 
-type mn = string
-type var = string 
-type includ = string 
+
 
 type expression = Unit 
           | Return
