@@ -1,15 +1,15 @@
 TRUE /\ B.(B^*) |- TRUE /\ ~(A.(B^*));
 
-TRUE /\ A |- TRUE /\ ~(A/\B);
-
-TRUE /\ A |- TRUE /\ ~(A | B);
-
-TRUE /\ F.B.C |- TRUE /\ ~(A.B.C);
-
-TRUE /\ A.C.C |- TRUE /\ ~(A.B.C);
-
-TRUE /\ A.B.D |- TRUE /\ ~(A.B.C);
+TRUE /\ A.C.C | A.B.D | F.B.C |- TRUE /\ ~(A.B.C);
 
 TRUE /\ ~(A.B.C) |- TRUE /\ ~(A.B.C);
 
+TRUE /\ ~(A.B.C) |- TRUE /\ ~(A.B);
+
+TRUE /\ ~(A.B) |- TRUE /\ ~(A.B.C);
+
 TRUE /\ ~(A.B.C) |- TRUE /\ (_^*);
+
+TRUE /\ A |- TRUE /\ ~(A/\B);
+
+TRUE /\ A |- TRUE /\ ~(A | B);

@@ -106,11 +106,14 @@ let ifShouldDisj (temp1:effect) (temp2:effect) : effect =
       | _ -> 
       Disj (temp1, temp2 )
   ;;
-let ifShouldConj (temp1:effect) (temp2:effect) : effect = 
+let rec ifShouldConj (temp1:effect) (temp2:effect) : effect = 
   match (temp1, temp2) with
       (Effect(pure1, evs1, exVarL1), Effect(pure2, evs2, exVarL2)) -> 
         Effect (PureAnd (pure1, pure2), ESAnd (evs1, evs2), append exVarL1 exVarL2)
-      | _ -> raise (Foo "wo bu zhidao za zheng ifShouldConj")
+    | (Effect(pure1, evs1, exVarL1), Disj (eff1, eff2)) -> 
+      Disj (ifShouldConj temp1 eff1, ifShouldConj temp1 eff2)
+    | (Disj (eff1, eff2), _) ->
+      Disj (ifShouldConj eff1 temp2, ifShouldConj eff2 temp2)
       (*Disj (temp1, temp2 )*)
   ;;
 
