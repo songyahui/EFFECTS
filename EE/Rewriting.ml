@@ -500,7 +500,7 @@ let trunItIntoWideCard (pi:pure) (esIn: es) : es =
 
 
 
-let rec derivative (p :pure) (es:es) (varL: var list) (ev:(string*int option)): effect =
+let rec derivative (p :pure) (es:es) (varL: var list) (ev:(string*int option)): (effect) =
   match es with
     Bot -> Effect (p,  Bot)
   | Emp -> Effect (p,  Bot)
@@ -537,8 +537,8 @@ let rec derivative (p :pure) (es:es) (varL: var list) (ev:(string*int option)): 
     match  tryder with
       Effect (ppp,Bot) -> Effect (ppp,Kleene (Underline))
     | Effect (ppp,Emp) -> 
-        let freeV = getAfreeVar varL in
-        Effect (ppp, ESOr (Ttimes (Underline, Var freeV), Omega (Underline) ))
+        let newVar = getAfreeVar varL in
+        Effect (PureAnd (ppp, Gt (Var newVar, Number 0)), ESOr (Ttimes (Underline, Var newVar), Omega (Underline) ))
     | _ -> 
       (let rec helper (noteffect:effect) : effect = 
         match noteffect with 
@@ -996,8 +996,14 @@ let rec instantiateEffR  (effR:effect) (instances: int list): effect list =
     Effect (piR, esR) ->  instantiateEff piR esR instances  
   | Disj (eff1, eff2) -> 
     List.fold_right (fun instance acc -> 
-      let temp:effect = Disj (hd (instantiateEffR eff1 [instance]), hd (instantiateEffR eff2 [instance])) in 
-      append acc [temp] ) (instances) [] 
+      let temp1 = instantiateEffR eff1 [instance] in 
+      let temp2 = instantiateEffR eff2 [instance] in 
+      match (List.length temp1, List.length temp2) with 
+        | (0, 0) ->acc
+        | (0, _) -> append acc [hd temp2]
+        | (_, 0) -> append acc [hd temp1]
+        | _ -> append acc [Disj(hd temp1, hd temp2)]
+       ) (instances) [] 
 
   ;;
 
@@ -1082,6 +1088,7 @@ let rec headEs (es:es) : es =
     Cons (es1 , es2) -> headEs es1
   | Kleene es1 -> headEs es1
   | Omega es1 -> headEs es1
+  | Not es1 -> headEs es1
   | ESOr (_, _ ) -> raise (Foo "Must be something wriong in the normalEffect")
   | _ -> es
   ;;
@@ -1166,6 +1173,7 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
   | (Effect(_, Bot), _) -> (Node(showEntail ^ "   [Bot-LHS]", []), true, 1)  
   | (_, Effect(FALSE, _)) -> (Node(showEntail ^ "   [DISPROVE]", []), false, 1)  
   | (_, Effect(_, Bot)) -> (Node(showEntail ^ "   [DISPROVE]", []), false, 1)  
+  
   | (Disj (effL1, effL2), _) -> 
     (*[LHSOR]*)
       let (tree1, re1, states1 ) = (containment1 effL1 effR delta varList) in
@@ -1182,7 +1190,7 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
     else if (isEmp normalFormR) == true then  (Node(showEntail^"   [Frame-Prove]" ^" with R = "^(showES esL ) , []),true, 1) 
     else if (checkNullable normalFormL) == true && (checkNullable normalFormR) == false then (Node(showEntail ^ "   [REFUTATION] "  , []), false, 1) 
     (*Existential*)
-    else if needToBeInstantiated normalFormR varList == true then 
+    else if needToBeInstantiated normalFormR (getAllVarFromEff normalFormL) == true then 
     (*if existialRHSEff piL esL normalFormRNew varList == true then*)
       
       let headsofRHS = headEff normalFormR in 

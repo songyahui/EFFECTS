@@ -10,6 +10,6 @@ TRUE /\ ~(A.B) |- TRUE /\ ~(A.B.C);
 
 TRUE /\ ~(A.B.C) |- TRUE /\ (_^*);
 
-TRUE /\ A |- TRUE /\ ~(A/\B);
-
 TRUE /\ A |- TRUE /\ ~(A | B);
+
+TRUE /\ A |- TRUE /\ ~(A/\B);

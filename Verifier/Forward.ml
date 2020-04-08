@@ -290,6 +290,7 @@ let rec verification (decl:(bool * declare)) (prog: program): string =
     (*print_string((showEntailmentEff acc post) ^ "\n") ;*)
     
     let varList = (*append*) (getAllVarFromEff acc) (*(getAllVarFromEff post)*) in  
+    
     let (result_tree, result, states) =  Rewriting.containment1 acc ( post) [] varList in 
     let result = "[Result: "^ (if result then "Succeed" else "Fail") ^"]\n" in 
     let states = "[Explored "^ string_of_int (states+1)  ^ " States]\n" in 
