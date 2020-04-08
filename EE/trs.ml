@@ -20,7 +20,7 @@ let () =
     let result = List.map (fun parm ->  
                             match parm with 
                               EE (lhs, rhs) -> printReport lhs rhs) eeList in 
-    let final_result = List.fold_right (fun x acc -> acc ^ "\n" ^ x) ( result) "" in 
+    let final_result = List.fold_right (fun x acc -> acc  ^ x ^ "\n") ( result) "" in 
     let oc = open_out outputfile in    (* 新建或修改文件,返回通道 *)
     fprintf oc "%s\n" final_result;   (* 写一些东西 *)
     close_out oc;                (* 写入并关闭通道 *)

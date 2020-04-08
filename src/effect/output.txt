@@ -1,12 +1,116 @@
-
 ====================================
 TRUE/\(B.(B^*)) |- TRUE/\~((A.(B^*)))
 [Result] Succeed
 [Explored 4 States]
-[Verification Time: 0.005225 s]
+[Verification Time: 0.004505 s]
  
 
 * TRUE/\(B.(B^*)) |- TRUE/\~((A.(B^*)))   [UNFOLD]
 * └── TRUE/\(B^*) |- TRUE/\(_^*)   [UNFOLD]
 *     └── TRUE/\(B^*) |- TRUE/\(_^*)   [Reoccur]
+
+====================================
+TRUE/\((((A.C).C)|((A.B).D))|((F.B).C)) |- TRUE/\~(((A.B).C))
+[Result] Succeed
+[Explored 15 States]
+[Verification Time: 0.024142 s]
+ 
+
+* (TRUE/\((A.(C.C))|(A.(B.D))))\/(TRUE/\(F.(B.C))) |- TRUE/\~(((A.B).C)) [LHSOR] 
+* ├── (TRUE/\(A.(C.C)))\/(TRUE/\(A.(B.D))) |- TRUE/\~(((A.B).C)) [LHSOR] 
+* │   ├── TRUE/\(A.(C.C)) |- TRUE/\~(((A.B).C))   [UNFOLD]
+* │   │   └── TRUE/\(C.C) |- TRUE/\~((B.C))   [UNFOLD]
+* │   │       └── TRUE/\C |- TRUE/\(_^*)   [UNFOLD]
+* │   │           └── TRUE/\emp |- TRUE/\(_^*)   [UNFOLD]
+* │   └── TRUE/\(A.(B.D)) |- TRUE/\~(((A.B).C))   [UNFOLD]
+* │       └── TRUE/\(B.D) |- TRUE/\~((B.C))   [UNFOLD]
+* │           └── TRUE/\D |- TRUE/\~(C)   [UNFOLD]
+* │               └── TRUE/\emp |- TRUE/\(_^*)   [UNFOLD]
+* └── TRUE/\(F.(B.C)) |- TRUE/\~(((A.B).C))   [UNFOLD]
+*     └── TRUE/\(B.C) |- TRUE/\(_^*)   [UNFOLD]
+*         └── TRUE/\C |- TRUE/\(_^*)   [UNFOLD]
+*             └── TRUE/\emp |- TRUE/\(_^*)   [UNFOLD]
+
+====================================
+TRUE/\~(((A.B).C)) |- TRUE/\~(((A.B).C))
+[Result] Succeed
+[Explored 12 States]
+[Verification Time: 0.034009 s]
+ 
+
+* TRUE/\~(((A.B).C)) |- TRUE/\~(((A.B).C))   [UNFOLD]
+* └── TRUE/\~((B.C)) |- TRUE/\~((B.C))   [UNFOLD]
+*     └── TRUE/\~(C) |- TRUE/\~(C)   [UNFOLD]
+*         └── (t1>0/\(_^t1))\/(t1>0/\(_^w)) |- (t1>0/\(_^t1))\/(t1>0/\(_^w)) [LHSOR] 
+*             ├── t1>0/\(_^t1) |- (t1>0/\(_^t1))\/(t1>0/\(_^w))   [UNFOLD]
+*             │   └── t1>0/\(_^t1-1) |- (t1>0/\(_^t1-1))\/(t1>0/\(_^w))   [SUB t1/t1-1]
+*             │       └── FALSE/\(_^t1) |- FALSE/\(_^w)   [Bot-LHS]
+*             └── t1>0/\(_^w) |- (t1>0/\(_^t1))\/(t1>0/\(_^w))   [UNFOLD]
+*                 └── t1>0/\(_^w) |- (t1>0/\(_^t1-1))\/(t1>0/\(_^w))   [UNFOLD]
+*                     └── t1>0/\(_^w) |- ((t1>0/\t1-1>0)/\(_^t1-2))\/(t1>0/\(_^w))   [UNFOLD]
+*                         └── t1>0/\(_^w) |- t1>0/\(_^w)   [UNFOLD]
+*                             └── t1>0/\(_^w) |- t1>0/\(_^w)   [Reoccur]
+
+====================================
+TRUE/\~(((A.B).C)) |- TRUE/\~((A.B))
+[Result] Fail
+[Explored 4 States]
+[Verification Time: 0.008408 s]
+ 
+
+* TRUE/\~(((A.B).C)) |- TRUE/\~((A.B))   [UNFOLD]
+* └── TRUE/\~((B.C)) |- TRUE/\~(B)   [UNFOLD]
+*     └── TRUE/\~(C) |- (t1>0/\(_^t1))\/(t1>0/\(_^w))   [REFUTATION] 
+
+====================================
+TRUE/\~((A.B)) |- TRUE/\~(((A.B).C))
+[Result] Fail
+[Explored 5 States]
+[Verification Time: 0.013853 s]
+ 
+
+* TRUE/\~((A.B)) |- TRUE/\~(((A.B).C))   [UNFOLD]
+* └── TRUE/\~(B) |- TRUE/\~((B.C))   [UNFOLD]
+*     └── (t1>0/\(_^t1))\/(t1>0/\(_^w)) |- TRUE/\~(C) [LHSOR] 
+*         └── t1>0/\(_^t1) |- TRUE/\~(C)   [UNFOLD]
+*             └── t1>0/\(_^t1-1) |- (t1>0/\(_^t1))\/(t1>0/\(_^w))   [REFUTATION] 
+
+====================================
+TRUE/\~(((A.B).C)) |- TRUE/\(_^*)
+[Result] Succeed
+[Explored 9 States]
+[Verification Time: 0.017168 s]
+ 
+
+* TRUE/\~(((A.B).C)) |- TRUE/\(_^*)   [UNFOLD]
+* └── TRUE/\~((B.C)) |- TRUE/\(_^*)   [UNFOLD]
+*     └── TRUE/\~(C) |- TRUE/\(_^*)   [UNFOLD]
+*         └── (t1>0/\(_^t1))\/(t1>0/\(_^w)) |- TRUE/\(_^*) [LHSOR] 
+*             ├── t1>0/\(_^t1) |- TRUE/\(_^*)   [UNFOLD]
+*             │   └── t1>0/\(_^t1-1) |- TRUE/\(_^*)   [SUB t1/t1-1]
+*             │       └── FALSE/\(_^t1) |- FALSE/\(_^*)   [Bot-LHS]
+*             └── t1>0/\(_^w) |- TRUE/\(_^*)   [UNFOLD]
+*                 └── t1>0/\(_^w) |- TRUE/\(_^*)   [Reoccur]
+
+====================================
+TRUE/\A |- TRUE/\~((A|B))
+[Result] Fail
+[Explored 3 States]
+[Verification Time: 0.007414 s]
+ 
+
+* TRUE/\A |- TRUE/\(~(A)/\~(B))   [UNFOLD]
+* └── TRUE/\emp |- (t1>0/\((_^t1)/\(_^*)))\/(t1>0/\((_^w)/\(_^*)))   [REFUTATION] 
+
+====================================
+TRUE/\A |- TRUE/\~((A/\B))
+[Result] Succeed
+[Explored 3 States]
+[Verification Time: 0.008735 s]
+ 
+
+* TRUE/\A |- (TRUE/\~(A))\/(TRUE/\~(B))   [UNFOLD]
+* └── TRUE/\emp |- ((t1>0/\(_^t1))\/(t1>0/\(_^w)))\/(TRUE/\(_^*))   [EXISTENTIAL t1=1]
+*     └── TRUE/\emp |- t1>0/\emp   [Frame-Prove] with R = emp
+
 
