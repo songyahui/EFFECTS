@@ -82,21 +82,21 @@ let rec input_lines file =
 
 let rec concatEffEs (eff:effect) (es:es) : effect = 
   match eff with 
-    Effect (p,e, varL) -> Effect (p, Cons (e, es), varL)
+    Effect (p,e) -> Effect (p, Cons (e, es))
   | Disj (eff1, eff2) -> Disj ((concatEffEs eff1 es), (concatEffEs eff2 es))
   ;; 
  
 
 let rec concatEffEff (eff1:effect) (eff2:effect) : effect = 
   match eff1 with 
-    Effect (p1,e1, varL1) -> 
+    Effect (p1,e1) -> 
       (match eff2 with
-        Effect (p2,e2, varL2) -> Effect (PureAnd(p1,p2) , Cons(e1, e2), append varL1 varL2)
+        Effect (p2,e2) -> Effect (PureAnd(p1,p2) , Cons(e1, e2))
       | Disj (ef1, ef2) -> Disj ((concatEffEff eff1 ef1), (concatEffEff eff1 ef2))
       )
   | Disj (ef1, ef2) -> 
       (match eff2 with
-        Effect (p2,e2, _) -> Disj ((concatEffEff ef1 eff2), (concatEffEff ef2 eff2))
+        Effect (p2,e2) -> Disj ((concatEffEff ef1 eff2), (concatEffEff ef2 eff2))
       | Disj (_, _ ) -> Disj ((concatEffEff ef1 eff2), (concatEffEff ef2 eff2))
       
       )
@@ -138,7 +138,7 @@ let rec substitutePureWithAgr (pi:pure) (realArg:expression) (formalArg: var):pu
 
 let rec substituteEffWithAgr (eff:effect) (realArg:expression) (formalArg: var):effect = 
   match eff with 
-    Effect (pi, es, varL) -> Effect (substitutePureWithAgr pi realArg formalArg, substituteESWithAgr es realArg formalArg, varL)
+    Effect (pi, es) -> Effect (substitutePureWithAgr pi realArg formalArg, substituteESWithAgr es realArg formalArg)
   | Disj (eff1, eff2) -> Disj (substituteEffWithAgr eff1 realArg formalArg, substituteEffWithAgr eff2 realArg formalArg)
   ;;
 
@@ -269,7 +269,7 @@ let rec verifier (caller:string) (expr:expression) (state_H:effect) (state_C:eff
 
 let rec extracPureFromPrecondition (eff:effect) :effect = 
   match eff with 
-    Effect (pi, es, varL) -> Effect (pi, Emp, varL)
+    Effect (pi, es) -> Effect (pi, Emp)
   | Disj (eff1, eff2) -> Disj (extracPureFromPrecondition eff1, extracPureFromPrecondition eff2)
   ;;
 

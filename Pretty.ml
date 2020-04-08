@@ -35,7 +35,7 @@ let rec iter f = function
 
 let rec addConstrain effect addPi =
   match effect with
-    Effect (pi, eff, exVarL) -> Effect ( (PureAnd (pi, addPi)), eff, exVarL)
+    Effect (pi, eff) -> Effect ( (PureAnd (pi, addPi)), eff)
   | Disj (effL1, effL2) -> Disj (addConstrain effL1 addPi, addConstrain effL2 addPi)
   ;;
 
@@ -224,7 +224,7 @@ let rec showPure (p:pure):string =
 (*To pretty print effects*)
 let rec showEffect (e:effect) :string = 
   match e with
-    Effect (p, es, exVarL) -> 
+    Effect (p, es) -> 
       showPure p ^ "/\\" ^ showES es
   | Disj (es1, es2) -> "(" ^ showEffect es1 ^ ")\\/("  ^ showEffect es2^")"
   ;;
@@ -284,7 +284,7 @@ let rec reverseEs (es:es) : es =
 
 let rec reverseEff (eff:effect) : effect =
   match eff with 
-    Effect (p,es, exVarL) ->  Effect (p, reverseEs es, exVarL)
+    Effect (p,es) ->  Effect (p, reverseEs es)
   | Disj (eff1, eff2) -> Disj ((reverseEff eff1), (reverseEff eff2)) 
   ;;
 
@@ -327,10 +327,10 @@ let rec substituteESWithAgr (es:es) (realArg:expression) (formalArg: var):es =
   ;;
 
 
-let rec splitDisj (p:pure) (es:es) (exVarL : var list):effect =
+let rec splitDisj (p:pure) (es:es):effect =
   match p with 
-    PureOr (p1, p2) -> Disj (splitDisj p1 es exVarL, splitDisj p2 es exVarL) 
-  | _ -> Effect (p, es, exVarL) 
+    PureOr (p1, p2) -> Disj (splitDisj p1 es , splitDisj p2 es ) 
+  | _ -> Effect (p, es) 
   ;;
 
 let rec normalPureToDisj (p:pure):pure = 
@@ -351,9 +351,9 @@ let rec normalPureToDisj (p:pure):pure =
 
 let rec deletePureOrInEff (eff:effect):effect = 
   match eff with 
-    Effect (pi, es, exVarL) -> 
+    Effect (pi, es) -> 
       let disjPure = normalPureToDisj pi in
-      splitDisj disjPure es exVarL
+      splitDisj disjPure es 
   | Disj (eff1, eff2) -> Disj ((deletePureOrInEff eff1), (deletePureOrInEff eff2))
   ;;
 

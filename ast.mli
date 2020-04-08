@@ -41,7 +41,7 @@ type pure = TRUE
 
 (*Effects*)
 type effect = 
-            Effect of pure * es * (var list )
+            Effect of pure * es
           | Disj of effect * effect
 
 

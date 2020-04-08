@@ -63,8 +63,6 @@ rule token = parse
 | '"' { read_string (Buffer.create 17) lexbuf }
 | '(' { LPAR }
 | ')' { RPAR }
-| '[' { LBrackets }
-| ']' { RBrackets }
 | '{' { LBRACK  }
 | '}' { RBRACK }
 | ',' { COMMA }
