@@ -50,7 +50,7 @@ let rec translateLTL (ltl:ltl) (varList:string list) :(es * string list) =
       (Cons (prefix, ess2), varList2)
   | Global l -> 
       let (ess, varList') =  translateLTL l varList in 
-      (Omega (ess), varList')
+      (Kleene (ess), varList')
   | Future l -> 
       let newVar = getAfreeVar varList in 
       let prefix = Ttimes (Underline, Var newVar) in 

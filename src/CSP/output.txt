@@ -1,21 +1,15 @@
-([] green) ==> (green^w)
+([] p) ==> (p^*)
 
-(<> green) ==> ((_^t1).green)
+(<> p) ==> ((_^t1).p)
 
-((<> green) && (<> red)) ==> (((_^t1).green)/\((_^t2).red))
+(p0 U p1) ==> ((p0^t1).p1)
 
-(<> ([] green)) ==> ((_^t1).(green^w))
+(Xp) ==> (_.p)
 
-([] (<> green)) ==> (((_^t1).green)^w)
+([] (<> p)) ==> (((_^t1).p)^*)
 
-([] (red -> (! (Xgreen)))) ==> ((~(red)|(red/\~((_.green))))^w)
+(<> ([] p)) ==> ((_^t1).(p^*))
 
-([] (red -> (<> green))) ==> ((~(red)|(red/\((_^t1).green)))^w)
-
-([] (red -> (! (green U yellow)))) ==> ((~(red)|(red/\~(((green^t1).yellow))))^w)
-
-([] (red -> ((<> green) && (! (green U yellow))))) ==> ((~(red)|(red/\(((_^t1).green)/\~(((green^t2).yellow)))))^w)
-
-([] (red -> (X(red U (yellow && (X(yellow U green))))))) ==> ((~(red)|(red/\(_.((red^t1).(yellow/\(_.((yellow^t2).green)))))))^w)
+(p0 -> (<> p1)) ==> (~(p0)|(p0/\((_^t1).p1)))
 
 

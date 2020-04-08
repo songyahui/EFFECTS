@@ -1,0 +1,21 @@
+([] green) ==> (green^*)
+
+(<> green) ==> ((_^t1).green)
+
+((<> green) && (<> red)) ==> (((_^t1).green)/\((_^t2).red))
+
+(<> ([] green)) ==> ((_^t1).(green^*))
+
+([] (<> green)) ==> (((_^t1).green)^*)
+
+([] (red -> (! (Xgreen)))) ==> ((~(red)|(red/\~((_.green))))^*)
+
+([] (red -> (<> green))) ==> ((~(red)|(red/\((_^t1).green)))^*)
+
+([] (red -> (! (green U yellow)))) ==> ((~(red)|(red/\~(((green^t1).yellow))))^*)
+
+([] (red -> ((<> green) && (! (green U yellow))))) ==> ((~(red)|(red/\(((_^t1).green)/\~(((green^t2).yellow)))))^*)
+
+([] (red -> (X(red U (yellow && (X(yellow U green))))))) ==> ((~(red)|(red/\(_.((red^t1).(yellow/\(_.((yellow^t2).green)))))))^*)
+
+
