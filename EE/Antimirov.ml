@@ -1,6 +1,7 @@
 open Ast
 open List
 open Pretty
+open Parser
 
 type bst_t =  
   | BLeaf 
@@ -62,6 +63,8 @@ let rec aNullable (es:es) : bool=
   | Cons (es1 , es2) -> (aNullable es1) && (aNullable es2)
   | ESOr (es1 , es2) -> (aNullable es1) || (aNullable es2)
   | Kleene es1 -> true
+  | Underline -> false 
+  | Omega _ -> false
   | _ -> raise (Foo "aNullable exeption")
 ;;
 
@@ -72,6 +75,8 @@ let rec aFst (es:es): (event *int option) list =
   | Cons (es1 , es2) ->  if aNullable es1 then append (aFst es1) (aFst es2) else aFst es1
   | ESOr (es1, es2) -> append (aFst es1) (aFst es2)
   | Kleene es1 -> aFst es1
+  | Omega es1 -> aFst es1
+  | Underline -> [("_", None)]
   | _ -> raise (Foo "aFst exeption")
 ;;
 
@@ -147,6 +152,8 @@ let rec aDerivative (es:es) (ev:string*int option): es =
       else let efF = aDerivative es1 ev in 
           Cons (efF, es2)    
   | Kleene es1 -> Cons  (aDerivative es1 ev, es)
+  | Omega es1 -> Cons  (aDerivative es1 ev, es)
+  | Underline -> Emp
   | _ -> raise (Foo "antimirovDerivative exeption\n")
 
 ;;
@@ -213,7 +220,14 @@ let rec aNormalES es:es  =
       | Kleene esIn1 ->  Kleene (aNormalES esIn1)
       | ESOr(Emp, aa) -> Kleene aa
       | _ ->  Kleene normalInside)
-  | _ -> raise (Foo "antimirovNormalES exeption\n")
+  | Omega es1 -> 
+      let normalInside = aNormalES es1 in 
+      (match normalInside with
+        Emp -> Emp
+      | _ ->  Omega normalInside)
+  | Underline -> Underline
+  | _ -> print_string (showES es);
+  raise (Foo "antimirovNormalES exeption\n")
   ;;
 
 (*
@@ -377,5 +391,19 @@ let antimirov_shell (lhs:es) (rhs:es) : (bool * int * float) =
   let (a, b) = antimirov lhs rhs [] in
 
   let endTime0 = Sys.time() in 
-  (a, b, (endTime0 -. startTimeStamp)*.float_of_int 1000)
+  (a, b, (endTime0 -. startTimeStamp))
   ;;
+
+
+let ff = "((Green.Green . Green . Yellow . Yellow . Yellow . Red . Red . Red)^w)";;
+let spe = "(((_^*).Green)^w)" ;;
+
+let main = 
+  let lhs:(es) = Parser.es_p Lexer.token (Lexing.from_string  ff)  in
+  let rhs:(es) = Parser.es_p Lexer.token (Lexing.from_string  spe)  in
+  let (a, b, c) = antimirov_shell lhs rhs in
+  print_string (string_of_bool a ^ "\n" ^ string_of_int b ^"\n" ^string_of_float c^"\n");;
+
+
+
+  

@@ -19,6 +19,9 @@ ocamlc -o verify parser.cmo lexer.cmo Askz3.cmo Pretty.cmo Rewriting.cmo Forward
 
 ocamlc -c -o Antimirov.cmo EE/Antimirov.ml
 
+ocamlc -o anti parser.cmo lexer.cmo Askz3.cmo Pretty.cmo Antimirov.cmo\
+
+
 
 ocamlc -c -o nfa.cmi Lib/nfa.mli 
 ocamlc -c -o nfa.cmo Lib/nfa.ml  

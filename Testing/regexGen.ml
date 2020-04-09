@@ -106,6 +106,9 @@ let rec sublist b e l =
      if b>0 then tail else h :: tail
 ;;
 
+
+
+
 let main =
   (*let ess = genES sampleNum  [] in
   let states = List.map (fun a -> RegToNfa.getStates (showESReg a)) ess in 
