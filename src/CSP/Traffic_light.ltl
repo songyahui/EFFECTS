@@ -2,18 +2,20 @@
 
 <>Green;
 
-(<>Green && (<>Red && <>Yellow) );
+<>Red; 
+
+<>Yellow;
 
 <>[]Green;
 
 []<>Red;
  
-[] (Red ->(! X Green));
+[] (Red ->(! X Green));     
 
 [] (Red -> (<> Green));
 
 [] (Red -> (! (Green U Yellow)));
 
-[] (Red -> ((<> Green) && (! (Green U Yellow))));
+[] (Red-> X (Red U (Yellow))); 
 
-[] (Red-> X (Red U (Yellow && X (Yellow U Green)))); 
+[] (Red-> X (Red U (X (Yellow U Green)))); 

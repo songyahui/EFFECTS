@@ -52,7 +52,16 @@ let rec nullable (pi :pure) (es:es) : bool=
   | Omega es1 -> false
   | Underline -> false
   | Kleene es1 -> true
-  | Not es1 -> not (nullable pi es1)
+  | Not es1 -> 
+   
+    (match es1 with 
+      Emp -> false 
+    | _ -> nullable pi es1
+    )
+
+        (* 
+    not (nullable pi es1)
+        *)
   | Range (esList) -> 
     (let range = List.fold_left (fun acc a -> acc || (nullable pi a)) false esList in 
     range 
@@ -448,7 +457,8 @@ let rec normalES es pi =
        List.fold_left (fun acc a -> ESOr (acc, a)) Bot range 
       )
 
-  | Not esIn -> 
+  | Not esARG -> 
+      let esIn = normalES  esARG pi in 
       match esIn with 
         ESOr (esIn1, esIn2) -> ESAnd (Not esIn1, Not esIn2)
       | ESAnd (esIn1, esIn2) -> ESOr (Not esIn1, Not esIn2)
@@ -889,6 +899,7 @@ let rec getFirstVar (es :es): string option =
         in getVarFromTerm t 
     | Kleene esIn -> getFirstVar esIn
     | Omega esIn -> getFirstVar esIn
+    | Not esIn -> getFirstVar esIn
     | _ -> None
 ;;
 
@@ -1012,7 +1023,7 @@ let instantiateEff (pi:pure) (es:es) (instances: int list): effect list =
     None -> []
   | Some (str) ->  
     map (fun n -> 
-    Effect (pi, substituteESWithVal es str n)) instances 
+     Effect (pi, substituteESWithVal es str n)) instances 
   ;;
 
 let rec instantiateEffR  (effR:effect) (instances: int list): effect list = 
@@ -1266,7 +1277,7 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
                       match lhs with 
                         Effect (FALSE, _) -> chceckResultOR rhss acc staacc
                       | _ -> 
-                        let rhs = addConstrain rhs pure in 
+                        let rhs = normalEffect (addConstrain rhs pure) in 
                         let (tree, re, states) = containment1 (lhs) (rhs) delta varList in 
                         if re == true then (true , tree::acc, staacc+states, index)
                         else chceckResultOR rhss (tree::acc) (staacc+states)
@@ -1274,7 +1285,9 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
                 in 
                 let (resultFinal, trees, states, value ) = chceckResultOR instantiateRHS [] 0 in
                 if resultFinal then (Node(showEntail ^ "   [EXISTENTIAL "^ s ^ "="^ string_of_int value ^"]", trees ), resultFinal, states) 
-                else (Node(showEntail ^ "   [EXISTENTIAL "^ "fail" ^"]", trees ), resultFinal, states) 
+                else 
+                (print_string (string_of_int (List.length trees));
+                (Node(showEntail ^ "   [EXISTENTIAL "^ "fail" ^"]", trees ), resultFinal, states) )
                 (*********************************)
 
               | Plus  (Var t, num) -> 
