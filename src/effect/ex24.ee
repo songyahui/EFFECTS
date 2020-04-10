@@ -1,19 +1,20 @@
 
 
-TRUE /\ (A.A) |- TRUE /\ (A^n);
+n>0  /\ (A.A) |- TRUE /\ (A^n);
 
-TRUE /\ (A.A.B.B) |- TRUE /\ (A^n).(B^n);
+n>0 /\ (A.A.B.B) |- TRUE /\ (A^n).(B^n);
 
-TRUE /\ (A.A.B.B) |- TRUE /\ (A^n).(B^m);
+n>0 /\ (A.A.B) |- TRUE /\ (A^n).(B^n);
 
-TRUE /\ (A.A.B.B.B) |- TRUE /\ (A^n).(B^m);
+n>0 /\ m>0/\ (A.A.B.B) |- TRUE /\ (A^n).(B^m);
 
-TRUE /\ (A.A | A.A.A).B.B |- TRUE /\  (A^n). (B^n) ;
+n>0 /\ m>0/\(A.A.B.B.B) |- TRUE /\ (A^n).(B^m);
 
-
-TRUE /\ (A.A | A.A.A).B.B.B |- TRUE /\  (A^n). (B^n) ;
-
-TRUE /\ (A.A | A.A.A).B.B.B.B |- TRUE /\  (A^n). (B^n) ;
+n>0 /\ (A.A | A.A.A).B.B |- TRUE /\  (A^n). (B^n) ;
 
 
-TRUE /\ (A.A | A.A.A).B |- TRUE /\  (A^n). (B^n) ;
+n>0 /\ (A.A | A.A.A).B.B.B |- TRUE /\  (A^n). (B^n) ;
+
+n>0 /\ (A.A | A.A.A).B.B.B.B |- TRUE /\  (A^n). (B^n) ;
+
+n>0 /\ (A.A | A.A.A).B |- TRUE /\  (A^n). (B^n) ;

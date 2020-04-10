@@ -331,7 +331,7 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) =
 
   let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentES normalFormL normalFormR in 
   
-  print_string(showEntail ^"\n");
+  print_string("\n================\n"^showEntail ^"\n");
   
 
   let lhs' = remove_dup (splitCons normalFormL) in 

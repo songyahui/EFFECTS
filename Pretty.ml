@@ -132,7 +132,7 @@ let rec showES (es:es):string =
   | Omega es -> "("^(showES es) ^ "^" ^  "w" ^")"
   | Underline -> "_"
   | Kleene es -> "(" ^ (showES es) ^ "^" ^ "*"^")"
-  | Not es -> "(~" ^ (showES es) ^")"
+  | Not es -> "~(" ^ (showES es) ^")"
   | Range (esList) -> 
       let rec helperHere acc esL =
         match esL with

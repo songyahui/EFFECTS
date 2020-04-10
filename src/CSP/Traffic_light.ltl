@@ -1,3 +1,19 @@
+[]Green;
+
+<>Green;
+
+(<>Green && (<>Red && <>Yellow) );
+
+<>[]Green;
+
+[]<>Red;
+ 
 [] (Red ->(! X Green));
 
 [] (Red -> (<> Green));
+
+[] (Red -> (! (Green U Yellow)));
+
+[] (Red -> ((<> Green) && (! (Green U Yellow))));
+
+[] (Red-> X (Red U (Yellow && X (Yellow U Green)))); 

@@ -32,7 +32,7 @@ let rec translateLTL (ltl:ltl) (varList:string list) :(es * string list) =
     Lable str -> (Event (str, None), varList)
   | Next l -> 
     let (ess, varList') =  translateLTL l varList in 
-    (ess, varList')
+    (Cons(Emp, ess), varList')
   | Until (l1, l2) -> 
       let newVar = getAfreeVar varList in 
       let (ess1, varList1) =  translateLTL l1 (newVar :: varList) in 
@@ -46,15 +46,18 @@ let rec translateLTL (ltl:ltl) (varList:string list) :(es * string list) =
   | Future l -> 
       let newVar = getAfreeVar varList in 
       let prefix = Ttimes (Underline, Var newVar) in 
-      let (ess, varList') =  translateLTL l (newVar::varList) in 
-      (Cons (prefix, ess), varList')
+      let (ess, varList') =  translateLTL l (newVar::varList) in
+      let newVar111 = getAfreeVar varList' in 
+ 
+ 
+      (Cons (Cons (prefix, ess), Emp), newVar111 :: varList')
   | NotLTL l -> 
       let (ess, varList') =  translateLTL l varList in 
       (Not (ess), varList')
   | Imply (l1, l2) -> 
       let (ess1, varList1) =  translateLTL l1 varList in 
       let (ess2, varList2) =  translateLTL l2 varList1 in 
-      (Cons (Kleene (Not (ess1)), Cons (ess1, ess2)), varList2)
+      (ESOr ( (Not (ess1)),  Cons (ess1, ess2)), varList2)
   | AndLTL (l1, l2) -> 
       let (ess1, varList1) =  translateLTL l1 varList in 
       let (ess2, varList2) =  translateLTL l2 varList1 in 
@@ -98,6 +101,7 @@ let main =
     let ltlList:(ltl list) = Parser.ltl_p Lexer.token (Lexing.from_string  lines)  in
 
     let esList=List.map (fun ltl->  
+    (*get_0  (translateLTL ltl [])*)
     print_string ("|- "^ showEffect (Effect(TRUE, get_0  (translateLTL ltl []))));
     "|- "^ showEffect (Effect(TRUE, get_0  (translateLTL ltl []))) ) (ltlList)  in 
     let oc = open_out outputfile in    (* 新建或修改文件,返回通道 *)
@@ -105,14 +109,16 @@ let main =
     (*
     print_string (showLTLList ^ "\n==============\n");
     *)
-    (*
+    
         let producte = List.combine ltlList esList in
-
+(*
     let result = List.fold_right (fun (l,e) acc -> acc ^ showLTL l ^ " ==> "^(showES e) ^"\n\n") (producte)  "" in 
     print_string (result^"\n");
     *)
+    
     let ential_result = List.fold_right (fun x acc -> acc ^ testASingle trafic x) esList "" in 
     print_string (ential_result^"\n");
+    
     fprintf oc "%s\n" ential_result;   (* 写一些东西 *)
 
 

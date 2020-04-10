@@ -464,7 +464,8 @@ let rec normalEffect eff =
     Effect (p, es) -> 
       if (askZ3 p) == false then 
         ( 
-          Effect (FALSE, es)
+          print_string (showPure p^"   "^ showES es^ "\n 11********\n");
+          Effect (FALSE, normalES es p)
         )
       else 
         let p_normal = normalPure p in 
@@ -555,11 +556,12 @@ let rec derivative (p :pure) (es:es) (varL: var list) (ev:(string*int option)): 
 
     match  tryder with
     
-      Effect (ppp,Bot) -> Effect (ppp,Kleene (Underline))
-    | Effect (ppp,Emp) -> 
+      Effect (ppp,Bot) -> Effect (ppp,Emp)
+    | Effect (ppp,Emp) -> Effect (ppp,Bot)
+    (*
         let newVar = getAfreeVar varL in
         Effect (PureAnd (ppp, Gt (Var newVar, Number 0)), ESOr (Ttimes (Underline, Var newVar), Omega (Underline) ))
-        
+        *)
     | _ -> 
       (let rec helper (noteffect:effect) : effect = 
         match noteffect with 
@@ -764,7 +766,7 @@ let rec getAllVarFromES es =
 
 let rec getAllVarFromEff (eff:effect): string list = 
   match eff with 
-    Effect (pi, es) -> append (getAllVarFromES es) (getAllVarFromPi pi)
+    Effect (pi, es) -> (getAllVarFromES es)(*append  (getAllVarFromPi pi)*)
   | Disj(eff1, eff2) -> append (getAllVarFromEff eff1) (getAllVarFromEff eff2)
 (*match effect with 
     Effect (pi, es) -> getAllVarFromES es
@@ -1009,7 +1011,8 @@ let instantiateEff (pi:pure) (es:es) (instances: int list): effect list =
   match getFirstVar es with 
     None -> []
   | Some (str) ->  
-    map (fun n -> Effect (pi, substituteESWithVal es str n)) instances 
+    map (fun n -> 
+    Effect (pi, substituteESWithVal es str n)) instances 
   ;;
 
 let rec instantiateEffR  (effR:effect) (instances: int list): effect list = 
@@ -1168,7 +1171,7 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
   let normalFormR = normalEffect effR in
   let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentEff normalFormL normalFormR in 
   
-  print_string(showEntail ^"\n");
+  print_string("\n================\n"^showEntail ^"\n");
   
   let unfold eff1 eff2 del = 
     let fstL = checkFst eff1 in 
@@ -1226,16 +1229,16 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
       let head = getTheheadneedToBeInstantiated headsofRHS varList in
       match head with 
           Ttimes (esIn, term) -> 
-          (*print_string ("Existential\n");*)
+          
               (match term with
                 Var s -> 
-
     (*********************************)
     (*                
     3. find possible values 
     4. disjunc all the values in instanstiation
     *)
                 let getInstansVal piL esL pattern: int list = 
+
                   let maxSize = getSize esL in 
                   let rec helper (acc:int) (p:es)= 
                     if acc <= maxSize then 
@@ -1244,9 +1247,11 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
                       else helper (acc+1) (Cons (p, pattern))
                     else maxSize
                   in 
+                  print_string ("Existential\n");
+
                   let max = helper 0 pattern in 
-                  (*print_string (string_of_int max^"\n**********\n");*)
-                  List.rev(makeList 1 max [])
+                  print_string (string_of_int max^"\n----------------\n");
+                  makeList 0 max []
                 in 
                 let instanceFromLeft = getInstansVal piL esL esIn in 
                 let instantiateRHS = instantiateEffR normalFormR instanceFromLeft in 
@@ -1255,9 +1260,16 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
                   (match li with 
                     [] -> (false , acc, staacc, -1) 
                   | rhs::rhss -> 
-                      let (tree, re, states) = containment1 (Effect (piL, esL)) rhs delta varList in 
-                      if re == true then (true , tree::acc, staacc+states, List.length li)
-                      else chceckResultOR rhss (tree::acc) (staacc+states)
+                      let index = (List.length instantiateRHS) - (List.length li)  in 
+                      let pure = Eq (Var s, Number index) in 
+                      let lhs = normalEffect (addConstrain (Effect (piL, esL)) pure )in 
+                      match lhs with 
+                        Effect (FALSE, _) -> chceckResultOR rhss acc staacc
+                      | _ -> 
+                        let rhs = addConstrain rhs pure in 
+                        let (tree, re, states) = containment1 (lhs) (rhs) delta varList in 
+                        if re == true then (true , tree::acc, staacc+states, index)
+                        else chceckResultOR rhss (tree::acc) (staacc+states)
                   )
                 in 
                 let (resultFinal, trees, states, value ) = chceckResultOR instantiateRHS [] 0 in

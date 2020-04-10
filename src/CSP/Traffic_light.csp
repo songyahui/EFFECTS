@@ -9,7 +9,7 @@
 
 #assert Light |=<>[]Green;
 
-#assert Light |=[]<>Green;
+#assert Light |=[]<>Red;
  
 #assert Light |=[] (Red ->(! X Green));
 
@@ -25,8 +25,15 @@
 
 
 
-
 /*
+
+ 
+
+
+
+
+
+
 
 #assert Light |= []green;
 
