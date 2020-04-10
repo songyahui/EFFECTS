@@ -12,6 +12,19 @@ open Int32
 
 exception Foo of string
 
+
+let rec showLTL (ltl:ltl):string =
+  match ltl with 
+    Lable str -> str
+  | Next l -> "(" ^"X" ^showLTL l ^")"
+  | Until (l1, l2) -> "(" ^showLTL l1 ^ " U " ^showLTL l2 ^")"
+  | Global l -> "(" ^"[] " ^showLTL l ^")"
+  | Future l -> "(" ^"<> " ^showLTL l ^")"
+  | NotLTL l -> "(" ^"! " ^showLTL l ^")"
+  | Imply (l1, l2) -> "(" ^showLTL l1 ^ " -> " ^showLTL l2 ^")"
+  | AndLTL (l1, l2) -> "(" ^showLTL l1 ^ " && " ^showLTL l2 ^")"
+  ;;
+
 let compareParm (p1:int option ) (p2:int option ) :bool = 
   match (p1, p2) with 
     (None, None) -> true 
@@ -88,6 +101,7 @@ type rule = LHSOR   | RHSOR
           | LHSCASE | RHSCASE 
           | UNFOLD  | DISPROVE 
           | FRAME   | REOCCUR
+          | RHSAND
 
 (*the effects entailment context*)
 type context =  ( pure * es * pure * es) list
@@ -118,7 +132,7 @@ let rec showES (es:es):string =
   | Omega es -> "("^(showES es) ^ "^" ^  "w" ^")"
   | Underline -> "_"
   | Kleene es -> "(" ^ (showES es) ^ "^" ^ "*"^")"
-  | Not es -> "~(" ^ (showES es) ^")"
+  | Not es -> "(~" ^ (showES es) ^")"
   | Range (esList) -> 
       let rec helperHere acc esL =
         match esL with
@@ -243,6 +257,7 @@ let showEntailmentESReg (es1:es) (es2:es):string = showESReg es1 ^ " |- "  ^ sho
 let showRule (r:rule):string = 
   match r with
     LHSOR -> " [LHSOR] "
+  | RHSAND -> " [RHSAND] "
   | RHSOR -> " [RHSOR] "
   | LHSEX -> " [LHSEX] "  
   | RHSEX -> " [RHSEX] " 

@@ -3,6 +3,12 @@ open List
 open Pretty
 open Parser
 
+
+
+let universal = Kleene(Underline);;
+
+
+
 type bst_t =  
   | BLeaf 
   | BNode of (int * (es list) * bst_t  * bst_t) (* Node (left, key, right) *)
@@ -65,7 +71,11 @@ let rec aNullable (es:es) : bool=
   | Kleene es1 -> true
   | Underline -> false 
   | Omega _ -> false
-  | _ -> raise (Foo "aNullable exeption")
+  | ESAnd (es1 , es2) -> (aNullable es1) && (aNullable es2)
+  | Not (es1) -> not (aNullable es1)
+  | _ -> 
+  print_string (showES es^"\n");
+  raise (Foo "aNullable exeption")
 ;;
 
 let rec aFst (es:es): (event *int option) list = 
@@ -154,7 +164,15 @@ let rec aDerivative (es:es) (ev:string*int option): es =
   | Kleene es1 -> Cons  (aDerivative es1 ev, es)
   | Omega es1 -> Cons  (aDerivative es1 ev, es)
   | Underline -> Emp
-  | _ -> raise (Foo "antimirovDerivative exeption\n")
+  | ESAnd (es1 , es2) -> 
+    let temp1 =  (aDerivative es1 ev) in
+    let temp2 =  (aDerivative es2 ev) in 
+    ESAnd(temp1, temp2)
+  | Not es1 -> Not (aDerivative es1 ev)
+  | _ -> 
+    let (a, b) = ev in 
+    print_string (showES es^"    "^a);
+  raise (Foo "antimirovDerivative exeption\n")
 
 ;;
 
@@ -226,6 +244,28 @@ let rec aNormalES es:es  =
         Emp -> Emp
       | _ ->  Omega normalInside)
   | Underline -> Underline
+  | ESAnd (es1, es2) -> 
+      (match (aNormalES es1, aNormalES es2) with 
+
+      | (Bot, norml_es2) -> Bot
+      | (norml_es1, Bot) -> Bot
+      | (Event (s1, p1), Event (s2, p2)) -> if compareEvent (s1, p1) (s2, p2) then Event (s1, p1) else Bot
+
+      | (Emp, norml_es2) -> if aNullable norml_es2 then Emp else Bot 
+      | (norml_es1, Emp) -> if aNullable norml_es1 then Emp else Bot 
+
+      | (norml_es1, norml_es2) -> 
+        if aCompareES  norml_es1 norml_es2 == true then norml_es1
+        else ESAnd (norml_es1, norml_es2)
+
+      )
+  | Not esIn->
+    let inside = aNormalES esIn in 
+    (match inside with 
+      Bot -> Emp
+    | Emp -> Bot
+    | _ -> Not inside 
+    )
   | _ -> print_string (showES es);
   raise (Foo "antimirovNormalES exeption\n")
   ;;
@@ -272,6 +312,7 @@ let fromListToSet (esL:es list) :SS.t =
 
 
 
+
 let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) = 
   
   (*
@@ -287,6 +328,11 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) =
   
   let normalFormL = aNormalES lhs in 
   let normalFormR = aNormalES rhs in
+
+  let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentES normalFormL normalFormR in 
+  
+  print_string(showEntail ^"\n");
+  
 
   let lhs' = remove_dup (splitCons normalFormL) in 
   let rhs' = remove_dup (splitCons normalFormR) in 
@@ -312,6 +358,8 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) =
 
   List.fold_left (fun acc a -> print_string (showES a ^"\n")) ()  rhs' ;
 *)
+
+
 
   let unfoldSingle ev esL esR (del:evn) = 
     (*
@@ -360,6 +408,13 @@ let rec antimirov (lhs:es) (rhs:es) (evn:evn ): (bool * int) =
     if (aReoccur ( normalFormL) ( normalFormR) evn) == true then ( true, 1) 
       (*Unfold*)                    
   else 
+    match (normalFormL, normalFormL) with
+      (Not lll, _) -> antimirov universal (ESOr (lll, normalFormR)) evn
+    | (_, ESAnd (es1, es2)) -> 
+      let (a, b) = antimirov normalFormL es1 evn in
+      let (a1, b1) = antimirov normalFormL es2 evn in
+      (a&& a1, b+b1)
+    | _ -> 
   (*
   match (normalFormL, normalFormR) with
     (ESOr (effL1, effL2), _) -> 
@@ -391,18 +446,11 @@ let antimirov_shell (lhs:es) (rhs:es) : (bool * int * float) =
   let (a, b) = antimirov lhs rhs [] in
 
   let endTime0 = Sys.time() in 
-  (a, b, (endTime0 -. startTimeStamp))
+  (a, b, (endTime0 -. startTimeStamp)*.float_of_int 1000)
   ;;
 
 
-let ff = "((Green.Green . Green . Yellow . Yellow . Yellow . Red . Red . Red)^w)";;
-let spe = "(((_^*).Green)^w)" ;;
 
-let main = 
-  let lhs:(es) = Parser.es_p Lexer.token (Lexing.from_string  ff)  in
-  let rhs:(es) = Parser.es_p Lexer.token (Lexing.from_string  spe)  in
-  let (a, b, c) = antimirov_shell lhs rhs in
-  print_string (string_of_bool a ^ "\n" ^ string_of_int b ^"\n" ^string_of_float c^"\n");;
 
 
 

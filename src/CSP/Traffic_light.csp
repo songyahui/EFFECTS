@@ -1,4 +1,32 @@
-﻿Light = green -> green -> green -> yellow -> yellow -> yellow -> red -> red -> red -> Light;
+﻿Light = Green -> Yellow ->  Red -> Light;
+
+
+#assert Light |=[]Green;
+
+#assert Light |=<>Green;
+
+#assert Light |=(<>Green && (<>Red && <>Yellow) );
+
+#assert Light |=<>[]Green;
+
+#assert Light |=[]<>Green;
+ 
+#assert Light |=[] (Red ->(! X Green));
+
+#assert Light |=[] (Red -> (<> Green));
+
+#assert Light |=[] (Red -> (! (Green U Yellow)));
+
+#assert Light |=[] (Red -> ((<> Green) && (! (Green U Yellow))));
+
+#assert Light |=[] (Red-> X (Red U (Yellow && X (Yellow U Green)))); 
+
+
+
+
+
+
+/*
 
 #assert Light |= []green;
 
@@ -23,4 +51,6 @@
 #assert Light |= [] (red -> (<> green) && (! (green U yellow)));
 #assert Light |= [] (red-> X (red U (yellow && X (yellow U green))));
 
+
+*/
  

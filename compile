@@ -19,7 +19,6 @@ ocamlc -o verify parser.cmo lexer.cmo Askz3.cmo Pretty.cmo Rewriting.cmo Forward
 
 ocamlc -c -o Antimirov.cmo EE/Antimirov.ml
 
-ocamlc -o anti parser.cmo lexer.cmo Askz3.cmo Pretty.cmo Antimirov.cmo\
 
 
 
@@ -41,6 +40,11 @@ ocamlc -c -o regexGen.cmo Testing/regexGen.ml
 
 ocamlc -o gen nfa.cmo dfa.cmo regex.cmo nfa_dot.cmo RegToNfa.cmo  parser.cmo lexer.cmo Askz3.cmo Pretty.cmo Antimirov.cmo regexGen.cmo
 
+ocamlc -c -o LTL_test.cmo Testing/LTL_test.ml
+
+ocamlc -o anti parser.cmo lexer.cmo Askz3.cmo Pretty.cmo Antimirov.cmo LTL_test.cmo
+
+
 ocamlc -c -o translateLTL.cmo Testing/translateLTL.ml
 
-ocamlc -o ltl  parser.cmo lexer.cmo Askz3.cmo  Pretty.cmo  translateLTL.cmo
+ocamlc -o ltl   parser.cmo lexer.cmo Askz3.cmo  Pretty.cmo  Rewriting.cmo  translateLTL.cmo

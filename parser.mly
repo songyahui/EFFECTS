@@ -135,7 +135,7 @@ parm:
 
 es:
 | EMPTY { Emp }
-| str = EVENT p=parm { Event (str, p) }
+| str = EVENT p=parm { Event (String.lowercase_ascii str, p) }
 | LPAR r = es RPAR { r }
 | a = es CHOICE b = es { ESOr(a, b) }
 | a = es CONJ b = es { ESAnd(a, b) }
@@ -178,7 +178,7 @@ entailment:
 
 
 ltl : 
-| s = VAR {Lable s} 
+| s = EVENT {Lable s} 
 | LPAR r = ltl RPAR { r }
 | NEXT p = ltl  {Next p}
 | LPAR p1= ltl UNTIL p2= ltl RPAR {Until (p1, p2)}

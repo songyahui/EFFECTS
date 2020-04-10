@@ -58,6 +58,23 @@ let rec nullable (pi :pure) (es:es) : bool=
     range 
     )
 ;;
+
+let rec getSize (es:es) : int=
+  match es with
+    Bot -> 0 
+  | Emp -> 1
+  | Event _ -> 1 
+  | Cons (es1 , es2) ->  (getSize es1) + (getSize es2)
+  | ESOr (es1 , es2) ->  (getSize es1) + (getSize es2)
+  | ESAnd (es1 , es2) ->  (getSize es1) + (getSize es2)
+  | Ttimes (es1, t) ->  (getSize es1)
+  | Omega es1 ->  (getSize es1)
+  | Underline -> 1
+  | Kleene es1 -> (getSize es1)
+  | Not es1 -> (getSize es1)
+  | Range (esList) -> 
+    raise (Foo "getSize range")
+;;
     
 let rec fst (pi :pure) (es:es): (event* int option) list = 
   let rec common (left:(string* int option) list) (right:(string*int option) list) (acc:(string*int option) list): (string*int option) list =
@@ -436,8 +453,8 @@ let rec normalES es pi =
         ESOr (esIn1, esIn2) -> ESAnd (Not esIn1, Not esIn2)
       | ESAnd (esIn1, esIn2) -> ESOr (Not esIn1, Not esIn2)
       | Not esIn1 -> esIn1
-      | Bot -> Underline
-      | Emp -> Bot
+      (*| Bot -> Underline
+      | Emp -> Bot*)
       | _ -> Not esIn (*raise (Foo "I have not thought through! Not in normal")*)
   ;;
 
@@ -533,12 +550,16 @@ let rec derivative (p :pure) (es:es) (varL: var list) (ev:(string*int option)): 
           
   | Kleene es1 -> appendEff_ES  (derivative p es1 varL ev) es
   | Not es1 -> 
+
     (let tryder = normalEffect (derivative p es1 varL ev) in 
+
     match  tryder with
+    
       Effect (ppp,Bot) -> Effect (ppp,Kleene (Underline))
     | Effect (ppp,Emp) -> 
         let newVar = getAfreeVar varL in
         Effect (PureAnd (ppp, Gt (Var newVar, Number 0)), ESOr (Ttimes (Underline, Var newVar), Omega (Underline) ))
+        
     | _ -> 
       (let rec helper (noteffect:effect) : effect = 
         match noteffect with 
@@ -1083,14 +1104,14 @@ let rec pureUnion (eff :effect ):pure =
   List.fold_right (fun (piL, esL) acc -> PureOr(acc, piL)) (effs) FALSE 
 ;;
 
-let rec headEs (es:es) : es =
+let rec headEs (es:es) : es list =
   match es with
     Cons (es1 , es2) -> headEs es1
   | Kleene es1 -> headEs es1
   | Omega es1 -> headEs es1
   | Not es1 -> headEs es1
-  | ESOr (_, _ ) -> raise (Foo "Must be something wriong in the normalEffect")
-  | _ -> es
+  | ESOr (es1, es2 ) -> append (headEs es1) (headEs es2)
+  | _ -> [es]
   ;;
 
 let rec subsetOf (small : string list) (big : string list) :bool = 
@@ -1113,7 +1134,7 @@ let rec makeList min max acc: int list =
 
 let rec headEff (eff:effect) : es list = 
   match eff with 
-    Effect (pi, es) -> [headEs es]
+    Effect (pi, es) -> headEs es
   | Disj (eff1, eff2) -> append (headEff eff1) (headEff eff2)
   ;; 
 
@@ -1146,9 +1167,9 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
   let normalFormL = normalEffect effL in 
   let normalFormR = normalEffect effR in
   let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentEff normalFormL normalFormR in 
-  (*
+  
   print_string(showEntail ^"\n");
-  *)
+  
   let unfold eff1 eff2 del = 
     let fstL = checkFst eff1 in 
     let deltaNew = append del [(eff1, eff2)] in
@@ -1181,6 +1202,14 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
       else 
         let (tree2, re2 , states2) = (containment1 effL2 effR delta varList) in
         (Node (showEntailmentEff normalFormL normalFormR ^ showRule LHSOR, [tree1; tree2] ), re2, states1+states2+1)
+  | (Effect (piL, esL),Effect(piR, ESAnd (esR1, esR2))) ->
+      let (tree1, re1, states1 ) = (containment1 normalFormL (Effect(piR, esR1)) delta varList) in
+      if re1 == false then (Node (showEntailmentEff normalFormL normalFormR ^ showRule RHSAND, [tree1] ),  false, states1)
+      else
+        let (tree2, re2, states2 ) = (containment1 normalFormL (Effect(piR, esR2)) delta varList) in
+        (Node (showEntailmentEff normalFormL normalFormR ^ showRule RHSAND, [tree1; tree2] ), re2, states1+states2+1)
+
+
   | (Effect (piL, esL),_) ->
     if checkReoccur normalFormL normalFormR delta then (Node(showEntail ^ "   [Reoccur]", []), true, 1) 
     (*
@@ -1207,10 +1236,13 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
     4. disjunc all the values in instanstiation
     *)
                 let getInstansVal piL esL pattern: int list = 
+                  let maxSize = getSize esL in 
                   let rec helper (acc:int) (p:es)= 
-                    let (t, r, s) = containment1 (Effect (piL, esL)) (Effect (TRUE, p)) [] []  in 
-                    if r = false then acc
-                    else helper (acc+1) (Cons (p, pattern))
+                    if acc <= maxSize then 
+                      let (t, r, s) = containment1 (Effect (piL, esL)) (Effect (TRUE, p)) [] []  in 
+                      if r = false then acc
+                      else helper (acc+1) (Cons (p, pattern))
+                    else maxSize
                   in 
                   let max = helper 0 pattern in 
                   (*print_string (string_of_int max^"\n**********\n");*)
@@ -1259,7 +1291,7 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
 
     else 
 (*there is no extantial var on thr RHS already*)
-      match headEs esL with
+      match hd (headEs esL) with
           Ttimes (esIn, term) -> 
             (match term with 
               Var s -> 
