@@ -10,18 +10,19 @@
 %token EMPTY ASSERTKEY EVENTKEY CHOICE LPAR RPAR CONCAT OMEGA POWER PLUS MINUS TRUE FALSE DISJ CONJ   ENTIL INTT BOOLT VOIDT 
 %token LBRACK RBRACK COMMA SIMI  IF ELSE REQUIRE ENSURE LSPEC RSPEC RETURN (*LBrackets  RBrackets*)
 %token EOF GT LT EQ GTEQ LTEQ INCLUDE SHARP EQEQ UNDERLINE KLEENE NEGATION
-%token FUTURE GLOBAL IMPLY LTLNOT NEXT UNTIL LILAND
+%token FUTURE GLOBAL IMPLY LTLNOT NEXT UNTIL LILAND 
 
 %left CHOICE
 %left CONCAT
 %left DISJ
 %left CONJ
 
-%start prog ee es_p ltl_p
+%start prog ee es_p ltl_p ltl_verify
 %type <(Ast.entilment) list > ee
 %type <Ast.program> prog
 %type <Ast.es> es_p
 %type <(Ast.ltl) list > ltl_p
+%type <(Ast.es * (Ast.ltl list) ) > ltl_verify
 %%
 
 ee: 
@@ -35,7 +36,8 @@ ltl_p:
 | EOF {[]}
 | a = ltl SIMI r = ltl_p { append [a] r }
 
-
+ltl_verify:
+| LSPEC r = es RSPEC ltls= ltl_p {(r, ltls)}
 
 
 type_: 
@@ -135,7 +137,7 @@ parm:
 
 es:
 | EMPTY { Emp }
-| str = EVENT p=parm { Event (String.lowercase_ascii str, p) }
+| str = EVENT p=parm { Event ( str, p) }
 | LPAR r = es RPAR { r }
 | a = es CHOICE b = es { ESOr(a, b) }
 | a = es CONJ b = es { ESAnd(a, b) }

@@ -42,9 +42,10 @@ ocamlc -o gen nfa.cmo dfa.cmo regex.cmo nfa_dot.cmo RegToNfa.cmo  parser.cmo lex
 
 ocamlc -c -o LTL_test.cmo Testing/LTL_test.ml
 
-ocamlc -o anti parser.cmo lexer.cmo Askz3.cmo Pretty.cmo Antimirov.cmo LTL_test.cmo
 
+ocamlc -c -o TranslateLTL.cmo Testing/translateLTL.ml
 
-ocamlc -c -o translateLTL.cmo Testing/translateLTL.ml
+ocamlc -o ltl   parser.cmo lexer.cmo Askz3.cmo  Pretty.cmo  Rewriting.cmo  TranslateLTL.cmo
 
-ocamlc -o ltl   parser.cmo lexer.cmo Askz3.cmo  Pretty.cmo  Rewriting.cmo  translateLTL.cmo
+ocamlc -o verifyLTL parser.cmo lexer.cmo Askz3.cmo Pretty.cmo Rewriting.cmo  LTL_test.cmo
+

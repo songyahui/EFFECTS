@@ -32,7 +32,7 @@ let rec translateLTL (pi:pure) (ltl:ltl) (varList:string list) :(pure * es * str
     Lable str -> (pi, Event (str, None), varList)
   | Next l -> 
     let (piii, ess, varList') =  translateLTL pi l varList in 
-    (piii, Cons (Underline, ess), varList')
+    (piii,  ess, varList')
   | Until (l1, l2) -> 
       let newVar = getAfreeVar varList in 
       let newPi = PureAnd (pi, Gt (Var newVar, Number 0)) in 

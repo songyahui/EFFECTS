@@ -88,4 +88,6 @@ type ltl = Lable of string
         | Imply of ltl * ltl
         | AndLTL of ltl * ltl
 
+type ltl_verification = (es* ltl list )
+
 

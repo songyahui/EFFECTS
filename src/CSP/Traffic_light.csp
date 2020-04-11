@@ -2,9 +2,7 @@
 
 BBB = B -> BBB; 
 
-#assert BBB |= Green U B;
-
-#assert Light |= []Green;
+#assert Light |=[]Green;
 
 #assert Light |=<>Green;
 

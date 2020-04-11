@@ -474,7 +474,7 @@ let rec normalEffect eff =
     Effect (p, es) -> 
       if (askZ3 p) == false then 
         ( 
-          print_string (showPure p^"   "^ showES es^ "\n 11********\n");
+          (*print_string (showPure p^"   "^ showES es^ "\n 11********\n");*)
           Effect (FALSE, normalES es p)
         )
       else 
@@ -1261,11 +1261,11 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
 
                   let max = helper 0 pattern in 
                   (*print_string ("Existential\n");
-                                    print_string (string_of_int max^"\n----------------\n");
+                  print_string (string_of_int max^"\n----------------\n");
 
                   *)
 
-                  makeList 0 max []
+                  makeList 0 maxSize []
                 in 
                 let instanceFromLeft = getInstansVal piL esL esIn in 
                 let instantiateRHS = instantiateEffR normalFormR instanceFromLeft in 
@@ -1289,8 +1289,7 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
                 let (resultFinal, trees, states, value ) = chceckResultOR instantiateRHS [] 0 in
                 if resultFinal then (Node(showEntail ^ "   [EXISTENTIAL "^ s ^ "="^ string_of_int value ^"]", trees ), resultFinal, states) 
                 else 
-                (print_string (string_of_int (List.length trees));
-                (Node(showEntail ^ "   [EXISTENTIAL "^ "fail" ^"]", trees ), resultFinal, states) )
+                (Node(showEntail ^ "   [EXISTENTIAL "^ "fail" ^"]", trees ), resultFinal, states) 
                 (*********************************)
 
               | Plus  (Var t, num) -> 
