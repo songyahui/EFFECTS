@@ -78,6 +78,9 @@ chmod 755 compile
 
 chmod 755 ltl
 
+chmod 755 verifyLTL
+
+
 ./compile
 
 sudo cp trs ../
@@ -85,6 +88,8 @@ sudo cp trs ../
 sudo cp verify ../
 
 sudo cp ltl ../
+
+sudo cp verifyLTL ../
 
 cd ..
 
