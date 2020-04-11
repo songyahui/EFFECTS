@@ -1018,26 +1018,28 @@ let rec substituteESWithVal (es:es) (var1:string) (val1: int):es =
   )
   ;;
 
-let instantiateEff (pi:pure) (es:es) (instances: int list): effect list = 
+let instantiateEff (pi:pure) (es:es) (instances: int list): (effect*int) list = 
   match getFirstVar es with 
     None -> []
   | Some (str) ->  
     map (fun n -> 
-     Effect (pi, substituteESWithVal es str n)) instances 
+     (Effect (pi, substituteESWithVal es str n), n)) instances 
   ;;
 
-let rec instantiateEffR  (effR:effect) (instances: int list): effect list = 
+let get_0 (a, b) = a;;
+
+let rec instantiateEffR  (effR:effect) (instances: int list): (effect*int) list = 
   match effR with 
-    Effect (piR, esR) ->  instantiateEff piR esR instances  
+    Effect (piR, esR) ->  instantiateEff piR esR instances
   | Disj (eff1, eff2) -> 
     List.fold_right (fun instance acc -> 
       let temp1 = instantiateEffR eff1 [instance] in 
       let temp2 = instantiateEffR eff2 [instance] in 
       match (List.length temp1, List.length temp2) with 
         | (0, 0) ->acc
-        | (0, _) -> append acc [hd temp2]
-        | (_, 0) -> append acc [hd temp1]
-        | _ -> append acc [Disj(hd temp1, hd temp2)]
+        | (0, _) -> append acc [(get_0 (hd temp2), instance)]
+        | (_, 0) -> append acc [(get_0 (hd temp1), instance)]
+        | _ -> append acc [(Disj(get_0 (hd temp1), get_0 (hd temp2)), instance)]
        ) (instances) [] 
 
   ;;
@@ -1176,13 +1178,15 @@ let rec addEntailConstrain (eff:effect) (pi:pure) :effect =
 
   
 
-let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:string list): (binary_tree * bool * int) = 
+let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses): (binary_tree * bool * int) = 
   
   let normalFormL = normalEffect effL in 
   let normalFormR = normalEffect effR in
+  let varList = getAllVarFromEff normalFormL in 
   let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentEff normalFormL normalFormR in 
   (*
   print_string("\n================\n"^showEntail ^"\n");
+  print_string (List.fold_left (fun acc a  -> acc ^ " " ^ a ^ "\n") ""  varList);
   *)
   let unfold eff1 eff2 del = 
     let fstL = checkFst eff1 in 
@@ -1194,7 +1198,7 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
       | ev::fs -> 
           let deriL = checkDerivative eff1 ev varList in
           let deriR = checkDerivative eff2 ev varList in
-          let (tree, re, states) =  containment1 deriL deriR deltaNew varList in 
+          let (tree, re, states) =  containment1 deriL deriR deltaNew  in 
           if re == false then (false , tree::acc, staacc+states)
           else chceckResultAND fs (tree::acc) (staacc+states)
       )
@@ -1211,16 +1215,16 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
   
   | (Disj (effL1, effL2), _) -> 
     (*[LHSOR]*)
-      let (tree1, re1, states1 ) = (containment1 effL1 effR delta varList) in
+      let (tree1, re1, states1 ) = (containment1 effL1 effR delta ) in
       if re1 == false then (Node (showEntailmentEff normalFormL normalFormR ^ showRule LHSOR, [tree1] ),  false, states1)
       else 
-        let (tree2, re2 , states2) = (containment1 effL2 effR delta varList) in
+        let (tree2, re2 , states2) = (containment1 effL2 effR delta ) in
         (Node (showEntailmentEff normalFormL normalFormR ^ showRule LHSOR, [tree1; tree2] ), re2, states1+states2+1)
   | (Effect (piL, esL),Effect(piR, ESAnd (esR1, esR2))) ->
-      let (tree1, re1, states1 ) = (containment1 normalFormL (Effect(piR, esR1)) delta varList) in
+      let (tree1, re1, states1 ) = (containment1 normalFormL (Effect(piR, esR1)) delta ) in
       if re1 == false then (Node (showEntailmentEff normalFormL normalFormR ^ showRule RHSAND, [tree1] ),  false, states1)
       else
-        let (tree2, re2, states2 ) = (containment1 normalFormL (Effect(piR, esR2)) delta varList) in
+        let (tree2, re2, states2 ) = (containment1 normalFormL (Effect(piR, esR2)) delta ) in
         (Node (showEntailmentEff normalFormL normalFormR ^ showRule RHSAND, [tree1; tree2] ), re2, states1+states2+1)
 
 
@@ -1237,6 +1241,11 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
     (*if existialRHSEff piL esL normalFormRNew varList == true then*)
       
       let headsofRHS = headEff normalFormR in 
+      (*
+      print_string (showEffect normalFormR^"\n");
+      print_string (string_of_int (List.length headsofRHS)^"\n");
+      print_string (List.fold_left (fun acc a  -> acc ^ " " ^ a ^ "\n") ""  varList);
+      *)
       let head = getTheheadneedToBeInstantiated headsofRHS varList in
       match head with 
           Ttimes (esIn, term) -> 
@@ -1251,6 +1260,7 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
                 let getInstansVal piL esL pattern: int list = 
 
                   let maxSize = getSize esL in 
+                  (* 
                   let rec helper (acc:int) (p:es)= 
                     if acc <= maxSize then 
                       let (t, r, s) = containment1 (Effect (piL, esL)) (Effect (TRUE, p)) [] []  in 
@@ -1259,12 +1269,12 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
                     else maxSize
                   in 
 
-                  let max = helper 0 pattern in 
-                  (*print_string ("Existential\n");
+                  let max = helper 0 pattern in
+
+                  print_string ("Existential\n");
                   print_string (string_of_int max^"\n----------------\n");
-
                   *)
-
+                  
                   makeList 0 maxSize []
                 in 
                 let instanceFromLeft = getInstansVal piL esL esIn in 
@@ -1273,15 +1283,20 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
                 let rec chceckResultOR li acc staacc : (bool * binary_tree list  * int * int)=
                   (match li with 
                     [] -> (false , acc, staacc, -1) 
-                  | rhs::rhss -> 
-                      let index = (List.length instantiateRHS) - (List.length li)  in 
+                  | (rhs, index)::rhss -> 
+                  (*
+                      print_string (showEffect rhs^"\n");
+                      print_string (string_of_int index^"\n");
+                      *)
                       let pure = Eq (Var s, Number index) in 
                       let lhs = normalEffect (addConstrain (Effect (piL, esL)) pure )in 
                       match lhs with 
-                        Effect (FALSE, _) -> chceckResultOR rhss acc staacc
+                        Effect (FALSE, _) -> 
+                        chceckResultOR rhss acc staacc
+                        
                       | _ -> 
                         let rhs = normalEffect (addConstrain rhs pure) in 
-                        let (tree, re, states) = containment1 (lhs) (rhs) delta varList in 
+                        let (tree, re, states) = containment1 (lhs) (rhs) delta  in 
                         if re == true then (true , tree::acc, staacc+states, index)
                         else chceckResultOR rhss (tree::acc) (staacc+states)
                   )
@@ -1298,7 +1313,7 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
                 let cons = PureAnd( Eq (Var newVar, Plus (Var t, num) ), GtEq (Var newVar, Number 0)) in
                 let lhs' = addConstrain normalFormL cons in
                 let rhs' = addConstrain rhs cons in
-                let (tree, re, states) = containment1 lhs' rhs' delta (varList)in
+                let (tree, re, states) = containment1 lhs' rhs' delta in
                 (Node (showEntailmentEff lhs' rhs' ^ "   [SUB-RHS]",[tree] ), re, states)
                 
               | Minus (Var t, num) -> 
@@ -1308,7 +1323,7 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
 
                 let lhs' = addConstrain normalFormL cons in
                 let rhs' = addConstrain rhs cons in
-                let (tree, re, states) = containment1 lhs' rhs' delta (varList)in
+                let (tree, re, states) = containment1 lhs' rhs' delta in
                 (Node (showEntailmentEff lhs' rhs' ^ "   [SUB-RHS]",[tree] ), re, states)
               | _ -> raise (Foo "bu ying gai a ");
               )
@@ -1334,10 +1349,10 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
 
                     (*zhe li hao xiang ke yi gai*)
 
-                    let (tree1, re1, states1) = (containment1 leftZero rightZero delta varList) in
+                    let (tree1, re1, states1) = (containment1 leftZero rightZero delta) in
                     (match re1 with 
                       false -> (Node (showEntailmentEff normalFormL normalFormR ^"   [CASE SPLIT]",[tree1] ), re1, states1)
-                    | true -> let (tree2, re2, states2) = (containment1 leftNonZero rightNonZero delta varList) in
+                    | true -> let (tree2, re2, states2) = (containment1 leftNonZero rightNonZero delta ) in
                       (Node (showEntailmentEff normalFormL normalFormR ^"   [CASE SPLIT]",[tree1;tree2] ), re1&& re2, states1+states2)
                     )
                   | false -> (*[UNFOLD]*)unfold normalFormL (addEntailConstrain normalFormR piL) delta 
@@ -1350,7 +1365,7 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
                 let cons = PureAnd( Eq (Var newVar, Plus (Var t, num) ), GtEq (Var newVar, Number 0)) in
                 let lhs' = addConstrain lhs cons in 
                 let rhs' = addConstrain rhs cons in 
-                let (tree, re, states) = containment1 lhs' rhs' delta (newVar::varList)in
+                let (tree, re, states) = containment1 lhs' rhs' delta in
                 (Node (showEntailmentEff normalFormL normalFormR ^"   [SUB "^ newVar ^"/" ^ t ^"+1]",[tree] ), re, states)
             | Minus (Var t, num) -> 
             (*[LHSSUB]*)
@@ -1360,7 +1375,7 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
                 let cons = PureAnd( Eq (Var newVar, Minus (Var t, num) ), GtEq (Var newVar, Number 0))in
                 let lhs' = addConstrain lhs cons in 
                 let rhs' = addConstrain rhs cons in 
-                let (tree, re, states) = containment1 lhs' rhs' delta (newVar::varList)in
+                let (tree, re, states) = containment1 lhs' rhs' delta in
                 (Node (showEntailmentEff normalFormL normalFormR ^"   [SUB "^ newVar ^"/" ^ t ^"-1]",[tree] ), re, states)
             | Number n -> 
             
@@ -1720,11 +1735,11 @@ let printReportHelper lhs rhs: (binary_tree * bool * int) =
   (*
   let delta = getProductHypo lhs rhs in 
     let varList = append (getAllVarFromEff lhs) (getAllVarFromEff rhs) in  
-
-  *)
   let varList = getAllVarFromEff lhs in  
 
-  containment1 lhs rhs [] varList 
+  *)
+
+  containment1 lhs rhs []  
   ;;
 
 
