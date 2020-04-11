@@ -2,7 +2,7 @@
 TRUE/\(b.(b^*)) |- TRUE/\~((a.(b^*)))
 [Result] Succeed
 [Explored 3 States]
-[Verification Time: 0.003146 s]
+[Verification Time: 0.003878 s]
  
 
 * TRUE/\(b.(b^*)) |- TRUE/\~((a.(b^*)))   [UNFOLD]
@@ -12,29 +12,29 @@ TRUE/\(b.(b^*)) |- TRUE/\~((a.(b^*)))
 TRUE/\((((a.c).c)|((a.b).d))|((f.b).c)) |- TRUE/\~(((a.b).c))
 [Result] Succeed
 [Explored 12 States]
-[Verification Time: 0.018087 s]
+[Verification Time: 0.02036 s]
  
 
-* (TRUE/\((a.(c.c))|(a.(b.d))))\/(TRUE/\(f.(b.c))) |- TRUE/\~(((a.b).c)) [LHSOR] 
-* ├── (TRUE/\(a.(c.c)))\/(TRUE/\(a.(b.d))) |- TRUE/\~(((a.b).c)) [LHSOR] 
-* │   ├── TRUE/\(a.(c.c)) |- TRUE/\~(((a.b).c))   [UNFOLD]
+* (TRUE/\((a.(c.c))|(a.(b.d))))\/(TRUE/\(f.(b.c))) |- TRUE/\~((a.(b.c))) [LHSOR] 
+* ├── (TRUE/\(a.(c.c)))\/(TRUE/\(a.(b.d))) |- TRUE/\~((a.(b.c))) [LHSOR] 
+* │   ├── TRUE/\(a.(c.c)) |- TRUE/\~((a.(b.c)))   [UNFOLD]
 * │   │   └── TRUE/\(c.c) |- TRUE/\~((b.c))   [UNFOLD]
 * │   │       └── TRUE/\c |- TRUE/\emp   [Frame-Prove] with R = c
-* │   └── TRUE/\(a.(b.d)) |- TRUE/\~(((a.b).c))   [UNFOLD]
+* │   └── TRUE/\(a.(b.d)) |- TRUE/\~((a.(b.c)))   [UNFOLD]
 * │       └── TRUE/\(b.d) |- TRUE/\~((b.c))   [UNFOLD]
 * │           └── TRUE/\d |- TRUE/\~(c)   [UNFOLD]
 * │               └── TRUE/\emp |- TRUE/\emp   [Frame-Prove] with R = emp
-* └── TRUE/\(f.(b.c)) |- TRUE/\~(((a.b).c))   [UNFOLD]
+* └── TRUE/\(f.(b.c)) |- TRUE/\~((a.(b.c)))   [UNFOLD]
 *     └── TRUE/\(b.c) |- TRUE/\emp   [Frame-Prove] with R = (b.c)
 
 ====================================
 TRUE/\~(((a.b).c)) |- TRUE/\~(((a.b).c))
 [Result] Succeed
 [Explored 5 States]
-[Verification Time: 0.009231 s]
+[Verification Time: 0.010373 s]
  
 
-* TRUE/\~(((a.b).c)) |- TRUE/\~(((a.b).c))   [UNFOLD]
+* TRUE/\~((a.(b.c))) |- TRUE/\~((a.(b.c)))   [UNFOLD]
 * └── TRUE/\~((b.c)) |- TRUE/\~((b.c))   [UNFOLD]
 *     └── TRUE/\~(c) |- TRUE/\~(c)   [UNFOLD]
 *         └── TRUE/\_|_ |- TRUE/\_|_   [Bot-LHS]
@@ -43,10 +43,10 @@ TRUE/\~(((a.b).c)) |- TRUE/\~(((a.b).c))
 TRUE/\~(((a.b).c)) |- TRUE/\~((a.b))
 [Result] Fail
 [Explored 4 States]
-[Verification Time: 0.006817 s]
+[Verification Time: 0.006836 s]
  
 
-* TRUE/\~(((a.b).c)) |- TRUE/\~((a.b))   [UNFOLD]
+* TRUE/\~((a.(b.c))) |- TRUE/\~((a.b))   [UNFOLD]
 * └── TRUE/\~((b.c)) |- TRUE/\~(b)   [UNFOLD]
 *     └── TRUE/\~(c) |- TRUE/\_|_   [DISPROVE]
 
@@ -54,10 +54,10 @@ TRUE/\~(((a.b).c)) |- TRUE/\~((a.b))
 TRUE/\~((a.b)) |- TRUE/\~(((a.b).c))
 [Result] Succeed
 [Explored 4 States]
-[Verification Time: 0.006871 s]
+[Verification Time: 0.006813 s]
  
 
-* TRUE/\~((a.b)) |- TRUE/\~(((a.b).c))   [UNFOLD]
+* TRUE/\~((a.b)) |- TRUE/\~((a.(b.c)))   [UNFOLD]
 * └── TRUE/\~(b) |- TRUE/\~((b.c))   [UNFOLD]
 *     └── TRUE/\_|_ |- TRUE/\~(c)   [Bot-LHS]
 
@@ -65,10 +65,10 @@ TRUE/\~((a.b)) |- TRUE/\~(((a.b).c))
 TRUE/\~(((a.b).c)) |- TRUE/\(_^*)
 [Result] Succeed
 [Explored 5 States]
-[Verification Time: 0.009627 s]
+[Verification Time: 0.008102 s]
  
 
-* TRUE/\~(((a.b).c)) |- TRUE/\(_^*)   [UNFOLD]
+* TRUE/\~((a.(b.c))) |- TRUE/\(_^*)   [UNFOLD]
 * └── TRUE/\~((b.c)) |- TRUE/\(_^*)   [UNFOLD]
 *     └── TRUE/\~(c) |- TRUE/\(_^*)   [UNFOLD]
 *         └── TRUE/\_|_ |- TRUE/\(_^*)   [Bot-LHS]
@@ -77,7 +77,7 @@ TRUE/\~(((a.b).c)) |- TRUE/\(_^*)
 TRUE/\a |- TRUE/\~((a|b))
 [Result] Fail
 [Explored 3 States]
-[Verification Time: 0.004566 s]
+[Verification Time: 0.004252 s]
  
 
 * TRUE/\a |- TRUE/\(~(a)/\~(b)) [RHSAND] 
@@ -88,10 +88,10 @@ TRUE/\a |- TRUE/\~((a|b))
 TRUE/\a |- TRUE/\~((a/\b))
 [Result] Succeed
 [Explored 3 States]
-[Verification Time: 0.006308 s]
+[Verification Time: 0.003494 s]
  
 
-* TRUE/\a |- (TRUE/\~(a))\/(TRUE/\~(b))   [UNFOLD]
+* TRUE/\a |- TRUE/\~(_|_)   [UNFOLD]
 * └── TRUE/\emp |- TRUE/\emp   [Frame-Prove] with R = emp
 
 

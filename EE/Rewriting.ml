@@ -1181,9 +1181,9 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
   let normalFormL = normalEffect effL in 
   let normalFormR = normalEffect effR in
   let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentEff normalFormL normalFormR in 
-  
+  (*
   print_string("\n================\n"^showEntail ^"\n");
-  
+  *)
   let unfold eff1 eff2 del = 
     let fstL = checkFst eff1 in 
     let deltaNew = append del [(eff1, eff2)] in
@@ -1258,10 +1258,13 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (varList:str
                       else helper (acc+1) (Cons (p, pattern))
                     else maxSize
                   in 
-                  print_string ("Existential\n");
 
                   let max = helper 0 pattern in 
-                  print_string (string_of_int max^"\n----------------\n");
+                  (*print_string ("Existential\n");
+                                    print_string (string_of_int max^"\n----------------\n");
+
+                  *)
+
                   makeList 0 max []
                 in 
                 let instanceFromLeft = getInstansVal piL esL esIn in 
