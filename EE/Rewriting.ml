@@ -1176,7 +1176,28 @@ let rec addEntailConstrain (eff:effect) (pi:pure) :effect =
   ;;
 
 
-  
+let rec isInfinite (es:es) :bool = 
+  match es with 
+  Omega es1 -> true
+| Cons (es1 , es2) -> (isInfinite es2)
+| ESOr (es1 , es2) -> (isInfinite es1) && (isInfinite es2)
+| ESAnd (es1 , es2) -> (isInfinite es1) && (isInfinite es2)
+| _ ->  false 
+
+  ;;
+
+
+let rec keepIfinite (eff:effect):effect =
+  match eff with 
+    Effect (pi, es) -> if isInfinite es then eff else Effect (FALSE, Bot)
+  | Disj (eff1, eff2) -> Disj (keepIfinite eff1, keepIfinite eff2)
+;;
+
+let rec notSureInfinite (eff:effect):bool =
+  match eff with 
+    Effect (pi, es) -> not (isInfinite es) 
+  | Disj (eff1, eff2) -> notSureInfinite eff1 || notSureInfinite eff2
+;;
 
 let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses): (binary_tree * bool * int) = 
   
@@ -1229,7 +1250,8 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses): (binary_tre
 
 
   | (Effect (piL, esL),_) ->
-    if checkReoccur normalFormL normalFormR delta then (Node(showEntail ^ "   [Reoccur]", []), true, 1) 
+    if isInfinite esL && notSureInfinite normalFormR then containment1 normalFormL (keepIfinite normalFormR) delta 
+    else if checkReoccur normalFormL normalFormR delta then (Node(showEntail ^ "   [Reoccur]", []), true, 1) 
     (*
     else if (entailConstrains (pureUnion normalFormL) (pureUnion normalFormR)) == false then (Node(showEntail ^ "   [Contradictory] "  , []), false, 1) 
     *)
@@ -1237,6 +1259,7 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses): (binary_tre
     else if (isEmp normalFormR) == true then  (Node(showEntail^"   [Frame-Prove]" ^" with R = "^(showES esL ) , []),true, 1) 
     else if (checkNullable normalFormL) == true && (checkNullable normalFormR) == false then (Node(showEntail ^ "   [REFUTATION] "  , []), false, 1) 
     (*Existential*)
+
     else if needToBeInstantiated normalFormR (getAllVarFromEff normalFormL) == true then 
     (*if existialRHSEff piL esL normalFormRNew varList == true then*)
       

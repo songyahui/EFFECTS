@@ -1,1 +1,2 @@
-n=0/\Done |- (n>=0/\((Send^n).Done))\/(n<0/\(Send^w));
+TRUE /\((Green.(Yellow.Red))^w) |- TRUE /\((_^n).(Green^*));
+
