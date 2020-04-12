@@ -1241,6 +1241,18 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses): (binary_tre
       else 
         let (tree2, re2 , states2) = (containment1 effL2 effR delta ) in
         (Node (showEntailmentEff normalFormL normalFormR ^ showRule LHSOR, [tree1; tree2] ), re2, states1+states2+1)
+
+  (****If worriy of comokenness, need to delete this part. *****)
+  | ( _, Disj (effL1, effL2)) -> 
+    (*[RHSOR]*)
+      let (tree1, re1, states1 ) = (containment1 normalFormL effL1 delta ) in
+      if re1 == true then (Node (showEntailmentEff normalFormL normalFormR ^ showRule LHSOR, [tree1] ),  true, states1)
+      else 
+        let (tree2, re2 , states2) = (containment1 normalFormL effL2 delta ) in 
+        (Node (showEntailmentEff normalFormL normalFormR ^ showRule LHSOR, [tree2] ), re2, states2)
+    (****If worriy of comokenness, need to delete this part. *****)
+
+
   | (Effect (piL, esL),Effect(piR, ESAnd (esR1, esR2))) ->
       let (tree1, re1, states1 ) = (containment1 normalFormL (Effect(piR, esR1)) delta ) in
       if re1 == false then (Node (showEntailmentEff normalFormL normalFormR ^ showRule RHSAND, [tree1] ),  false, states1)
@@ -1258,8 +1270,9 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses): (binary_tre
     else if (isEmp normalFormR) == true then  (Node(showEntail^"   [Frame-Prove]" ^" with R = "^(showES esL ) , []),true, 1) 
     else if (checkNullable normalFormL) == true && (checkNullable normalFormR) == false then (Node(showEntail ^ "   [REFUTATION] "  , []), false, 1) 
     
+    (*
     else if isInfinite esL && notSureInfinite normalFormR then containment1 normalFormL (keepIfinite normalFormR) delta 
-
+      *)
     (*Existential*)
 
     else if needToBeInstantiated normalFormR (getAllVarFromEff normalFormL) == true then 

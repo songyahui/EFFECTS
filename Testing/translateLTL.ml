@@ -123,8 +123,9 @@ let main =
     let producte = List.combine ltlList esList in
 
     let result = List.fold_right (fun (l,e) acc -> acc ^ showLTL l ^ " ==> "^(showEffect e) ^"\n\n") (producte)  "" in 
+    (*
     print_string (result^"\n");
-    
+    *)
     
     
     
