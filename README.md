@@ -76,10 +76,6 @@ chmod 755 clean
 
 chmod 755 compile
 
-chmod 755 ltl
-
-chmod 755 verifyLTL
-
 
 ./compile
 
@@ -98,6 +94,8 @@ sudo chown www-data:www-data trs
 sudo chown www-data:www-data verify
 
 sudo chown www-data:www-data ltl
+
+sudo chown www-data:www-data verifyLTL
 
 yahui:repo
 
