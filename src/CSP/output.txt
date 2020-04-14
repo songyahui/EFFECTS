@@ -1,23 +1,175 @@
-([] Green) ==> TRUE/\(Green^*)
+====================================
+TRUE/\(((Green.Yellow).Red)^w) |- TRUE/\(Green^*)
+[Result] Fail
+[Explored 2 States]
+[Verification Time: 0.004142 s]
+ 
 
-(<> Green) ==> TRUE/\((_^t1).Green)
+* TRUE/\((Green.(Yellow.Red))^w) |- TRUE/\(Green^*)   [UNFOLD]
+* └── TRUE/\(Yellow.(Red.((Green.(Yellow.Red))^w))) |- TRUE/\(Green^*)   [UNFOLD]
+*     └── TRUE/\(Red.((Green.(Yellow.Red))^w)) |- TRUE/\_|_   [DISPROVE]
 
-(<> Red) ==> TRUE/\((_^t1).Red)
 
-(<> Yellow) ==> TRUE/\((_^t1).Yellow)
+====================================
+TRUE/\(((Green.Yellow).Red)^w) |- TRUE/\((_^t1).Green)
+[Result] Fail
+[Explored 5 States]
+[Verification Time: 0.015987 s]
+ 
 
-(<> ([] Green)) ==> TRUE/\((_^t1).(Green^*))
+* TRUE/\((Green.(Yellow.Red))^w) |- TRUE/\((_^t1).Green)   [EXISTENTIAL fail]
+* └── t1=3/\((Green.(Yellow.Red))^w) |- t1=3/\((_^3).Green)   [UNFOLD]
+*     └── t1=3/\(Yellow.(Red.((Green.(Yellow.Red))^w))) |- (t1=3/\3>0)/\((_^2).Green)   [UNFOLD]
+*         └── t1=3/\(Red.((Green.(Yellow.Red))^w)) |- (t1=3/\2>0)/\((_^1).Green)   [UNFOLD]
+*             └── t1=3/\((Green.(Yellow.Red))^w) |- (t1=3/\1>0)/\Green   [UNFOLD]
+*                 └── t1=3/\(Yellow.(Red.((Green.(Yellow.Red))^w))) |- t1=3/\emp   [UNFOLD]
+*                     └── t1=3/\(Red.((Green.(Yellow.Red))^w)) |- t1=3/\_|_   [DISPROVE]
 
-([] (<> Red)) ==> TRUE/\(((_^t1).Red)^*)
 
-([] (Red -> (! (XGreen)))) ==> TRUE/\((~(Red)|(Red.~(Green)))^*)
+====================================
+TRUE/\(((Green.Yellow).Red)^w) |- TRUE/\((_^t1).Red)
+[Result] Fail
+[Explored 4 States]
+[Verification Time: 0.01501 s]
+ 
 
-([] (Red -> (<> Green))) ==> TRUE/\((~(Red)|(Red.((_^t1).Green)))^*)
+* TRUE/\((Green.(Yellow.Red))^w) |- TRUE/\((_^t1).Red)   [EXISTENTIAL fail]
+* └── t1=3/\((Green.(Yellow.Red))^w) |- t1=3/\((_^3).Red)   [UNFOLD]
+*     └── t1=3/\(Yellow.(Red.((Green.(Yellow.Red))^w))) |- (t1=3/\3>0)/\((_^2).Red)   [UNFOLD]
+*         └── t1=3/\(Red.((Green.(Yellow.Red))^w)) |- (t1=3/\2>0)/\((_^1).Red)   [UNFOLD]
+*             └── t1=3/\((Green.(Yellow.Red))^w) |- (t1=3/\1>0)/\Red   [UNFOLD]
+*                 └── t1=3/\(Yellow.(Red.((Green.(Yellow.Red))^w))) |- t1=3/\_|_   [DISPROVE]
 
-([] (Red -> (! (Green U Yellow)))) ==> (TRUE/\t1>0)/\((~(Red)|(Red.~(((Green^t1).Yellow))))^*)
 
-([] (Red -> (X(Red U Yellow)))) ==> (TRUE/\t1>0)/\((~(Red)|(Red.((Red^t1).Yellow)))^*)
+====================================
+TRUE/\(((Green.Yellow).Red)^w) |- TRUE/\((_^t1).Yellow)
+[Result] Fail
+[Explored 4 States]
+[Verification Time: 0.014096 s]
+ 
 
-([] (Red -> (X(Red U (X(Yellow U Green)))))) ==> ((TRUE/\t1>0)/\t2>0)/\((~(Red)|(Red.((Red^t1).((Yellow^t2).Green))))^*)
+* TRUE/\((Green.(Yellow.Red))^w) |- TRUE/\((_^t1).Yellow)   [EXISTENTIAL fail]
+* └── t1=3/\((Green.(Yellow.Red))^w) |- t1=3/\((_^3).Yellow)   [UNFOLD]
+*     └── t1=3/\(Yellow.(Red.((Green.(Yellow.Red))^w))) |- (t1=3/\3>0)/\((_^2).Yellow)   [UNFOLD]
+*         └── t1=3/\(Red.((Green.(Yellow.Red))^w)) |- (t1=3/\2>0)/\((_^1).Yellow)   [UNFOLD]
+*             └── t1=3/\((Green.(Yellow.Red))^w) |- (t1=3/\1>0)/\Yellow   [UNFOLD]
+*                 └── t1=3/\(Yellow.(Red.((Green.(Yellow.Red))^w))) |- t1=3/\_|_   [DISPROVE]
+
+
+====================================
+TRUE/\(((Green.Yellow).Red)^w) |- TRUE/\((_^t1).(Green^*))
+[Result] Fail
+[Explored 5 States]
+[Verification Time: 0.014939 s]
+ 
+
+* TRUE/\((Green.(Yellow.Red))^w) |- TRUE/\((_^t1).(Green^*))   [EXISTENTIAL fail]
+* └── t1=3/\((Green.(Yellow.Red))^w) |- t1=3/\((_^3).(Green^*))   [UNFOLD]
+*     └── t1=3/\(Yellow.(Red.((Green.(Yellow.Red))^w))) |- (t1=3/\3>0)/\((_^2).(Green^*))   [UNFOLD]
+*         └── t1=3/\(Red.((Green.(Yellow.Red))^w)) |- (t1=3/\2>0)/\((_^1).(Green^*))   [UNFOLD]
+*             └── t1=3/\((Green.(Yellow.Red))^w) |- (t1=3/\1>0)/\(Green^*)   [UNFOLD]
+*                 └── t1=3/\(Yellow.(Red.((Green.(Yellow.Red))^w))) |- t1=3/\(Green^*)   [UNFOLD]
+*                     └── t1=3/\(Red.((Green.(Yellow.Red))^w)) |- t1=3/\_|_   [DISPROVE]
+
+
+====================================
+TRUE/\(((Green.Yellow).Red)^w) |- TRUE/\(((_^t1).Red)^*)
+[Result] Fail
+[Explored 4 States]
+[Verification Time: 0.013473 s]
+ 
+
+* TRUE/\((Green.(Yellow.Red))^w) |- TRUE/\(((_^t1).Red)^*)   [EXISTENTIAL fail]
+* └── t1=3/\((Green.(Yellow.Red))^w) |- t1=3/\(((_^3).Red)^*)   [UNFOLD]
+*     └── t1=3/\(Yellow.(Red.((Green.(Yellow.Red))^w))) |- (t1=3/\3>0)/\((_^2).(Red.(((_^3).Red)^*)))   [UNFOLD]
+*         └── t1=3/\(Red.((Green.(Yellow.Red))^w)) |- (t1=3/\2>0)/\((_^1).(Red.(((_^3).Red)^*)))   [UNFOLD]
+*             └── t1=3/\((Green.(Yellow.Red))^w) |- (t1=3/\1>0)/\(Red.(((_^3).Red)^*))   [UNFOLD]
+*                 └── t1=3/\(Yellow.(Red.((Green.(Yellow.Red))^w))) |- t1=3/\_|_   [DISPROVE]
+
+
+====================================
+TRUE/\(((Green.Yellow).Red)^w) |- TRUE/\((~(Red)|(Red.~(Green)))^*)
+[Result] Succeed
+[Explored 4 States]
+[Verification Time: 0.02109 s]
+ 
+
+* TRUE/\((Green.(Yellow.Red))^w) |- TRUE/\((~(Red)|(Red.~(Green)))^*)   [UNFOLD]
+* └── TRUE/\(Yellow.(Red.((Green.(Yellow.Red))^w))) |- TRUE/\((_^*).((~(Red)|(Red.~(Green)))^*))   [UNFOLD]
+*     └── TRUE/\(Red.((Green.(Yellow.Red))^w)) |- (TRUE/\((_^*).((~(Red)|(Red.~(Green)))^*)))\/(TRUE/\((_^*).((~(Red)|(Red.~(Green)))^*))) [LHSOR] 
+*         └── TRUE/\(Red.((Green.(Yellow.Red))^w)) |- TRUE/\((_^*).((~(Red)|(Red.~(Green)))^*))   [UNFOLD]
+*             └── TRUE/\((Green.(Yellow.Red))^w) |- (TRUE/\((_^*).((~(Red)|(Red.~(Green)))^*)))\/(TRUE/\(~(Green).((~(Red)|(Red.~(Green)))^*))) [LHSOR] 
+*                 └── TRUE/\((Green.(Yellow.Red))^w) |- TRUE/\((_^*).((~(Red)|(Red.~(Green)))^*))   [UNFOLD]
+*                     └── TRUE/\(Yellow.(Red.((Green.(Yellow.Red))^w))) |- (TRUE/\((_^*).((~(Red)|(Red.~(Green)))^*)))\/(TRUE/\((_^*).((~(Red)|(Red.~(Green)))^*))) [LHSOR] 
+*                         └── TRUE/\(Yellow.(Red.((Green.(Yellow.Red))^w))) |- TRUE/\((_^*).((~(Red)|(Red.~(Green)))^*))   [Reoccur]
+
+
+====================================
+TRUE/\(((Green.Yellow).Red)^w) |- TRUE/\((~(Red)|(Red.((_^t1).Green)))^*)
+[Result] Succeed
+[Explored 4 States]
+[Verification Time: 0.021784 s]
+ 
+
+* TRUE/\((Green.(Yellow.Red))^w) |- TRUE/\((~(Red)|(Red.((_^t1).Green)))^*)   [UNFOLD]
+* └── TRUE/\(Yellow.(Red.((Green.(Yellow.Red))^w))) |- TRUE/\((_^*).((~(Red)|(Red.((_^t1).Green)))^*))   [UNFOLD]
+*     └── TRUE/\(Red.((Green.(Yellow.Red))^w)) |- (TRUE/\((_^*).((~(Red)|(Red.((_^t1).Green)))^*)))\/(TRUE/\((_^*).((~(Red)|(Red.((_^t1).Green)))^*))) [LHSOR] 
+*         └── TRUE/\(Red.((Green.(Yellow.Red))^w)) |- TRUE/\((_^*).((~(Red)|(Red.((_^t1).Green)))^*))   [UNFOLD]
+*             └── TRUE/\((Green.(Yellow.Red))^w) |- (TRUE/\((_^*).((~(Red)|(Red.((_^t1).Green)))^*)))\/(TRUE/\((_^t1).(Green.((~(Red)|(Red.((_^t1).Green)))^*)))) [LHSOR] 
+*                 └── TRUE/\((Green.(Yellow.Red))^w) |- TRUE/\((_^*).((~(Red)|(Red.((_^t1).Green)))^*))   [UNFOLD]
+*                     └── TRUE/\(Yellow.(Red.((Green.(Yellow.Red))^w))) |- (TRUE/\((_^*).((~(Red)|(Red.((_^t1).Green)))^*)))\/(TRUE/\((_^*).((~(Red)|(Red.((_^t1).Green)))^*))) [LHSOR] 
+*                         └── TRUE/\(Yellow.(Red.((Green.(Yellow.Red))^w))) |- TRUE/\((_^*).((~(Red)|(Red.((_^t1).Green)))^*))   [Reoccur]
+
+
+====================================
+(TRUE/\t1>0)/\(((Green.Yellow).Red)^w) |- (TRUE/\t1>0)/\((~(Red)|(Red.~(((Green^t1).Yellow))))^*)
+[Result] Succeed
+[Explored 4 States]
+[Verification Time: 0.028676 s]
+ 
+
+* t1>0/\((Green.(Yellow.Red))^w) |- t1>0/\((~(Red)|(Red.~(((Green^t1).Yellow))))^*)   [UNFOLD]
+* └── t1>0/\(Yellow.(Red.((Green.(Yellow.Red))^w))) |- t1>0/\((_^*).((~(Red)|(Red.~(((Green^t1).Yellow))))^*))   [UNFOLD]
+*     └── t1>0/\(Red.((Green.(Yellow.Red))^w)) |- (t1>0/\((_^*).((~(Red)|(Red.~(((Green^t1).Yellow))))^*)))\/(t1>0/\((_^*).((~(Red)|(Red.~(((Green^t1).Yellow))))^*))) [LHSOR] 
+*         └── t1>0/\(Red.((Green.(Yellow.Red))^w)) |- t1>0/\((_^*).((~(Red)|(Red.~(((Green^t1).Yellow))))^*))   [UNFOLD]
+*             └── t1>0/\((Green.(Yellow.Red))^w) |- (t1>0/\((_^*).((~(Red)|(Red.~(((Green^t1).Yellow))))^*)))\/(t1>0/\(~(((Green^t1).Yellow)).((~(Red)|(Red.~(((Green^t1).Yellow))))^*))) [LHSOR] 
+*                 └── t1>0/\((Green.(Yellow.Red))^w) |- t1>0/\((_^*).((~(Red)|(Red.~(((Green^t1).Yellow))))^*))   [UNFOLD]
+*                     └── t1>0/\(Yellow.(Red.((Green.(Yellow.Red))^w))) |- (t1>0/\((_^*).((~(Red)|(Red.~(((Green^t1).Yellow))))^*)))\/(t1>0/\((_^*).((~(Red)|(Red.~(((Green^t1).Yellow))))^*))) [LHSOR] 
+*                         └── t1>0/\(Yellow.(Red.((Green.(Yellow.Red))^w))) |- t1>0/\((_^*).((~(Red)|(Red.~(((Green^t1).Yellow))))^*))   [Reoccur]
+
+
+====================================
+(TRUE/\t1>0)/\(((Green.Yellow).Red)^w) |- (TRUE/\t1>0)/\((~(Red)|(Red.((Red^t1).Yellow)))^*)
+[Result] Succeed
+[Explored 4 States]
+[Verification Time: 0.023194 s]
+ 
+
+* t1>0/\((Green.(Yellow.Red))^w) |- t1>0/\((~(Red)|(Red.((Red^t1).Yellow)))^*)   [UNFOLD]
+* └── t1>0/\(Yellow.(Red.((Green.(Yellow.Red))^w))) |- t1>0/\((_^*).((~(Red)|(Red.((Red^t1).Yellow)))^*))   [UNFOLD]
+*     └── t1>0/\(Red.((Green.(Yellow.Red))^w)) |- (t1>0/\((_^*).((~(Red)|(Red.((Red^t1).Yellow)))^*)))\/(t1>0/\((_^*).((~(Red)|(Red.((Red^t1).Yellow)))^*))) [LHSOR] 
+*         └── t1>0/\(Red.((Green.(Yellow.Red))^w)) |- t1>0/\((_^*).((~(Red)|(Red.((Red^t1).Yellow)))^*))   [UNFOLD]
+*             └── t1>0/\((Green.(Yellow.Red))^w) |- (t1>0/\((_^*).((~(Red)|(Red.((Red^t1).Yellow)))^*)))\/(t1>0/\((Red^t1).(Yellow.((~(Red)|(Red.((Red^t1).Yellow)))^*)))) [LHSOR] 
+*                 └── t1>0/\((Green.(Yellow.Red))^w) |- t1>0/\((_^*).((~(Red)|(Red.((Red^t1).Yellow)))^*))   [UNFOLD]
+*                     └── t1>0/\(Yellow.(Red.((Green.(Yellow.Red))^w))) |- (t1>0/\((_^*).((~(Red)|(Red.((Red^t1).Yellow)))^*)))\/(t1>0/\((_^*).((~(Red)|(Red.((Red^t1).Yellow)))^*))) [LHSOR] 
+*                         └── t1>0/\(Yellow.(Red.((Green.(Yellow.Red))^w))) |- t1>0/\((_^*).((~(Red)|(Red.((Red^t1).Yellow)))^*))   [Reoccur]
+
+
+====================================
+((TRUE/\t1>0)/\t2>0)/\(((Green.Yellow).Red)^w) |- ((TRUE/\t1>0)/\t2>0)/\((~(Red)|(Red.((Red^t1).((Yellow^t2).Green))))^*)
+[Result] Succeed
+[Explored 4 States]
+[Verification Time: 0.03911 s]
+ 
+
+* (t2>0/\t1>0)/\((Green.(Yellow.Red))^w) |- (t2>0/\t1>0)/\((~(Red)|(Red.((Red^t1).((Yellow^t2).Green))))^*)   [UNFOLD]
+* └── (t1>0/\t2>0)/\(Yellow.(Red.((Green.(Yellow.Red))^w))) |- (t1>0/\t2>0)/\((_^*).((~(Red)|(Red.((Red^t1).((Yellow^t2).Green))))^*))   [UNFOLD]
+*     └── (t2>0/\t1>0)/\(Red.((Green.(Yellow.Red))^w)) |- ((t1>0/\t2>0)/\((_^*).((~(Red)|(Red.((Red^t1).((Yellow^t2).Green))))^*)))\/((t1>0/\t2>0)/\((_^*).((~(Red)|(Red.((Red^t1).((Yellow^t2).Green))))^*))) [LHSOR] 
+*         └── (t1>0/\t2>0)/\(Red.((Green.(Yellow.Red))^w)) |- (t2>0/\t1>0)/\((_^*).((~(Red)|(Red.((Red^t1).((Yellow^t2).Green))))^*))   [UNFOLD]
+*             └── (t2>0/\t1>0)/\((Green.(Yellow.Red))^w) |- ((t2>0/\t1>0)/\((_^*).((~(Red)|(Red.((Red^t1).((Yellow^t2).Green))))^*)))\/((t2>0/\t1>0)/\((Red^t1).((Yellow^t2).(Green.((~(Red)|(Red.((Red^t1).((Yellow^t2).Green))))^*))))) [LHSOR] 
+*                 └── (t1>0/\t2>0)/\((Green.(Yellow.Red))^w) |- (t1>0/\t2>0)/\((_^*).((~(Red)|(Red.((Red^t1).((Yellow^t2).Green))))^*))   [UNFOLD]
+*                     └── (t2>0/\t1>0)/\(Yellow.(Red.((Green.(Yellow.Red))^w))) |- ((t1>0/\t2>0)/\((_^*).((~(Red)|(Red.((Red^t1).((Yellow^t2).Green))))^*)))\/((t1>0/\t2>0)/\((_^*).((~(Red)|(Red.((Red^t1).((Yellow^t2).Green))))^*))) [LHSOR] 
+*                         └── (t1>0/\t2>0)/\(Yellow.(Red.((Green.(Yellow.Red))^w))) |- (t2>0/\t1>0)/\((_^*).((~(Red)|(Red.((Red^t1).((Yellow^t2).Green))))^*))   [Reoccur]
+
 
 

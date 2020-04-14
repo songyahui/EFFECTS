@@ -561,6 +561,7 @@ let rec simpleDerivative (ev:event) (es:es) :es =
   | Cons (es1 , es2) ->  Cons (simpleDerivative ev es1 , es2)
   | Underline -> Emp
   | Ttimes (es1, t) -> Cons (simpleDerivative ev es1, Ttimes (es1, Minus (t, Number 1)))
+  | Omega (es1) -> Cons (simpleDerivative ev es1, Omega (es1) )
   | _ -> raise (Foo (showES es^"simpleDerivative exception"))
 
   ;;
