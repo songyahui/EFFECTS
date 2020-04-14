@@ -600,7 +600,7 @@ let rec derivative (p :pure) (es:es) (varL: var list) (ev:(string*int option)): 
 
     match  tryder with
     
-      Effect (ppp,Bot) -> Effect (ppp,Emp)
+      Effect (ppp,Bot) -> Effect (ppp, Kleene(Underline))(*Effect (ppp,Emp)*)
     | Effect (ppp,Emp) -> Effect (ppp,Bot)
     (*
         let newVar = getAfreeVar varL in
