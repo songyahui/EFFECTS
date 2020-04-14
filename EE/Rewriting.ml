@@ -499,12 +499,13 @@ let rec normalEffect eff =
   let noPureOr  = deletePureOrInEff eff in 
   match noPureOr with
     Effect (p, es) -> 
-      if (askZ3 p) == false then 
+      (*if (askZ3 p) == false then 
         ( 
           (*print_string (showPure p^"   "^ showES es^ "\n 11********\n");*)
-          Effect (FALSE, normalES es p)
+          Effect (FALSE, es)
         )
       else 
+      *)
         let p_normal = normalPure p in 
         let es_normal  = normalES es p in
         (match es_normal with 
@@ -602,11 +603,20 @@ let rec derivative (p :pure) (es:es) (varL: var list) (ev:(string*int option)): 
   | Kleene es1 -> appendEff_ES  (derivative p es1 varL ev) es
   | Not es1 -> 
 
-    (let tryder = normalEffect (derivative p es1 varL ev) in 
-
+    (
+    let der = derivative p es1 varL ev in 
+    let tryder = normalEffect der in 
     match  tryder with
     
-      Effect (ppp,Bot) -> Effect (ppp, Kleene(Underline))(*Effect (ppp,Emp)*)
+      Effect (ppp,Bot) -> 
+        let rec helper eff :effect = 
+          match eff with 
+            Effect (derPi, derES) -> 
+              let temp = trunItIntoWideCard derPi derES in 
+              Effect (ppp, temp)(*Effect (ppp,Emp)*)
+          | Disj (eff1, eff2) -> Disj (helper eff1, helper eff2) 
+        in helper der
+        
     | Effect (ppp,Emp) -> Effect (ppp,Bot)
     (*
         let newVar = getAfreeVar varL in
@@ -816,7 +826,7 @@ let rec getAllVarFromES es =
 
 let rec getAllVarFromEff (eff:effect): string list = 
   match eff with 
-    Effect (pi, es) -> append (getAllVarFromES es)  (getAllVarFromPi pi)
+    Effect (pi, es) -> (* append   (getAllVarFromPi pi) *) (getAllVarFromES es)
   | Disj(eff1, eff2) -> append (getAllVarFromEff eff1) (getAllVarFromEff eff2)
 (*match effect with 
     Effect (pi, es) -> getAllVarFromES es
@@ -1415,7 +1425,7 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (mode:bool):
                   let max = helper_classic esL pattern 0 in
                   
                   if itStartsFromANegation normalFormR then List.rev(makeList 1 maxSize [])
-                  else List.rev((*makeList max *)[max] ) 
+                  else List.rev(makeList 0 max [] ) 
                   
                 in 
                 let instanceFromLeft = getInstansVal piL esL esIn in 

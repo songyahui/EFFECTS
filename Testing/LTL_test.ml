@@ -23,7 +23,7 @@ let rec getAfreeVar (varList:string list):string  =
 
 let checkSingle (lhs:es) (pi:pure) (esR:es) : string = 
 
-  printReport (Effect(pi, lhs)) (Effect(pi, esR)) true
+  printReport (Effect(pi, lhs)) (Effect(pi, esR)) false
 
   ;;
 
