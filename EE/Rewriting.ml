@@ -76,7 +76,11 @@ let rec getSize (es:es) : int=
   | Cons (es1 , es2) ->  (getSize es1) + (getSize es2)
   | ESOr (es1 , es2) ->  max (getSize es1)  (getSize es2)
   | ESAnd (es1 , es2) -> max (getSize es1) (getSize es2)
-  | Ttimes (es1, t) ->  (getSize es1)
+  | Ttimes (es1, t) ->  
+    (match t with 
+      Number n -> (getSize es1) * n
+    | _ -> (getSize es1)
+    )
   | Omega es1 ->  (getSize es1)
   | Underline -> 1
   | Kleene es1 -> (getSize es1)
@@ -1115,7 +1119,7 @@ let effectEntailSyntatically eff1 eff2 :bool =
   let rec checkSingle piL esL liR:bool = 
     match liR with
       [] -> false  
-    | (piR, esR)::xs -> if compareES esL esR then true else checkSingle piL esL xs
+    | (piR, esR)::xs -> if compareES esL esR && (nullable piR esR == nullable piL esL)then true else checkSingle piL esL xs
   in 
   List.fold_right (fun (piL, esL) acc -> acc && checkSingle piL esL effsR) (effsL) true 
   ;;
@@ -1250,6 +1254,32 @@ let rec itStartsFromANegation (eff:effect):bool =
   | Disj (eff1, eff2) -> itStartsFromANegation eff1 || itStartsFromANegation eff2
   ;;
 
+
+let rec synchronizedReason (eff:effect) (s:string): effect list = 
+  (*print_string (showEffect eff ^"\n" ^s^"\n");*)
+  match eff with 
+    Effect (pi, es) ->
+      let rec helper (inner:es) esAcc effListAcc : effect list =
+        match inner with 
+          Emp -> 
+            if isEmpES esAcc then effListAcc else (Effect(pi, esAcc)::effListAcc)
+        | Cons (esIn1, esIn2) -> 
+          let temp = if isEmpES esAcc then esIn1 else Cons (esAcc, esIn1) in 
+          helper esIn2 temp effListAcc
+        | Ttimes (esIn, Var t) -> 
+            if String.compare t s == 0 
+            then if isEmpES esAcc then helper Emp inner effListAcc else helper Emp inner (Effect(pi, esAcc)::effListAcc)
+            else helper Emp (Cons (esAcc, inner)) effListAcc 
+        | _ -> helper Emp (Cons (esAcc, inner)) effListAcc 
+      in 
+      helper es Emp []
+  | Disj (eff1, eff2) -> raise (Foo (showEffect eff ^ " synchronizedReason"))
+  ;;
+
+let rec synchronizedPairs (effList1:effect list) (effList2:effect list) : (effect *effect) list = 
+  List.combine effList1 effList2
+  ;;
+
 (*mode = 1  means ential without resedue*)
 let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (mode:bool): (binary_tree * bool * int) = 
   (*
@@ -1354,11 +1384,9 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (mode:bool):
     (*                
     3. find possible values 
     4. disjunc all the values in instanstiation
-    *)
+    *)          let maxSize = getSize esL in 
+
                 let getInstansVal piL esL pattern: int list = 
-
-                  let maxSize = getSize esL in 
-
 
                   let rec helper_classic (leftEs:es) (rightEs:es) (acc:int):int= 
                     if acc <= maxSize then 
@@ -1384,13 +1412,9 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (mode:bool):
                   *)
 
                   let max = helper_classic esL pattern 0 in
-
-                  
-                  
-                  
                   
                   if itStartsFromANegation normalFormR then List.rev(makeList 1 maxSize [])
-                  else List.rev(makeList 1 max []) 
+                  else List.rev((*makeList max *)[max] ) 
                   
                 in 
                 let instanceFromLeft = getInstansVal piL esL esIn in 
@@ -1449,10 +1473,35 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (mode:bool):
 
     else 
 (*there is no extantial var on thr RHS already*)
+      let rec chceckSyncAND li acc staacc:(bool *binary_tree list* int )=
+        (match li with 
+          [] -> (true, acc, staacc) 
+        | (lhs, rhs)::fs -> 
+            let (tree, re, states) =  containment1 lhs rhs delta true in 
+            if re == false then (false , tree::acc, staacc+states)
+            else chceckSyncAND fs (tree::acc) (staacc+states)
+        )
+      in 
       match hd (headEs esL) with
           Ttimes (esIn, term) -> 
             (match term with 
               Var s -> 
+                let synchronizedLHS = synchronizedReason normalFormL s in 
+                
+                (*print_string (List.fold_left (fun acc a  -> acc ^ showEffect a ^ "\n") ""  synchronizedLHS ^"\n"); 
+
+                print_string (string_of_int (List.length synchronizedLHS)^"\n"); 
+                *)
+                if List.length (synchronizedLHS) > 1 then 
+                  (let synchronizedRHS = synchronizedReason normalFormR s in 
+                  if List.length (synchronizedLHS) != List.length (synchronizedRHS) 
+                  then (Node (showEntailmentEff normalFormL normalFormR ^"   [SYNC-REASONING-FAIL]",[] ), false, 0)
+                  else 
+                    let syncPairs = synchronizedPairs synchronizedLHS synchronizedRHS in
+                    let (resultFinal, trees, states) = chceckSyncAND syncPairs [] 0 in 
+                    (Node (showEntail ^ "   [SYNC-REASONING]",trees ), resultFinal, states+1)  
+                  )  
+                else 
                 (match  entailConstrains (Eq (Var s, Number 0) ) piL  with 
                   true -> (*[CASE SPLIT]*) 
                     let zeroCase = PureAnd (piL, Eq (Var s, Number 0) ) in 
@@ -1493,9 +1542,7 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (mode:bool):
                 let rhs' = addConstrain rhs cons in 
                 let (tree, re, states) = containment1 lhs' rhs' delta mode in
                 (Node (showEntailmentEff normalFormL normalFormR ^"   [SUB "^ newVar ^"/" ^ t ^"-1]",[tree] ), re, states)
-            | Number n -> 
-            
-            unfold normalFormL (addEntailConstrain normalFormR piL) delta 
+            | Number n -> unfold normalFormL (addEntailConstrain normalFormR piL) delta 
             | _ -> print_endline (showEntailmentEff normalFormL normalFormR);
               raise ( Foo "term is too complicated exception1!")
             )

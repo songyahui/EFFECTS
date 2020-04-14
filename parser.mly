@@ -8,7 +8,7 @@
 %token <bool> TRUEE  
 %token <bool> FALSEE
 %token EMPTY ASSERTKEY EVENTKEY CHOICE LPAR RPAR CONCAT OMEGA POWER PLUS MINUS TRUE FALSE DISJ CONJ   ENTIL INTT BOOLT VOIDT 
-%token LBRACK RBRACK COMMA SIMI  IF ELSE REQUIRE ENSURE LSPEC RSPEC RETURN (*LBrackets  RBrackets*)
+%token LBRACK RBRACK COMMA SIMI  IF ELSE REQUIRE ENSURE LSPEC RSPEC RETURN LBrackets  RBrackets
 %token EOF GT LT EQ GTEQ LTEQ INCLUDE SHARP EQEQ UNDERLINE KLEENE NEGATION
 %token FUTURE GLOBAL IMPLY LTLNOT NEXT UNTIL LILAND 
 
@@ -150,30 +150,29 @@ es:
 | NEGATION LPAR a = es RPAR {Not a}
 
 
-(*
+
 singleVAR: var = VAR {[var]}
 
 existVar:
 | {[]}
 | p = singleVAR {p}
 | p1 = singleVAR  COMMA  p2 = existVar {append p1 p2 }
-*)
+
 
 effect:
 | LPAR r = effect RPAR { r }
 | a = pure  CONJ  b= es  {Effect (a, b)}
 | a = effect  DISJ  b=effect  {Disj (a,b)}
-(*
 | LPAR LBrackets nn= existVar RBrackets  eff= effect RPAR{
   let rec helper (eff:effect) :effect = 
   (match eff with 
-    Effect (p, es, li) -> Effect (p, es, append li nn) 
+    Effect (p, es) -> Effect (p, es) 
   | Disj (eff1, eff2) ->  Disj (helper eff1, helper eff2)  
   )
   in 
   helper eff}
 
-  *)
+
 
 entailment:
 | lhs = effect   ENTIL   rhs = effect {EE (lhs, rhs)}

@@ -1,1 +1,11 @@
+TRUE /\ (A^n).(C^n) |- TRUE /\ (A^n).(C^n);
+
+TRUE /\ (A^n).(B^n).(C^n) |- TRUE /\ (A^n).(B^n).(C^n);
+
+TRUE /\ (A^n).B.E.F.(C^n) |- TRUE /\ (A^n).B.E.F.(C^n);
+
+TRUE /\ (A^n).B.E.F.(C^n) |- TRUE /\ (A^n).B.E.(C^n);
+
+TRUE /\ (A^n).B.E.F.(C^n) |- TRUE /\ (A^n).B.E.F;
+
 TRUE /\  (A^5).(B^4).(C^5) |- TRUE /\ (A^n).(B^m).(C^n);
