@@ -1,15 +1,23 @@
-([] P) ==> TRUE/\(P^*)
+([] Green) ==> TRUE/\(Green^*)
 
-(<> P) ==> TRUE/\((_^t1).P)
+(<> Green) ==> TRUE/\((_^t1).Green)
 
-(P0 U P1) ==> (TRUE/\t1>0)/\((P0^t1).P1)
+(<> Red) ==> TRUE/\((_^t1).Red)
 
-(XP) ==> TRUE/\P
+(<> Yellow) ==> TRUE/\((_^t1).Yellow)
 
-([] (<> P)) ==> TRUE/\(((_^t1).P)^*)
+(<> ([] Green)) ==> TRUE/\((_^t1).(Green^*))
 
-(<> ([] P)) ==> TRUE/\((_^t1).(P^*))
+([] (<> Red)) ==> TRUE/\(((_^t1).Red)^*)
 
-(P0 -> (<> P1)) ==> TRUE/\(~(P0)|(P0.((_^t1).P1)))
+([] (Red -> (! (XGreen)))) ==> TRUE/\((~(Red)|(Red.~(Green)))^*)
+
+([] (Red -> (<> Green))) ==> TRUE/\((~(Red)|(Red.((_^t1).Green)))^*)
+
+([] (Red -> (! (Green U Yellow)))) ==> (TRUE/\t1>0)/\((~(Red)|(Red.~(((Green^t1).Yellow))))^*)
+
+([] (Red -> (X(Red U Yellow)))) ==> (TRUE/\t1>0)/\((~(Red)|(Red.((Red^t1).Yellow)))^*)
+
+([] (Red -> (X(Red U (X(Yellow U Green)))))) ==> ((TRUE/\t1>0)/\t2>0)/\((~(Red)|(Red.((Red^t1).((Yellow^t2).Green))))^*)
 
 

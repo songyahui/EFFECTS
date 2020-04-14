@@ -1,6 +1,10 @@
-﻿Light = Green -> Yellow ->  Red -> Light;
+﻿Light = Green -> Green -> Green -> Yellow -> Yellow -> Yellow ->  Red ->Red -> Red-> Light;
 
 BBB = B -> BBB; 
+
+temp = (Green -> Yellow ->temp);
+
+#assert temp |=<> (Green -> Yellow);
 
 #assert Light |=[]Green;
 

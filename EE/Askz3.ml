@@ -121,6 +121,10 @@ let addAssert (str:string) :string =
 
 
 let askZ3 pi = 
+  (*
+  let startTimeStamp = Sys.time() in
+  *)
+  
   let inFile = Sys.getcwd () ^ "/askZ3.txt" in
   let outFile = Sys.getcwd () ^ "/answerZ3.txt" in 
   let declear = List.fold_right (fun v acc ->acc ^ ("(declare-const " ^ v ^ " Int)\n") ) (checkRedundant (getAllVarFromPure pi [])) "" in
@@ -135,6 +139,11 @@ let askZ3 pi =
       try 
         let line = input_line ic in  (* 从输入通道读入一行并丢弃'\n'字符 *)
         close_in ic ;                 (* 关闭输入通道 *) 
+        (*
+        let verification_time = "[askZ3 Time: " ^ string_of_float (Sys.time() -. startTimeStamp) ^ " s]\n" in
+
+        print_string (verification_time); 
+        *)
         match line with 
         "sat" -> true
         | "unsat" -> false 
@@ -142,6 +151,7 @@ let askZ3 pi =
       with e ->                      (* 一些不可预见的异常发生 *)
       close_in_noerr ic;           (* 紧急关闭 *)
       raise e                      (* 以出错的形式退出: 文件已关闭,但通道没有写入东西 *)
+      
 ;;
                 
 

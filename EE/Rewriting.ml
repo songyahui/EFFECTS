@@ -74,8 +74,8 @@ let rec getSize (es:es) : int=
   | Emp -> 1
   | Event _ -> 1 
   | Cons (es1 , es2) ->  (getSize es1) + (getSize es2)
-  | ESOr (es1 , es2) ->  (getSize es1) + (getSize es2)
-  | ESAnd (es1 , es2) ->  (getSize es1) + (getSize es2)
+  | ESOr (es1 , es2) ->  max (getSize es1)  (getSize es2)
+  | ESAnd (es1 , es2) -> max (getSize es1) (getSize es2)
   | Ttimes (es1, t) ->  (getSize es1)
   | Omega es1 ->  (getSize es1)
   | Underline -> 1
@@ -776,7 +776,7 @@ let rec getAllVarFromES es =
 
 let rec getAllVarFromEff (eff:effect): string list = 
   match eff with 
-    Effect (pi, es) -> (getAllVarFromES es)(*append  (getAllVarFromPi pi)*)
+    Effect (pi, es) -> append (getAllVarFromES es)  (getAllVarFromPi pi)
   | Disj(eff1, eff2) -> append (getAllVarFromEff eff1) (getAllVarFromEff eff2)
 (*match effect with 
     Effect (pi, es) -> getAllVarFromES es
@@ -1199,10 +1199,34 @@ let rec notSureInfinite (eff:effect):bool =
   | Disj (eff1, eff2) -> notSureInfinite eff1 || notSureInfinite eff2
 ;;
 
+let rec itStartsFromANegationES (es:es) :bool = 
+    match es with
+    Cons (es1 , es2) -> itStartsFromANegationES es1
+  | Kleene es1 -> itStartsFromANegationES es1
+  | Omega es1 -> itStartsFromANegationES es1
+  | Not es1 -> true
+  | ESOr (es1, es2 ) -> (itStartsFromANegationES es1)|| (itStartsFromANegationES es2)
+  | _ -> false
+  ;;
+
+let rec itStartsFromANegation (eff:effect):bool = 
+  match eff with 
+    Effect (pi, es) -> itStartsFromANegationES es 
+  | Disj (eff1, eff2) -> itStartsFromANegation eff1 || itStartsFromANegation eff2
+  ;;
+
 let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses): (binary_tree * bool * int) = 
+  (*
+  let startTimeStamp = Sys.time() in
+  *)
   
   let normalFormL = normalEffect effL in 
   let normalFormR = normalEffect effR in
+  (*
+  let verification_time = "[normalEffect Time: " ^ string_of_float (Sys.time() -. startTimeStamp) ^ " s]\n" in
+
+  print_string (verification_time);
+  *)
   let varList = getAllVarFromEff normalFormL in 
   let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*)showEntailmentEff normalFormL normalFormR in 
   (*
@@ -1229,10 +1253,10 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses): (binary_tre
   in 
   match (normalFormL, normalFormR) with 
       (*this means the assertion or precondition is already fail*)
-    (Effect(FALSE, _), _) -> (Node(showEntail ^ "   [Bot-LHS]", []), true, 1)  
-  | (Effect(_, Bot), _) -> (Node(showEntail ^ "   [Bot-LHS]", []), true, 1)  
-  | (_, Effect(FALSE, _)) -> (Node(showEntail ^ "   [DISPROVE]", []), false, 1)  
-  | (_, Effect(_, Bot)) -> (Node(showEntail ^ "   [DISPROVE]", []), false, 1)  
+    (Effect(FALSE, _), _) -> (Node(showEntail ^ "   [Bot-LHS]", []), true, 0)  
+  | (Effect(_, Bot), _) -> (Node(showEntail ^ "   [Bot-LHS]", []), true, 0)  
+  | (_, Effect(FALSE, _)) -> (Node(showEntail ^ "   [DISPROVE]", []), false, 0)  
+  | (_, Effect(_, Bot)) -> (Node(showEntail ^ "   [DISPROVE]", []), false, 0)  
   
   | (Disj (effL1, effL2), _) -> 
     (*[LHSOR]*)
@@ -1240,7 +1264,7 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses): (binary_tre
       if re1 == false then (Node (showEntailmentEff normalFormL normalFormR ^ showRule LHSOR, [tree1] ),  false, states1)
       else 
         let (tree2, re2 , states2) = (containment1 effL2 effR delta ) in
-        (Node (showEntailmentEff normalFormL normalFormR ^ showRule LHSOR, [tree1; tree2] ), re2, states1+states2+1)
+        (Node (showEntailmentEff normalFormL normalFormR ^ showRule LHSOR, [tree1; tree2] ), re2, states1+states2)
 
   (****If worriy of comokenness, need to delete this part. *****)
   | ( _, Disj (effL1, effL2)) -> 
@@ -1258,17 +1282,17 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses): (binary_tre
       if re1 == false then (Node (showEntailmentEff normalFormL normalFormR ^ showRule RHSAND, [tree1] ),  false, states1)
       else
         let (tree2, re2, states2 ) = (containment1 normalFormL (Effect(piR, esR2)) delta ) in
-        (Node (showEntailmentEff normalFormL normalFormR ^ showRule RHSAND, [tree1; tree2] ), re2, states1+states2+1)
+        (Node (showEntailmentEff normalFormL normalFormR ^ showRule RHSAND, [tree1; tree2] ), re2, states1+states2)
 
 
   | (Effect (piL, esL),_) ->
-    if checkReoccur normalFormL normalFormR delta then (Node(showEntail ^ "   [Reoccur]", []), true, 1) 
+    if checkReoccur normalFormL normalFormR delta then (Node(showEntail ^ "   [Reoccur]", []), true, 0) 
     (*
     else if (entailConstrains (pureUnion normalFormL) (pureUnion normalFormR)) == false then (Node(showEntail ^ "   [Contradictory] "  , []), false, 1) 
     *)
     
-    else if (isEmp normalFormR) == true then  (Node(showEntail^"   [Frame-Prove]" ^" with R = "^(showES esL ) , []),true, 1) 
-    else if (checkNullable normalFormL) == true && (checkNullable normalFormR) == false then (Node(showEntail ^ "   [REFUTATION] "  , []), false, 1) 
+    else if (isEmp normalFormR) == true then  (Node(showEntail^"   [Frame-Prove]" ^" with R = "^(showES esL ) , []),true, 0) 
+    else if (checkNullable normalFormL) == true && (checkNullable normalFormR) == false then (Node(showEntail ^ "   [REFUTATION] "  , []), false, 0) 
     
     (*
     else if isInfinite esL && notSureInfinite normalFormR then containment1 normalFormL (keepIfinite normalFormR) delta 
@@ -1298,10 +1322,10 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses): (binary_tre
                 let getInstansVal piL esL pattern: int list = 
 
                   let maxSize = getSize esL in 
-                  (* 
+                  
                   let rec helper (acc:int) (p:es)= 
                     if acc <= maxSize then 
-                      let (t, r, s) = containment1 (Effect (piL, esL)) (Effect (TRUE, p)) [] []  in 
+                      let (t, r, s) = containment1 (Effect (piL, esL)) (Effect (TRUE, p)) []  in 
                       if r = false then acc
                       else helper (acc+1) (Cons (p, pattern))
                     else maxSize
@@ -1309,11 +1333,14 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses): (binary_tre
 
                   let max = helper 0 pattern in
 
+                  (*
                   print_string ("Existential\n");
                   print_string (string_of_int max^"\n----------------\n");
                   *)
                   
-                  makeList 0 maxSize []
+                  if itStartsFromANegation normalFormR then List.rev(makeList 1 maxSize [])
+                  else List.rev(makeList 1 max []) 
+                  
                 in 
                 let instanceFromLeft = getInstansVal piL esL esIn in 
                 let instantiateRHS = instantiateEffR normalFormR instanceFromLeft in 
@@ -1781,12 +1808,13 @@ let printReportHelper lhs rhs: (binary_tree * bool * int) =
   ;;
 
 
+
 let printReport lhs rhs:string =
   let startTimeStamp = Sys.time() in
   let (tree, re, states) =  printReportHelper lhs rhs in
   let verification_time = "[Verification Time: " ^ string_of_float (Sys.time() -. startTimeStamp) ^ " s]\n" in
   let result = printTree ~line_prefix:"* " ~get_name ~get_children tree in
-  let states = "[Explored "^ string_of_int (states+1) ^ " States]\n" in 
+  let states = "[Explored "^ string_of_int (states) ^ " States]\n" in 
   let buffur = ( "===================================="^"\n" ^(showEntailmentEff lhs rhs)^"\n[Result] " ^(if re then "Succeed\n" else "Fail\n") ^ states ^verification_time^" \n\n"^ result)
   in buffur
   ;;

@@ -24,7 +24,9 @@ let () =
     let oc = open_out outputfile in    (* 新建或修改文件,返回通道 *)
     fprintf oc "%s\n" final_result;   (* 写一些东西 *)
     close_out oc;                (* 写入并关闭通道 *)
+    (*
     print_string final_result;
+    *)
     flush stdout;                (* 现在写入默认设备 *)
     close_in ic                  (* 关闭输入通道 *) 
 

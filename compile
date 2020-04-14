@@ -45,7 +45,7 @@ ocamlc -c -o LTL_test.cmo Testing/LTL_test.ml
 
 ocamlc -c -o TranslateLTL.cmo Testing/translateLTL.ml
 
-ocamlc -o ltl   parser.cmo lexer.cmo Askz3.cmo  Pretty.cmo  Rewriting.cmo  TranslateLTL.cmo
+ocamlc -o ltl parser.cmo lexer.cmo Askz3.cmo  Pretty.cmo  Rewriting.cmo  TranslateLTL.cmo
 
 ocamlc -o verifyLTL parser.cmo lexer.cmo Askz3.cmo Pretty.cmo Rewriting.cmo  LTL_test.cmo
 
