@@ -13,7 +13,7 @@ let testASingle pi ff ss :string =
   let lhs = addConstrain (Effect(TRUE, (Parser.es_p Lexer.token (Lexing.from_string ff)))) pi  in
   let rhs = addConstrain (Effect(TRUE, (Parser.es_p Lexer.token (Lexing.from_string ss)))) pi  in
   (*let rhs:(es) = Parser.es_p Lexer.token (Lexing.from_string  ss)  in*)
-  printReport lhs rhs
+  printReport lhs rhs true
   (*
   let helper li acc = 
     match li with 

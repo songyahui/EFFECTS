@@ -187,7 +187,7 @@ let checkPrecondition (state:effect) (pre:effect)  =
   let reverseState =  (reverseEff state) in
   let reversePre =  (reverseEff pre) in 
   (*check containment*)
-  let (result_tree, result, states) =  Rewriting.printReportHelper reverseState reversePre  in 
+  let (result_tree, result, states) =  Rewriting.printReportHelper reverseState reversePre false in 
   let tree = Node (showEntailmentEff reverseState reversePre, [result_tree]) in
 
   if result == false then 
@@ -291,7 +291,7 @@ let rec verification (decl:(bool * declare)) (prog: program): string =
     
     (*let varList = (*append*) (getAllVarFromEff acc) (*(getAllVarFromEff post)*) in  
     *)
-    let (result_tree, result, states) =  Rewriting.containment1 acc ( post) [] in 
+    let (result_tree, result, states) =  Rewriting.containment1 acc ( post) [] false in 
     let result = "[Result: "^ (if result then "Succeed" else "Fail") ^"]\n" in 
     let states = "[Explored "^ string_of_int (states+1)  ^ " States]\n" in 
     let verification_time = "[Verification Time: " ^ string_of_float (Sys.time() -. startTimeStamp) ^ " s]\n" in

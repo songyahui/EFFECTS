@@ -2,7 +2,7 @@
 TRUE/\(A.A) |- TRUE/\(A^n)
 [Result] Succeed
 [Explored 2 States]
-[Verification Time: 0.018982 s]
+[Verification Time: 0.008092 s]
  
 
 * TRUE/\(A.A) |- TRUE/\(A^n)   [EXISTENTIAL n=2]
@@ -14,7 +14,7 @@ TRUE/\(A.A) |- TRUE/\(A^n)
 TRUE/\(((A.A).B).B) |- TRUE/\((A^n).(B^n))
 [Result] Succeed
 [Explored 4 States]
-[Verification Time: 0.025137 s]
+[Verification Time: 0.015268 s]
  
 
 * TRUE/\(A.(A.(B.B))) |- TRUE/\((A^n).(B^n))   [EXISTENTIAL n=2]
@@ -28,7 +28,7 @@ TRUE/\(((A.A).B).B) |- TRUE/\((A^n).(B^n))
 TRUE/\((A.A).B) |- TRUE/\((A^n).(B^n))
 [Result] Fail
 [Explored 5 States]
-[Verification Time: 0.029637 s]
+[Verification Time: 0.019544 s]
  
 
 * TRUE/\(A.(A.B)) |- TRUE/\((A^n).(B^n))   [EXISTENTIAL fail]
@@ -44,7 +44,7 @@ TRUE/\((A.A).B) |- TRUE/\((A^n).(B^n))
 TRUE/\(((A.A).B).B) |- TRUE/\((A^n).(B^m))
 [Result] Succeed
 [Explored 4 States]
-[Verification Time: 0.040994 s]
+[Verification Time: 0.022561 s]
  
 
 * TRUE/\(A.(A.(B.B))) |- TRUE/\((A^n).(B^m))   [EXISTENTIAL n=2]
@@ -59,7 +59,7 @@ TRUE/\(((A.A).B).B) |- TRUE/\((A^n).(B^m))
 TRUE/\((((A.A).B).B).B) |- TRUE/\((A^n).(B^m))
 [Result] Succeed
 [Explored 5 States]
-[Verification Time: 0.055386 s]
+[Verification Time: 0.031519 s]
  
 
 * TRUE/\(A.(A.(B.(B.B)))) |- TRUE/\((A^n).(B^m))   [EXISTENTIAL n=2]
@@ -75,7 +75,7 @@ TRUE/\((((A.A).B).B).B) |- TRUE/\((A^n).(B^m))
 TRUE/\((((A.A)|((A.A).A)).B).B) |- TRUE/\((A^n).(B^n))
 [Result] Fail
 [Explored 14 States]
-[Verification Time: 0.078733 s]
+[Verification Time: 0.056471 s]
  
 
 * (TRUE/\(A.(A.(B.B))))\/(TRUE/\(A.(A.(A.(B.B))))) |- TRUE/\((A^n).(B^n)) [LHSOR] 
@@ -104,7 +104,7 @@ TRUE/\((((A.A)|((A.A).A)).B).B) |- TRUE/\((A^n).(B^n))
 TRUE/\(((((A.A)|((A.A).A)).B).B).B) |- TRUE/\((A^n).(B^n))
 [Result] Succeed
 [Explored 10 States]
-[Verification Time: 0.067025 s]
+[Verification Time: 0.041586 s]
  
 
 * (TRUE/\(A.(A.(B.(B.B)))))\/(TRUE/\(A.(A.(A.(B.(B.B)))))) |- TRUE/\((A^n).(B^n)) [LHSOR] 
@@ -127,7 +127,7 @@ TRUE/\(((((A.A)|((A.A).A)).B).B).B) |- TRUE/\((A^n).(B^n))
 TRUE/\((((((A.A)|((A.A).A)).B).B).B).B) |- TRUE/\((A^n).(B^n))
 [Result] Succeed
 [Explored 10 States]
-[Verification Time: 0.086011 s]
+[Verification Time: 0.042709 s]
  
 
 * (TRUE/\(A.(A.(B.(B.(B.B))))))\/(TRUE/\(A.(A.(A.(B.(B.(B.B))))))) |- TRUE/\((A^n).(B^n)) [LHSOR] 
@@ -150,7 +150,7 @@ TRUE/\((((((A.A)|((A.A).A)).B).B).B).B) |- TRUE/\((A^n).(B^n))
 TRUE/\(((A.A)|((A.A).A)).B) |- TRUE/\((A^n).(B^n))
 [Result] Fail
 [Explored 5 States]
-[Verification Time: 0.034005 s]
+[Verification Time: 0.021885 s]
  
 
 * (TRUE/\(A.(A.B)))\/(TRUE/\(A.(A.(A.B)))) |- TRUE/\((A^n).(B^n)) [LHSOR] 
