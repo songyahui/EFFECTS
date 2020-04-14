@@ -556,6 +556,7 @@ let rec simpleDerivative (ev:event) (es:es) :es =
       else if String.compare ev ev1 ==0 then Emp else Bot
   | Cons (es1 , es2) ->  Cons (simpleDerivative ev es1 , es2)
   | Underline -> Emp
+  | Ttimes (es1, t) -> Cons (simpleDerivative ev es1, Ttimes (es1, Minus (t, Number 1)))
   | _ -> raise (Foo (showES es^"simpleDerivative exception"))
 
   ;;

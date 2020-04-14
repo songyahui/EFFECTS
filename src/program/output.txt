@@ -1,13 +1,61 @@
-====================================
-TRUE/\(((((((((Green.Green).Green).Yellow).Yellow).Yellow).Red).Red).Red)^w) |- TRUE/\((_^t1).Green)
-[Result] Succeed
-[Explored 1 States]
-[Verification Time: 0.005268 s]
- 
+=======================
+[Verification for method: main]
+[Precondition: TRUE/\emp]
+[Real Effect: 1>=0/\((Ready.((Send^1).Done))^w)]
+[Postcondition: TRUE/\(((Ready.(Send^n)).Done)^w)]
+[Result: Succeed]
+[Explored 5 States]
+[Verification Time: 0.019587 s]
 
-* TRUE/\((Green.(Green.(Green.(Yellow.(Yellow.(Yellow.(Red.(Red.Red))))))))^w) |- TRUE/\((_^t1).Green)   [EXISTENTIAL t1=0]
-* └── t1=0/\((Green.(Green.(Green.(Yellow.(Yellow.(Yellow.(Red.(Red.Red))))))))^w) |- t1=0/\Green   [UNFOLD]
-*     └── t1=0/\(Green.(Green.(Yellow.(Yellow.(Yellow.(Red.(Red.(Red.((Green.(Green.(Green.(Yellow.(Yellow.(Yellow.(Red.(Red.Red))))))))^w))))))))) |- t1=0/\emp   [Frame-Prove] with R = (Green.(Green.(Yellow.(Yellow.(Yellow.(Red.(Red.(Red.((Green.(Green.(Green.(Yellow.(Yellow.(Yellow.(Red.(Red.Red))))))))^w)))))))))
+* 1>=0/\((Ready.((Send^1).Done))^w) |- TRUE/\((Ready.((Send^n).Done))^w)   [UNFOLD]
+* └── 1>=0/\((Send^1).(Done.((Ready.((Send^1).Done))^w))) |- TRUE/\((Send^n).(Done.((Ready.((Send^n).Done))^w)))   [EXISTENTIAL n=1]
+*     └── n=1/\((Send^1).(Done.((Ready.((Send^1).Done))^w))) |- n=1/\((Send^1).(Done.((Ready.((Send^1).Done))^w)))   [UNFOLD]
+*         └── (n=1/\1>0)/\(Done.((Ready.((Send^1).Done))^w)) |- (n=1/\1>0)/\(Done.((Ready.((Send^1).Done))^w))   [UNFOLD]
+*             └── n=1/\((Ready.((Send^1).Done))^w) |- n=1/\((Ready.((Send^1).Done))^w)   [UNFOLD]
+*                 └── n=1/\((Send^1).(Done.((Ready.((Send^1).Done))^w))) |- n=1/\((Send^1).(Done.((Ready.((Send^1).Done))^w)))   [Reoccur]
 
+=======================
+[Verification for method: server]
+[Precondition: n>=0/\emp]
+[Real Effect: n>=0/\(Ready.((Send^n).(Done.((Ready.((Send^n).Done))^w))))]
+[Postcondition: n>=0/\(((Ready.(Send^n)).Done)^w)]
+[Result: Succeed]
+[Explored 5 States]
+[Verification Time: 0.044741 s]
+
+* n>=0/\(Ready.((Send^n).(Done.((Ready.((Send^n).Done))^w)))) |- n>=0/\((Ready.((Send^n).Done))^w)   [UNFOLD]
+* └── n>=0/\((Send^n).(Done.((Ready.((Send^n).Done))^w))) |- n>=0/\((Send^n).(Done.((Ready.((Send^n).Done))^w)))   [CASE SPLIT]
+*     ├── (n>=0/\n=0)/\(Done.((Ready.Done)^w)) |- (n>=0/\n=0)/\(Done.((Ready.Done)^w))   [UNFOLD]
+*     │   └── (n=0/\n>=0)/\((Ready.Done)^w) |- (n=0/\n>=0)/\((Ready.Done)^w)   [UNFOLD]
+*     │       └── (n>=0/\n=0)/\(Done.((Ready.Done)^w)) |- (n>=0/\n=0)/\(Done.((Ready.Done)^w))   [Reoccur]
+*     └── (n>=0/\n>0)/\((Send^n).(Done.((Ready.((Send^n).Done))^w))) |- (n>=0/\n>0)/\((Send^n).(Done.((Ready.((Send^n).Done))^w)))   [UNFOLD]
+*         └── (n>0/\n>=0)/\((Send^n-1).(Done.((Ready.((Send^n).Done))^w))) |- (n>0/\n>=0)/\((Send^n-1).(Done.((Ready.((Send^n).Done))^w)))   [SUB t1/n-1]
+*             └── (n>=0/\(t1=n-1/\(t1>=0/\n>0)))/\((Send^t1).(Done.((Ready.((Send^n).Done))^w))) |- (n>=0/\(t1=n-1/\(t1>=0/\n>0)))/\((Send^t1).(Done.((Ready.((Send^n).Done))^w)))   [Reoccur]
+
+=======================
+[Verification for method: send]
+[Precondition: TRUE/\(Ready.(_^*))]
+[Real Effect: (n=0/\Done)\/(((n-1>=0/\(~(n=0)))/\(Send.((Send^n-1).Done)))\/((n-1<0/\(~(n=0)))/\(Send.(Send^w))))]
+[Postcondition: (n>=0/\((Send^n).Done))\/(n<0/\(Send^w))]
+[Result: Succeed]
+[Explored 6 States]
+[Verification Time: 0.164507 s]
+
+* (n=0/\Done)\/(((n-1>=0/\(~(n=0)))/\(Send.((Send^n-1).Done)))\/((n-1<0/\(~(n=0)))/\(Send.(Send^w)))) |- (n>=0/\((Send^n).Done))\/(n<0/\(Send^w)) [LHSOR] 
+* ├── n=0/\Done |- (n>=0/\((Send^n).Done))\/(n<0/\(Send^w)) [LHSOR] 
+* │   └── n=0/\Done |- n>=0/\((Send^n).Done)   [UNFOLD]
+* │       └── n=0/\emp |- n>=0/\emp   [Frame-Prove] with R = emp
+* └── (((~(n=0))/\n-1>=0)/\(Send.((Send^n-1).Done)))\/(((~(n=0))/\n-1<0)/\(Send.(Send^w))) |- (n>=0/\((Send^n).Done))\/(n<0/\(Send^w)) [LHSOR] 
+*     ├── (n-1>=0/\(~(n=0)))/\(Send.((Send^n-1).Done)) |- (n>=0/\((Send^n).Done))\/(n<0/\(Send^w)) [LHSOR] 
+*     │   └── ((~(n=0))/\n-1>=0)/\(Send.((Send^n-1).Done)) |- n>=0/\((Send^n).Done)   [UNFOLD]
+*     │       └── (n-1>=0/\(~(n=0)))/\((Send^n-1).Done) |- (n>0/\n>=0)/\((Send^n-1).Done)   [SUB t1/n-1]
+*     │           └── ((~(n=0))/\(t1=n-1/\(t1>=0/\n-1>=0)))/\((Send^t1).Done) |- (n>=0/\(t1=n-1/\(t1>=0/\n>0)))/\((Send^t1).Done)   [UNFOLD]
+*     │               ├── (t1>=0/\(n-1>=0/\((~(n=0))/\t1=n-1)))/\emp |- (t1>=0/\(n>0/\(n>=0/\t1=n-1)))/\emp   [Frame-Prove] with R = emp
+*     │               └── (t1=n-1/\(t1>=0/\(n-1>=0/\(t1>0/\(~(n=0))))))/\((Send^t1-1).Done) |- (t1=n-1/\(t1>=0/\(n>0/\(t1>0/\n>=0))))/\((Send^t1-1).Done)   [SUB t2/t1-1]
+*     │                   └── (t1>=0/\(n-1>=0/\(t1>0/\((~(n=0))/\(t2=t1-1/\(t2>=0/\t1=n-1))))))/\((Send^t2).Done) |- (t1>=0/\(n>0/\(t1>0/\(n>=0/\(t2=t1-1/\(t2>=0/\t1=n-1))))))/\((Send^t2).Done)   [Reoccur]
+*     └── (n-1<0/\(~(n=0)))/\(Send.(Send^w)) |- (n>=0/\((Send^n).Done))\/(n<0/\(Send^w)) [LHSOR] 
+*         └── ((~(n=0))/\n-1<0)/\(Send.(Send^w)) |- n<0/\(Send^w)   [UNFOLD]
+*             └── (n-1<0/\(~(n=0)))/\(Send^w) |- n<0/\(Send^w)   [UNFOLD]
+*                 └── ((~(n=0))/\n-1<0)/\(Send^w) |- n<0/\(Send^w)   [Reoccur]
 
 
