@@ -42,6 +42,7 @@ let rec translateLTL (pi:pure) (ltl:ltl) (varList:string list) :(pure * es * str
       let (pi1, ess1, varList1) =  translateLTL newPi l1 (newVar :: varList) in 
       let (pi2, ess2, varList2) =  translateLTL pi1 l2 varList1 in 
       let prefix = Ttimes (ess1, Var newVar) in 
+      (*(pi2, Cons (Cons(ess1, Kleene (ess1)) , ess2), varList2)*)
       (pi2, Cons (prefix, ess2), varList2)
   | Global l -> 
       let (piii , ess1, varList') =  translateLTL pi l varList in 
@@ -52,6 +53,7 @@ let rec translateLTL (pi:pure) (ltl:ltl) (varList:string list) :(pure * es * str
       let prefix = Ttimes (Underline, Var newVar) in 
       let (piii, ess, varList') =  translateLTL pi l (newVar::varList) in 
  
+      (*(piii, Cons (Kleene(Not ess ), ess), varList')*)
       (piii, Cons (prefix, ess), varList')
   | NotLTL l -> 
       let (piii, ess, varList') =  translateLTL pi l varList in 

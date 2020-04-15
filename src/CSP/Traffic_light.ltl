@@ -1,4 +1,3 @@
-
 []Green;
 
 <>Green;
@@ -10,10 +9,14 @@
 <>[]Green;
 
 []<>Red;
+
+(<> Red -> !(Green U Red));
  
 [] (Red ->(! X Green));     
 
 [] (Red -> (<> Green));
+
+[] (Red -> ([] ! Green));
 
 [] (Red -> (! (Green U Yellow)));
 

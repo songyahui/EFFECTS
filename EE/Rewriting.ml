@@ -228,6 +228,11 @@ let rec splitEffects eff : (pure * es) list =
   | Disj (eff1, eff2) -> append (splitEffects eff1) (splitEffects eff2)
   ;;
 
+let rec concertive (es:es) (t:int): es = 
+  if t ==0 then Emp 
+  else Cons (es, concertive es (t -1))
+  ;;
+
 (*this is use to keep the bot in head for negation usage *)
 let rec normalES_Bot es pi = 
   match es with
@@ -464,7 +469,10 @@ let rec normalES es pi =
         Emp -> Emp
       | _ -> 
         let allPi = getAllPi pi [] in 
-        if (existPi (Eq (terms, Number 0)) allPi) || (compareTerm t (Number 0 )) then Emp else Ttimes (normalInside, t))
+        if (existPi (Eq (terms, Number 0)) allPi) then Emp else 
+          match t with
+            Number num -> concertive normalInside num 
+          | _ -> Ttimes (normalInside, t))
         (*else if (existPi (Eq (terms, n)) allPi)) then Emp else Ttimes (normalInside, t))*)
   | Omega es1 -> 
       let normalInside = normalES es1 pi in 
@@ -499,13 +507,13 @@ let rec normalEffect eff =
   let noPureOr  = deletePureOrInEff eff in 
   match noPureOr with
     Effect (p, es) -> 
-      (*if (askZ3 p) == false then 
+      if (askZ3 p) == false then 
         ( 
           (*print_string (showPure p^"   "^ showES es^ "\n 11********\n");*)
           Effect (FALSE, es)
         )
       else 
-      *)
+      
         let p_normal = normalPure p in 
         let es_normal  = normalES es p in
         (match es_normal with 
