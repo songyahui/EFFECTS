@@ -27,19 +27,7 @@ The routine of the washing machine goes like this:
 
 /* ----- OUTPUT MACROS ----- */
 
-#define A 2
-#define B 8
-#define C 6
-#define D 5
-#define E 4
-#define F 3
-#define G 7
-#define RELAY 10
-#define YELLOW 12
-#define PUMP 9
-#define DRUM 11
-#define SWITCH2 0
-#define SWITCH3 1
+
 
 
 const int all[7] = {A, B, C, D, E, F, G};

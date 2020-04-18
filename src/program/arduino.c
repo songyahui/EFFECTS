@@ -4,6 +4,21 @@
 #define OUTPUT 1
 #define HIGH 1
 #define LOW 1
+#define A0 0
+
+#define A 2
+#define B 8
+#define C 6
+#define D 5
+#define E 4
+#define F 3
+#define G 7
+#define RELAY 10
+#define YELLOW 12
+#define PUMP 9
+#define DRUM 11
+#define SWITCH2 0
+#define SWITCH3 1
 
 void pinMode (int a, int b){
     return ;

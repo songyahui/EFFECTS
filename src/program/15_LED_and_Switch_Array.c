@@ -1,16 +1,6 @@
-#include "arduino.c"
+//https://create.arduino.cc/projecthub/ejshea/led-bar-graph-and-switch-array-8467e0?ref=tag&ref_id=control&offset=19
 //Control LED bar graph function based on input from switch array
 //Last modified April 2019
-
-/*
-If you haven’t read our Getting Started Guide for the Arduino Uno Rev3, 
-please read that first. Otherwise, continue reading. In this tutorial, 
-we’ll be maxing out the digital I/O on the Arduino Uno Rev3 (Uno). We 
-interface a 10-segment LED bar graph and an 8-segment switch array. 
-We’ll use 9/10 LEDs on the bar graph and 5/8 switches on the switch array 
-for a total of 14 pins that we’ll need on the Uno. Each LED input will 
-be an output from the Uno and each switch output will be an input to the Uno.
-*/
 
 int LED0 = 0;
 int LED1 = 1;
@@ -254,8 +244,4 @@ void loop() {
     digitalWrite(LED7, LOW);
   }
 
-}
-
-int main (){
-  while (1) loop();
 }
