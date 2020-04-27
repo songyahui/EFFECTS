@@ -1,4 +1,5 @@
 #include "primitives.c"
+#include <time.h>
 
 #define INPUT 0
 #define OUTPUT 1
@@ -58,6 +59,15 @@ void analogWrite(int a, int b)
 
 
 int  analogRead(int a){
+    int lower = 210, upper = 220; 
+  
+    // Use current time as  
+    // seed for random generator 
+    /*srand(time(0)); 
+  
+    return (rand() % 
+           (upper - lower + 1)) + lower;
+           */
     return 0;
 }
 

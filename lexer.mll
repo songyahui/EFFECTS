@@ -89,6 +89,7 @@ rule token = parse
 | 'X' {NEXT}
 | 'U' {UNTIL}
 | "&&" {LILAND}
+| "&&" {LILOR}
 | _ { raise (SyntaxError ("Unexpected char: " ^ Lexing.lexeme lexbuf)) }
 | eof { EOF }
 

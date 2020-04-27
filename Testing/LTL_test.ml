@@ -4,6 +4,7 @@ open Pretty
 open Printf
 open List
 open Rewriting
+open Antimirov 
 
 
 
@@ -27,8 +28,47 @@ let checkSingle (lhs:es) (pi:pure) (esR:es) : string =
 
   ;;
 
+let rec interleveParalle es1 es2 acc: es = 
+  let es1 = aNormalES es1 in 
+  let es2 = aNormalES es2 in 
+  match (es1, es2) with
+    (Emp , Emp) -> acc
+  | (Emp, es2_p) -> Cons (acc, es2_p) 
+  | (es1_p, Emp) -> Cons (acc, es1_p)
+  | (Kleene es1_p, Kleene es2_p) -> Kleene (interleveParalle es1_p es2_p acc)
+  | (Kleene es1_p, es2_p)-> Cons (Cons (es1, interleveParalle es1_p es2_p acc ) , es1)
+  | (es1_p,Kleene es2_p) ->Cons (Cons (es2, interleveParalle es1_p es2_p acc ) , es2)
+  | _ -> 
+
+    
+  let fstSetES1 = aFst es1 in 
+  let fstSetES2 = aFst es2 in
+
+  let esLfromes1 = (List.fold_left (fun accin (esa , n) -> 
+    let derES1 = aDerivative es1 (esa , n)  in 
+    let rest = interleveParalle derES1 es2 (Cons (acc, Event (esa , n))) in 
+    ESOr (accin, rest)
+  ) Bot  fstSetES1) 
+  in 
+  let esLfromes2 = (List.fold_left (fun accin (esa , n) -> 
+    let derES2 = aDerivative es2 (esa , n)  in 
+    let rest = interleveParalle es1 derES2 (Cons (acc, Event (esa , n))) in 
+    ESOr (accin, rest)
+  ) Bot  fstSetES2) 
+  in 
+  ESOr (esLfromes1, esLfromes2)
+
+;;
+
 
 let main = 
+  let str1 = "((A . C)^*)" in 
+  let str2 = "((B . D)^*)" in 
+  let es1 = Parser.es_p Lexer.token (Lexing.from_string  str1) in 
+  let es2 = Parser.es_p Lexer.token (Lexing.from_string  str2) in 
+  let result = interleveParalle es1 es2 Emp in 
+  print_string  (showES es1 ^ " || " ^ showES es2 ^ " => \n" ^ showES (aNormalES  result) ^"\n");
+  (*
   let inputfile = (Sys.getcwd () ^ "/" ^ Sys.argv.(1)) in 
   let outputfile = (Sys.getcwd ()^ "/" ^ Sys.argv.(2)) in
   let ic = open_in inputfile in
@@ -71,7 +111,7 @@ let main =
   with e ->                      (* 一些不可预见的异常发生 *)
     close_in_noerr ic;           (* 紧急关闭 *)
     raise e                      (* 以出错的形式退出: 文件已关闭,但通道没有写入东西 *)
-
+*)
  ;;
 
   

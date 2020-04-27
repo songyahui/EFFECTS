@@ -87,6 +87,7 @@ type ltl = Lable of string
         | NotLTL of ltl
         | Imply of ltl * ltl
         | AndLTL of ltl * ltl
+        | OrLTL of ltl * ltl
 
 type ltl_verification = (es* ltl list )
 

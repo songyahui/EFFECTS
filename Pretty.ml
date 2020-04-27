@@ -35,7 +35,7 @@ let rec translateLTL (pi:pure) (ltl:ltl) (varList:string list) :(pure * es * str
     Lable str -> (pi, Event (str, None), varList)
   | Next l -> 
     let (piii, ess, varList') =  translateLTL pi l varList in 
-    (piii,  ess, varList')
+    (piii,  Cons (Underline,ess), varList')
   | Until (l1, l2) -> 
       let newVar = getAfreeVar varList in 
       let newPi = PureAnd (pi, Gt (Var newVar, Number 0)) in 
@@ -61,11 +61,15 @@ let rec translateLTL (pi:pure) (ltl:ltl) (varList:string list) :(pure * es * str
   | Imply (l1, l2) -> 
       let (pi1, ess1, varList1) =  translateLTL pi l1 varList in 
       let (pi2, ess2, varList2) =  translateLTL pi1 l2 varList1 in 
-      (pi2, ESOr ( (Not (ess1)),  Cons (ess1, ess2)), varList2)
+      (pi2, ESOr ( (Not (ess1)),   ess2), varList2)
   | AndLTL (l1, l2) -> 
       let (pi1, ess1, varList1) =  translateLTL pi l1 varList in 
       let (pi2, ess2, varList2) =  translateLTL pi1 l2 varList1 in 
       (pi2, ESAnd (ess1, ess2), varList2)
+  | OrLTL (l1, l2) -> 
+      let (pi1, ess1, varList1) =  translateLTL pi l1 varList in 
+      let (pi2, ess2, varList2) =  translateLTL pi1 l2 varList1 in 
+      (pi2, ESOr (ess1, ess2), varList2)
   ;;
 
 let rec input_lines file =
@@ -91,6 +95,7 @@ let rec showLTL (ltl:ltl):string =
   | NotLTL l -> "(" ^"! " ^showLTL l ^")"
   | Imply (l1, l2) -> "(" ^showLTL l1 ^ " -> " ^showLTL l2 ^")"
   | AndLTL (l1, l2) -> "(" ^showLTL l1 ^ " && " ^showLTL l2 ^")"
+  | OrLTL (l1, l2) -> "(" ^showLTL l1 ^ " || " ^showLTL l2 ^")"
   ;;
 
 let compareParm (p1:int option ) (p2:int option ) :bool = 
@@ -176,6 +181,8 @@ type context =  ( pure * es * pure * es) list
 
 type hypotheses = (effect * effect) list
 
+
+
 (*To pretty print terms*)
 let rec showTerms (t:terms):string = 
   match t with
@@ -193,14 +200,14 @@ let rec showES (es:es):string =
   | Emp -> "emp"
   | Event (ev, None) -> ev  
   | Event (ev, Some num) -> ev ^"("^string_of_int num^")"
-  | Cons (es1, es2) -> "("^(showES es1) ^ "." ^ (showES es2)^")"
+  | Cons (es1, es2) -> "("^(showES es1) ^ " . " ^ (showES es2)^")"
   | ESOr (es1, es2) -> "("^(showES es1) ^ "|" ^ (showES es2)^")"
   | ESAnd (es1, es2) -> "("^(showES es1) ^ "/\\" ^ (showES es2)^")"
   | Ttimes (es, t) -> "("^(showES es) ^ "^" ^ (showTerms t)^")"
   | Omega es -> "("^(showES es) ^ "^" ^  "w" ^")"
   | Underline -> "_"
   | Kleene es -> "(" ^ (showES es) ^ "^" ^ "*"^")"
-  | Not es -> "~(" ^ (showES es) ^")"
+  | Not es -> "!(" ^ (showES es) ^")"
   | Range (esList) -> 
       let rec helperHere acc esL =
         match esL with
@@ -211,6 +218,7 @@ let rec showES (es:es):string =
       let range = helperHere "{" esList in 
       range 
   ;;
+
 
 
 let rec showESReg (es:es):string = 
@@ -287,12 +295,11 @@ let rec regToInt (esIn:es):int32  =
   ;;
 
 
-
 (*To pretty print pure formulea*)
 let rec showPure (p:pure):string = 
   match p with
-    TRUE -> "TRUE"
-  | FALSE -> "FALSE"
+    TRUE -> "true"
+  | FALSE -> "false"
   | Gt (t1, t2) -> (showTerms t1) ^ ">" ^ (showTerms t2)
   | Lt (t1, t2) -> (showTerms t1) ^ "<" ^ (showTerms t2)
   | GtEq (t1, t2) -> (showTerms t1) ^ ">=" ^ (showTerms t2)
@@ -300,15 +307,15 @@ let rec showPure (p:pure):string =
   | Eq (t1, t2) -> (showTerms t1) ^ "=" ^ (showTerms t2)
   | PureOr (p1, p2) -> "("^showPure p1 ^ "\\/" ^ showPure p2^")"
   | PureAnd (p1, p2) -> "("^showPure p1 ^ "/\\" ^ showPure p2^")"
-  | Neg p -> "(~" ^ "(" ^ showPure p^"))"
+  | Neg p -> "(!" ^ "(" ^ showPure p^"))"
   ;; 
 
 (*To pretty print effects*)
 let rec showEffect (e:effect) :string = 
   match e with
     Effect (p, es) -> 
-      showPure p ^ "/\\" ^ showES es
-  | Disj (es1, es2) -> "(" ^ showEffect es1 ^ ")\\/("  ^ showEffect es2^")"
+      showPure p ^ "&" ^ showES es 
+  | Disj (es1, es2) ->  showEffect es1 ^ " \\/ "  ^ showEffect es2 
   ;;
 
 (*To pretty print effects entialments*)
