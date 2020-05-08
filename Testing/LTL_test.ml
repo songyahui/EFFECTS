@@ -80,15 +80,15 @@ let rec interleaving  es1 es2 acc: es =
 
 
 let main = 
-  let str1 = "((A . C))" in 
+ (* let str1 = "((A . C))" in 
   let str2 = "((B . D))" in 
   let es1 = Parser.es_p Lexer.token (Lexing.from_string  str1) in 
   let es2 = Parser.es_p Lexer.token (Lexing.from_string  str2) in 
   let result = interleaving es1 es2 Emp in 
   print_string  (showES es1 ^ " ||| " ^ showES es2 ^ " => \n" ^ showES (aNormalES  result) ^"\n");
-  (*
+  *)
+  
   let inputfile = (Sys.getcwd () ^ "/" ^ Sys.argv.(1)) in 
-  let outputfile = (Sys.getcwd ()^ "/" ^ Sys.argv.(2)) in
   let ic = open_in inputfile in
   try 
     let specs:(string list) =  List.rev(input_lines ic) in 
@@ -102,7 +102,6 @@ let main =
     ) (ltlList) "" in 
     print_string (ential_result^"\n");
     *)
-    let oc = open_out outputfile in    (* 新建或修改文件,返回通道 *)
     let effect_List = List.map (fun ltl -> 
       let (a, b, c) = (translateLTL TRUE ltl []) in 
       (a, b)   ) (List.rev ltlList) in
@@ -119,17 +118,16 @@ let main =
     *)
     
     
-    fprintf oc "%s\n" result;   (* 写一些东西 *)
+    print_string (result);
 
 
-    close_out oc;                (* 写入并关闭通道 *)
     flush stdout;                (* 现在写入默认设备 *)
     close_in ic                  (* 关闭输入通道 *) 
 
   with e ->                      (* 一些不可预见的异常发生 *)
     close_in_noerr ic;           (* 紧急关闭 *)
     raise e                      (* 以出错的形式退出: 文件已关闭,但通道没有写入东西 *)
-*)
+
  ;;
 
   
