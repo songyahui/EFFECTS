@@ -28,7 +28,7 @@ let testASingle pi ff ss :string =
 
 let main = 
   let inputfile = (Sys.getcwd () ^ "/" ^ Sys.argv.(1)) in 
-  let outputfile = (Sys.getcwd ()^ "/" ^ Sys.argv.(2)) in
+  
   let ic = open_in inputfile in
   try 
     let specs:(string list) =  (input_lines ic) in 
@@ -42,7 +42,7 @@ let main =
     ) (ltlList) "" in 
     print_string (ential_result^"\n");
     *)
-    let oc = open_out outputfile in    (* 新建或修改文件,返回通道 *)
+   
     let esList = List.map (fun ltl -> 
       let (a, b, c) = (translateLTL TRUE ltl []) in 
       Effect (a, b)   ) ltlList in
@@ -58,11 +58,6 @@ let main =
     
     
     
-    
-    fprintf oc "%s\n" result;   (* 写一些东西 *)
-
-
-    close_out oc;                (* 写入并关闭通道 *)
     flush stdout;                (* 现在写入默认设备 *)
     close_in ic                  (* 关闭输入通道 *) 
 
