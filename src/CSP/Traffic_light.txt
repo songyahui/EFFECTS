@@ -15,13 +15,3 @@
 (<> Red -> !(Green U Red));
  
 [] (Red ->(! X Green));     
-
-[] (Red -> (<> Green));
-
-[] (Red -> ([] ! Green));
-
-[] (Red -> (! (Green U Yellow)));
-
-[] (Red-> X (Red U (Yellow))); 
-
-[] (Red-> X (Red U (X (Yellow U Green)))); 

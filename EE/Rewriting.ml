@@ -93,7 +93,14 @@ let rec simpleFst (es:es): event =
   match es with 
   | Event (str, p) ->  str
   | Cons (es1 , es2) ->  simpleFst es1
+  | ESOr (es1 , es2) ->  simpleFst es1
+
   | Underline -> "_"
+  | Omega (es1) -> simpleFst es1
+  | Not es1 -> simpleFst es1
+  | Kleene es1 -> simpleFst es1
+  | Ttimes (es1, t) ->   simpleFst es1
+
   | _ -> raise (Foo (showES es^"simpleFst exception"))
   
   ;;
