@@ -30,6 +30,7 @@ let rec getAfreeVar (varList:string list):string  =
   findOne freeVar
 ;;
 
+(*
 let rec translateLTL (pi:pure) (ltl:ltl) (varList:string list) :(pure * es * string list) =
   match ltl with 
     Lable str -> (pi, Event (str, None), varList)
@@ -71,6 +72,76 @@ let rec translateLTL (pi:pure) (ltl:ltl) (varList:string list) :(pure * es * str
       let (pi2, ess2, varList2) =  translateLTL pi1 l2 varList1 in 
       (pi2, ESOr (ess1, ess2), varList2)
   ;;
+*)
+
+let rec translateLTL (pi:pure) (ltl:ltl) (varList:string list) :(pure * es * string list) =
+  match ltl with 
+    Lable str -> (pi, Event (str, None), varList)
+  | Next l -> 
+    let (piii, ess, varList') =  translateLTL pi l varList in 
+    (piii,  Cons (Underline,ess), varList')
+  | Until (l1, l2) -> 
+      let newVar = getAfreeVar varList in 
+      let newPi =pi (* PureAnd (pi, Gt (Var newVar, Number 0)) *) in 
+      let (pi1, ess1, varList1) =  translateLTL newPi l1 (newVar :: varList) in 
+      let (pi2, ess2, varList2) =  translateLTL pi1 l2 varList1 in 
+      let prefix = Ttimes (ess1, Var newVar) in 
+      (*(pi2, Cons (Cons(ess1, Kleene (ess1)) , ess2), varList2)*)
+      (pi2, Cons (prefix, ess2), varList2)
+  | Global l -> 
+      let (piii , ess1, varList') =  translateLTL pi l varList in 
+
+      (piii, Kleene (ess1), varList')
+  | Future l -> 
+      let newVar = getAfreeVar varList in 
+      let prefix = Ttimes (Underline, Var newVar) in 
+      let (piii, ess, varList') =  translateLTL pi l (newVar::varList) in 
+ 
+      (*(piii, Cons (Kleene(Not ess ), ess), varList')*)
+      (piii, Cons (prefix, ess), varList')
+  | NotLTL l -> 
+      let (piii, ess, varList') =  translateLTL pi l varList in 
+      (piii, Not (ess), varList')
+  | Imply (l1, l2) -> 
+      let (pi1, ess1, varList1) =  translateLTL pi l1 varList in 
+      let (pi2, ess2, varList2) =  translateLTL pi1 l2 varList1 in 
+      (pi2, ESOr ( (Not (ess1)),   ess2), varList2)
+  | AndLTL (l1, l2) -> 
+      let (pi1, ess1, varList1) =  translateLTL pi l1 varList in 
+      let (pi2, ess2, varList2) =  translateLTL pi1 l2 varList1 in 
+      (pi2, ESAnd (ess1, ess2), varList2)
+  | OrLTL (l1, l2) -> 
+      let (pi1, ess1, varList1) =  translateLTL pi l1 varList in 
+      let (pi2, ess2, varList2) =  translateLTL pi1 l2 varList1 in 
+      (pi2, ESOr (ess1, ess2), varList2)
+  ;;
+
+
+(*
+let rec translateLTL (pi:pure) (ltlOUT:ltl) (varList:string list) :(pure * es * string list) =
+  let rec inner (ltl:ltl): es = 
+    match ltl with 
+      Lable str -> Event (str, None)
+    | Next l -> 
+      Cons (Underline, inner l)
+    | Until (l1, l2) -> 
+      Cons (Kleene (inner l1), inner l2)
+    | Global l -> 
+      Omega (inner l)
+    | Future l -> 
+      Cons (Kleene (Underline), inner l)
+    | NotLTL l ->
+      Not (inner l)
+    | Imply (l1, l2) -> 
+      ESOr ( (Not (inner l1)),   inner l2)
+    | AndLTL (l1, l2) -> 
+      ESAnd (inner l1, inner l2)
+    | OrLTL (l1, l2) -> 
+      ESOr (inner l1, inner l2)  
+  in 
+  (TRUE, inner ltlOUT, [])
+;;
+ *)
 
 let rec input_lines file =
   match try [input_line file] with End_of_file -> [] with
