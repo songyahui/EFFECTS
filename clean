@@ -10,3 +10,5 @@ rm parser.mli
 rm trs
 rm verify
 rm gen
+rm ltl
+rm verifyLTL
