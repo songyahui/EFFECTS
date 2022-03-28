@@ -57,7 +57,7 @@ rule token = parse
 | '<' {LT}
 | '=' {EQ}
 | '^' { POWER }
-| 'w' { OMEGA }
+(*| 'w' { OMEGA }*)
 | '|' { CHOICE }
 | '.' { CONCAT }
 | '"' { read_string (Buffer.create 17) lexbuf }

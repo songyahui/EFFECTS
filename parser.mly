@@ -7,7 +7,7 @@
 %token <string> STRING
 %token <bool> TRUEE  
 %token <bool> FALSEE
-%token EMPTY ASSERTKEY EVENTKEY CHOICE LPAR RPAR CONCAT OMEGA POWER PLUS MINUS TRUE FALSE DISJ CONJ   ENTIL INTT BOOLT VOIDT 
+%token EMPTY ASSERTKEY EVENTKEY CHOICE LPAR RPAR CONCAT  POWER PLUS MINUS TRUE FALSE DISJ CONJ   ENTIL INTT BOOLT VOIDT  (* OMEGA *)
 %token LBRACK RBRACK COMMA SIMI  IF ELSE REQUIRE ENSURE LSPEC RSPEC RETURN LBrackets  RBrackets
 %token EOF GT LT EQ GTEQ LTEQ INCLUDE SHARP EQEQ UNDERLINE KLEENE NEGATION
 %token FUTURE GLOBAL IMPLY LTLNOT NEXT UNTIL LILAND LILOR
@@ -126,9 +126,6 @@ pure:
 | a = pure CONJ b = pure {PureAnd (a, b)}
 | a = pure DISJ b = pure {PureOr (a, b)}
 
-es_range :
-| single = es {[single]}
-| e = es_range COMMA eddd = es {append e [eddd]}
 
 parm:
 | {None}
@@ -138,16 +135,14 @@ parm:
 es:
 | EMPTY { Emp }
 | str = EVENT p=parm { Event ( str, p) }
+| NEGATION str = EVENT p=parm {Not ( str, p)}
 | LPAR r = es RPAR { r }
 | a = es CHOICE b = es { ESOr(a, b) }
 | a = es CONJ b = es { ESAnd(a, b) }
-| LPAR r = es POWER t = term RPAR { Ttimes(r, t )}
-| LPAR r = es POWER OMEGA RPAR{ Omega r }
+| LPAR r = es SHARP t = term RPAR { Ttimes(r, t )}
 | UNDERLINE {Underline}
 | a = es CONCAT b = es { Cons(a, b) } 
 | LPAR a = es POWER KLEENE RPAR{Kleene a}
-| LBRACK a = es_range RBRACK {Range a}
-| NEGATION LPAR a = es RPAR {Not a}
 
 
 

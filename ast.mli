@@ -17,14 +17,12 @@ type includ = string
 type es = Bot 
         | Emp 
         | Event of event * int option 
+        | Not of event * int option 
         | Cons of es * es
         | ESOr of es * es
         | ESAnd of es * es
         | Ttimes of es * terms
         | Kleene of es
-        | Omega of es
-        | Range of (es list)
-        | Not of es
         | Underline
 
 (*Arithimetic pure formulae*)
