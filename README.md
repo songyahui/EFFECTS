@@ -39,7 +39,7 @@ Entailments Checking
 Program Verification
 
 ```
-./verify src/program/send.c src/program/output.txt
+./verify src/program/coffee.c
 ```
 
 ### To Clean:
