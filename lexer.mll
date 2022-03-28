@@ -35,6 +35,9 @@ rule token = parse
 | "bool" {BOOLT}
 | "void" {VOIDT}
 | "event" {EVENTKEY}
+| "timeout" {TimeoutKEY} 
+| "deadline" {DeadlineKEY}
+| "delay" {DelayKEY}
 | "assert" {ASSERTKEY}
 | "return" {RETURN}
 | "|-" {ENTIL}
@@ -56,6 +59,7 @@ rule token = parse
 | '>' {GT}
 | '<' {LT}
 | '=' {EQ}
+
 | '^' { POWER }
 (*| 'w' { OMEGA }*)
 | '|' { CHOICE }

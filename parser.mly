@@ -11,6 +11,7 @@
 %token LBRACK RBRACK COMMA SIMI  IF ELSE REQUIRE ENSURE LSPEC RSPEC RETURN LBrackets  RBrackets
 %token EOF GT LT EQ GTEQ LTEQ INCLUDE SHARP EQEQ UNDERLINE KLEENE NEGATION
 %token FUTURE GLOBAL IMPLY LTLNOT NEXT UNTIL LILAND LILOR
+%token TimeoutKEY DeadlineKEY DelayKEY
 
 %left CHOICE
 %left CONCAT
@@ -70,6 +71,9 @@ expres_help :
 | name = VAR LPAR vlist = real_param RPAR {Call (name, vlist)}
 | v = VAR EQ e = expres_help{Assign (v, e)}
 | EVENTKEY LPAR ev = STRING p=parm RPAR {EventRaise (ev,p)}
+| TimeoutKEY LPAR e = expres_help COMMA t = INTE  RPAR  {Timeout(e, t)}
+| DeadlineKEY LPAR e = expres_help COMMA t = INTE  RPAR {Deadline(e, t)}
+| DelayKEY t = INTE {Delay t}
 | ASSERTKEY LPAR eff = effect RPAR {Assertion eff}
 
 cond:

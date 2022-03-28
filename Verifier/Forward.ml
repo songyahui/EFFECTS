@@ -59,7 +59,10 @@ let rec printExpr (expr: expression):string =
   | Seq (e1, e2) -> printExpr e1 ^ ";" ^ printExpr e2
   | EventRaise (ev,None) -> ev
   | EventRaise (ev,Some n) -> ev ^"(" ^string_of_int n ^")"
+  | Deadline (e, n) -> "deadline (" ^ printExpr e ^", " ^ string_of_int n ^")\n"
+  | Timeout (e, n) -> "timeout (" ^ printExpr e ^", " ^ string_of_int n ^")\n"
 
+  | Delay n -> "delay " ^  string_of_int n ^"\n"
   | IfElse (e1, e2, e3) -> "if " ^ printExpr e1 ^ " then " ^ printExpr e2 ^ " else " ^ printExpr e3 
   | Cond (e1, e2, str) -> printExpr e1 ^ str ^ printExpr e2 
   | BinOp (e1, e2, str) -> printExpr e1 ^ str ^ printExpr e2 

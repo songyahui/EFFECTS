@@ -63,6 +63,9 @@ type expression = Unit
           | Assign of var * expression
           | Seq of expression * expression
           | EventRaise of (event*int option)
+          | Timeout of (expression * int)  
+          | Deadline of (expression * int)
+          | Delay of int
           | IfElse of expression * expression * expression
           | Cond of expression * expression * string
           | BinOp of expression * expression * string
