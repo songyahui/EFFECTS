@@ -1,28 +1,10 @@
 ====================================
-n=0&Done \/ n>0&((Send . (Send^n-1)) . Done) \/ n<0&(Send . (Send^w)) |- (n>0\/n=0)&((Send^n) . Done) \/ n<0&(Send^w)
+true&((Green . (Yellow . Red))^*) |- true&((_^n) . (Green^*))
 [Result] Succeed
-[Explored 7 States]
-[Verification Time: 0.034953 s]
+[Explored 0 States]
+[Verification Time: 0.015 ms]
  
 
-* n=0&Done \/ n>0&(Send . ((Send^n-1) . Done)) \/ n<0&(Send . (Send . (Send^w))) |- n>0&((Send^n) . Done) \/ n=0&Done \/ n<0&(Send^w) [LHSOR] 
-* ├── n=0&Done \/ n>0&(Send . ((Send^n-1) . Done)) |- n>0&((Send^n) . Done) \/ n=0&Done \/ n<0&(Send^w) [LHSOR] 
-* │   ├── n=0&Done |- n>0&((Send^n) . Done) \/ n=0&Done \/ n<0&(Send^w) [RHSOR] 
-* │   │   └── n=0&Done |- n>0&((Send^n) . Done) \/ n=0&Done [RHSOR] 
-* │   │       └── n=0&Done |- n=0&Done   [UNFOLD]
-* │   │           └── n=0&emp |- n=0&emp   [UNFOLD]
-* │   └── n>0&(Send . ((Send^n-1) . Done)) |- n>0&((Send^n) . Done) \/ n=0&Done \/ n<0&(Send^w) [RHSOR] 
-* │       └── n>0&(Send . ((Send^n-1) . Done)) |- n>0&((Send^n) . Done) \/ n=0&Done [RHSOR] 
-* │           └── n>0&(Send . ((Send^n-1) . Done)) |- n>0&((Send^n) . Done)   [UNFOLD]
-* │               └── n>0&((Send^n-1) . Done) |- n>0&((Send^n-1) . Done)   [SUB t1/n-1]
-* │                   └── (t1=n-1/\(t1>=0/\n>0))&((Send^t1) . Done) |- (t1=n-1/\(t1>=0/\n>0))&((Send^t1) . Done)   [UNFOLD]
-* │                       ├── (n>0/\(t1=n-1/\t1>=0))&emp |- (n>0/\(t1=n-1/\t1>=0))&emp   [Reoccur]
-* │                       └── (t1>=0/\(n>0/\(t1>0/\t1=n-1)))&((Send^t1-1) . Done) |- (t1>=0/\(n>0/\(t1>0/\t1=n-1)))&((Send^t1-1) . Done)   [SUB t2/t1-1]
-* │                           └── (n>0/\(t1>0/\(t1=n-1/\(t2=t1-1/\(t2>=0/\t1>=0)))))&((Send^t2) . Done) |- (n>0/\(t1>0/\(t1=n-1/\(t2=t1-1/\(t2>=0/\t1>=0)))))&((Send^t2) . Done)   [Reoccur]
-* └── n<0&(Send . (Send . (Send^w))) |- n>0&((Send^n) . Done) \/ n=0&Done \/ n<0&(Send^w) [RHSOR] 
-*     └── n<0&(Send . (Send . (Send^w))) |- n<0&(Send^w)   [UNFOLD]
-*         └── n<0&(Send . (Send^w)) |- n<0&(Send^w)   [UNFOLD]
-*             └── n<0&(Send^w) |- n<0&(Send^w)   [UNFOLD]
-*                 └── n<0&(Send^w) |- n<0&(Send^w)   [Reoccur]
+* true&((Green . (Yellow . Red))^*) |- true&((_^n) . (Green^*))   [UNFOLD]
 
 

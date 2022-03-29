@@ -190,7 +190,7 @@ let checkPrecondition (state:effect) (pre:effect)  =
   let reverseState =  (reverseEff state) in
   let reversePre =  (reverseEff pre) in 
   (*check containment*)
-  let (result_tree, result, states, hypo) =  Rewriting.printReportHelper reverseState reversePre false in 
+  let (result_tree, result, states, hypo) =  Rewriting.printReportHelper reverseState reversePre in 
   let tree = Node (showEntailmentEff reverseState reversePre, [result_tree]) in
 
   if result == false then 
@@ -289,15 +289,15 @@ let rec verification (decl:(bool * declare)) (prog: program): string =
     let postcon = "[Postcondition: "^ (showEffect ( post)) ^ "]\n" in 
     let acc =  (verifier mn expression (pre) (extracPureFromPrecondition pre) prog) in 
     
-    let accumulated = "[Real Effect: " ^(showEffect ( normalEffect acc 0)) ^ "]\n" in 
+    let accumulated = "[Real Effect: " ^(showEffect ( normalEffect acc)) ^ "]\n" in 
     (*print_string((showEntailmentEff acc post) ^ "\n") ;*)
     
     (*let varList = (*append*) (getAllVarFromEff acc) (*(getAllVarFromEff post)*) in  
     *)
-    let (result_tree, result, states, hypos) =  Rewriting.printReportHelper acc post false in 
+    let (result_tree, result, states, hypos) =  Rewriting.printReportHelper acc post in 
     let result = "[Result: "^ (if result then "Succeed" else "Fail") ^"]\n" in 
     let states = "[Explored "^ string_of_int (states+1)  ^ " States]\n" in 
-    let verification_time = "[Verification Time: " ^ string_of_float (Sys.time() -. startTimeStamp) ^ " s]\n" in
+    let verification_time = "[Verification Time: " ^ string_of_float ((Sys.time() -. startTimeStamp) *. 1000.0) ^ " ms]\n" in
     let printTree = printTree ~line_prefix:"* " ~get_name ~get_children result_tree in
     "=======================\n"^ head ^ precon ^ accumulated ^ postcon ^ result ^ states ^verification_time^ "\n" ^ printTree ^ "\n" 
     

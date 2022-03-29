@@ -290,7 +290,7 @@ let rec normalES_Bot es pi =
 
   ;;
 
-let rec normalES (es:es) (pi:pure) mode:es = 
+let rec normalES (es:es) (pi:pure) :es = 
   match es with
     Bot -> es
   | Emp -> es
@@ -298,10 +298,10 @@ let rec normalES (es:es) (pi:pure) mode:es =
   | Not _ -> es
 
   | Underline -> Underline
-  | Cons (Cons (esIn1, esIn2), es2)-> normalES (Cons (esIn1, Cons (esIn2, es2))) pi mode
+  | Cons (Cons (esIn1, esIn2), es2)-> normalES (Cons (esIn1, Cons (esIn2, es2))) pi 
   | Cons (es1, es2) -> 
-      let normalES1 = normalES es1 pi mode in
-      let normalES2 = normalES es2 pi mode in
+      let normalES1 = normalES es1 pi  in
+      let normalES2 = normalES es2 pi  in
       (match (normalES1, normalES2) with 
         (Emp, _) -> normalES2 
       | (_, Emp) -> normalES1
@@ -315,18 +315,16 @@ let rec normalES (es:es) (pi:pure) mode:es =
           else Cons (normalES1, normalES2) 
 
       | (normal_es1, normal_es2) -> 
-        if mode == 1 then 
-        (
+
         match (normal_es1, normal_es2) with 
         (*|  (Cons (esIn1, esIn2), es2)-> normalES (Cons (esIn1, Cons (esIn2, es2))) pi *)
-        (*|  (ESOr (or1, or2), es2) ->  (ESOr (normalES  (Cons (or1, es2)) pi mode,  normalES (Cons (or2, es2)) pi mode)) *)
-        |  (es1, ESOr (or1, or2)) -> normalES (ESOr ( (Cons (es1, or1)),  (Cons (es1, or2)))) pi mode
+        (*|  (ESOr (or1, or2), es2) ->  (ESOr (normalES  (Cons (or1, es2)) pi ,  normalES (Cons (or2, es2)) pi )) *)
+        |  (es1, ESOr (or1, or2)) -> normalES (ESOr ( (Cons (es1, or1)),  (Cons (es1, or2)))) pi 
         | _-> Cons (normal_es1, normal_es2)
-        )
-        else Cons (normal_es1, normal_es2)
-      ;)
+        
+      )
   | ESOr (es1, es2) -> 
-      (match (normalES es1 pi mode, normalES es2 pi mode) with 
+      (match (normalES es1 pi , normalES es2 pi ) with 
         (Bot, Bot) -> Bot
       | (Bot, norml_es2) -> norml_es2
       | (norml_es1, Bot) -> norml_es1
@@ -354,7 +352,7 @@ let rec normalES (es:es) (pi:pure) mode:es =
       ;)
 
   | ESAnd (es1, es2) -> 
-      (match (normalES es1 pi mode, normalES es2 pi mode) with 
+      (match (normalES es1 pi , normalES es2 pi ) with 
 
       | (Bot, norml_es2) -> Bot
       | (norml_es1, Bot) -> Bot
@@ -373,7 +371,7 @@ let rec normalES (es:es) (pi:pure) mode:es =
 
   | Ttimes (es1, terms) -> 
       let t = normalTerms terms in 
-      let normalInside = normalES es1 pi mode in 
+      let normalInside = normalES es1 pi  in 
       (match normalInside with
         Emp -> Emp
       | _ -> 
@@ -384,10 +382,10 @@ let rec normalES (es:es) (pi:pure) mode:es =
           | _ -> Ttimes (normalInside, t))
         (*else if (existPi (Eq (terms, n)) allPi)) then Emp else Ttimes (normalInside, t))*)
   | Kleene es1 -> 
-      let normalInside = normalES es1 pi mode in 
+      let normalInside = normalES es1 pi  in 
       (match normalInside with
         Emp -> Emp
-      | Kleene esIn1 ->  Kleene (normalES esIn1 pi mode)
+      | Kleene esIn1 ->  Kleene (normalES esIn1 pi )
       | ESOr(Emp, aa) -> Kleene aa
       | _ ->  Kleene normalInside)
 
@@ -395,7 +393,7 @@ let rec normalES (es:es) (pi:pure) mode:es =
 
 
 
-let rec normalEffect (eff:effect) mode:effect =
+let rec normalEffect (eff:effect) :effect =
   let noPureOr  = deletePureOrInEff eff in 
   match noPureOr with
     Effect (p, es) -> 
@@ -408,14 +406,14 @@ let rec normalEffect (eff:effect) mode:effect =
       *)
       
         let p_normal = normalPure p in 
-        let es_normal  = normalES es p mode in
+        let es_normal  = normalES es p  in
         (match es_normal with 
           ESOr (es_nor1, es_nor2) -> Disj (Effect (p_normal, es_nor1), Effect (p_normal, es_nor2))
         | _ -> Effect ( p_normal, es_normal)
         )
   | Disj (eff1, eff2) -> 
-      let normaedEff1 = normalEffect eff1 mode in 
-      let normaedEff2 = normalEffect eff2 mode in 
+      let normaedEff1 = normalEffect eff1  in 
+      let normaedEff2 = normalEffect eff2  in 
       match (normaedEff1, normaedEff2 ) with
         (Effect (_,  Bot  ), _) -> normaedEff2
       | (_, Effect (_,  Bot)) -> normaedEff1
@@ -479,11 +477,11 @@ let rec derivative (p :pure) (es:es) (varL: var list) (ev:(string*int option)): 
   | ESOr (es1 , es2) -> 
     let temp1 =  (derivative p es1 varL ev) in
     let temp2 =  (derivative p es2 varL ev) in 
-    normalEffect (ifShouldDisj temp1 temp2) 0
+    normalEffect (ifShouldDisj temp1 temp2) 
   | ESAnd (es1 , es2) -> 
     let temp1 =  (derivative p es1 varL ev) in
     let temp2 =  (derivative p es2 varL ev) in 
-    normalEffect (ifShouldConj temp1 temp2) 0
+    normalEffect (ifShouldConj temp1 temp2) 
   | Ttimes (es1, t) -> 
       let pi = PureAnd (Gt (t, Number 0), p) in
       let efF = derivative pi es1 varL ev in 
@@ -494,7 +492,7 @@ let rec derivative (p :pure) (es:es) (varL: var list) (ev:(string*int option)): 
       then let efF = derivative p es1 varL ev in 
           let effL =  (appendEff_ES efF es2) in 
           let effR =  (derivative p es2 varL ev) in 
-          normalEffect (ifShouldDisj effL effR) 0
+          normalEffect (ifShouldDisj effL effR) 
       else let efF = derivative p es1 varL ev in 
           appendEff_ES efF es2    
           
@@ -1050,9 +1048,9 @@ let rec sublist b e l =
      if b>0 then tail else h :: tail
 ;;
 
-let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (mode:bool) : (binary_tree * bool * int * hypotheses) = 
-  let normalFormL = normalEffect effL 0 in 
-  let normalFormR = normalEffect effR 0 in
+let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) : (binary_tree * bool * int * hypotheses) = 
+  let normalFormL = normalEffect effL in 
+  let normalFormR = normalEffect effR in
   let showEntail  = (*showEntailmentEff effL effR ^ " ->>>> " ^*) showEntailmentEff normalFormL normalFormR in 
 
   (Node (showEntail ^ "   [UNFOLD]",[] ), true, 0, [])
@@ -1086,7 +1084,7 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (mode:bool) 
           *)
           let deriL = checkDerivative eff1 ev varList in
           let deriR = checkDerivative eff2 ev varList in
-          let (tree, re, states, hypo) =  containment1 deriL deriR hypoacc mode in 
+          let (tree, re, states, hypo) =  containment1 deriL deriR hypoacc  in 
           if re == false then (false , tree::acc, staacc+states, [])
           else chceckResultAND fs (tree::acc) (staacc+states)  (hypo)
       )
@@ -1103,34 +1101,34 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (mode:bool) 
   
   | (Disj (effL1, effL2), _) -> 
     (*[LHSOR]*)
-      let (tree1, re1, states1 , hypo ) = (containment1 effL1 effR delta mode) in
+      let (tree1, re1, states1 , hypo ) = (containment1 effL1 effR delta ) in
       if re1 == false then (Node (showEntail ^ showRule LHSOR, [tree1] ),  false, states1, [])
       else 
         (
         (*print_string ("lallalallalal\n");*)
-        let (tree2, re2 , states2, hypo1) = (containment1 effL2 effR (List.append delta (sublist (List.length delta) (List.length hypo -1 ) hypo)) mode) in
+        let (tree2, re2 , states2, hypo1) = (containment1 effL2 effR (List.append delta (sublist (List.length delta) (List.length hypo -1 ) hypo)) ) in
         (Node (showEntail ^ showRule LHSOR, [tree1; tree2] ), re2, states1+states2, hypo1)
         )
 
   (****If worriy of comokenness, need to delete this part. *****)
   | ( _, Disj (effL1, effL2)) -> 
     (*[RHSOR]*)
-      let (tree1, re1, states1, hypo ) = (containment1 normalFormL effL1 delta mode) in
+      let (tree1, re1, states1, hypo ) = (containment1 normalFormL effL1 delta ) in
       if re1 == true then (Node (showEntail ^ showRule RHSOR, [tree1] ),  true, states1, hypo)
       else 
-        let (tree2, re2 , states2, hypo1) = (containment1 normalFormL effL2  delta mode) in 
+        let (tree2, re2 , states2, hypo1) = (containment1 normalFormL effL2  delta ) in 
         (Node (showEntail ^ showRule RHSOR, [tree2] ), re2, states2, hypo1)
     (****If worriy of comokenness, need to delete this part. *****)
 
 
   | (Effect (piL, esL),Effect(piR, ESAnd (esR1, esR2))) ->
-      let (tree1, re1, states1, hypo ) = (containment1 normalFormL (Effect(piR, esR1)) delta mode) in
+      let (tree1, re1, states1, hypo ) = (containment1 normalFormL (Effect(piR, esR1)) delta ) in
       if re1 == false then (Node (showEntail ^ showRule RHSAND, [tree1] ),  false, states1, [])
       else
         (
         (*print_string ("lallalallalalRHSAND \n");*)
 
-        let (tree2, re2, states2 , hypo1) = (containment1 normalFormL (Effect(piR, esR2)) (List.append delta (sublist (List.length delta) (List.length hypo -1 ) hypo)) mode) in
+        let (tree2, re2, states2 , hypo1) = (containment1 normalFormL (Effect(piR, esR2)) (List.append delta (sublist (List.length delta) (List.length hypo -1 ) hypo)) ) in
         (Node (showEntail ^ showRule RHSAND, [tree1; tree2] ), re2, states1+states2, hypo1)
         )
 
@@ -1141,7 +1139,7 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (mode:bool) 
     else if (entailConstrains (pureUnion normalFormL) (pureUnion normalFormR)) == false then (Node(showEntail ^ "   [Contradictory] "  , []), false, 1) 
     *)
     
-    else if (not mode) && (isEmp normalFormR) == true then  (Node(showEntail^"   [Frame-Prove]" ^" with R = "(*^(showES esL )*) , []),true, 0, delta) 
+    else if (not ) && (isEmp normalFormR) == true then  (Node(showEntail^"   [Frame-Prove]" ^" with R = "(*^(showES esL )*) , []),true, 0, delta) 
     else if (checkNullable normalFormL) == true && (checkNullable normalFormR) == false then (Node(showEntail ^ "   [REFUTATION] "  , []), false, 0, []) 
     
     (*
@@ -1245,7 +1243,7 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (mode:bool) 
                         
                       | _ -> 
                         let rhs = (addConstrain rhs pure) in 
-                        let (tree, re, states, hypo) = containment1 (lhs) (rhs) delta mode in 
+                        let (tree, re, states, hypo) = containment1 (lhs) (rhs) delta  in 
                         if re == true then (true , tree::acc, staacc+states, index, hypo)
                         else chceckResultOR rhss (tree::acc) (staacc+states) 
                   )
@@ -1262,7 +1260,7 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (mode:bool) 
                 let cons = PureAnd( Eq (Var newVar, Plus (Var t, num) ), GtEq (Var newVar, Number 0)) in
                 let lhs' = addConstrain normalFormL cons in
                 let rhs' = addConstrain rhs cons in
-                let (tree, re, states, hypo) = containment1 lhs' rhs' delta mode in
+                let (tree, re, states, hypo) = containment1 lhs' rhs' delta  in
                 (Node (showEntailmentEff lhs' rhs' ^ "   [SUB-RHS]",[tree] ), re, states, hypo)
                 
               | Minus (Var t, num) -> 
@@ -1272,7 +1270,7 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (mode:bool) 
 
                 let lhs' = addConstrain normalFormL cons in
                 let rhs' = addConstrain rhs cons in
-                let (tree, re, states ,hypo) = containment1 lhs' rhs' delta mode in
+                let (tree, re, states ,hypo) = containment1 lhs' rhs' delta  in
                 (Node (showEntailmentEff lhs' rhs' ^ "   [SUB-RHS]",[tree] ), re, states, hypo)
               | _ -> raise (Foo "bu ying gai a ");
               )
@@ -1323,10 +1321,10 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (mode:bool) 
 
                     (*zhe li hao xiang ke yi gai*)
 
-                    let (tree1, re1, states1, hypo) = (containment1 leftZero rightZero delta mode) in
+                    let (tree1, re1, states1, hypo) = (containment1 leftZero rightZero delta ) in
                     (match re1 with 
                       false -> (Node (showEntail ^"   [CASE SPLIT]",[tree1] ), re1, states1, [])
-                    | true -> let (tree2, re2, states2, hypo1) = (containment1 leftNonZero rightNonZero hypo mode) in
+                    | true -> let (tree2, re2, states2, hypo1) = (containment1 leftNonZero rightNonZero hypo ) in
                       (Node (showEntail ^"   [CASE SPLIT]",[tree1;tree2] ), re1&& re2, states1+states2, List.append hypo hypo1)
                     )
                   | false -> (*[UNFOLD]*)unfold normalFormL (addEntailConstrain normalFormR piL) delta 
@@ -1339,7 +1337,7 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (mode:bool) 
                 let cons = PureAnd( Eq (Var newVar, Plus (Var t, num) ), GtEq (Var newVar, Number 0)) in
                 let lhs' = addConstrain lhs cons in 
                 let rhs' = addConstrain rhs cons in 
-                let (tree, re, states, hypo) = containment1 lhs' rhs' delta mode in
+                let (tree, re, states, hypo) = containment1 lhs' rhs' delta  in
                 (Node (showEntail ^"   [SUB "^ newVar ^"/" ^ t ^"+1]",[tree] ), re, states, hypo)
             | Minus (Var t, num) -> 
             (*[LHSSUB]*)
@@ -1349,7 +1347,7 @@ let rec containment1 (effL:effect) (effR:effect) (delta:hypotheses) (mode:bool) 
                 let cons = PureAnd( Eq (Var newVar, Minus (Var t, num) ), GtEq (Var newVar, Number 0))in
                 let lhs' = addConstrain lhs cons in 
                 let rhs' = addConstrain rhs cons in 
-                let (tree, re, states, hypo) = containment1 lhs' rhs' delta mode in
+                let (tree, re, states, hypo) = containment1 lhs' rhs' delta  in
                 (Node (showEntail ^"   [SUB "^ newVar ^"/" ^ t ^"-1]",[tree] ), re, states, hypo)
             | Number n -> unfold normalFormL (addEntailConstrain normalFormR piL) delta 
             | _ -> print_endline (showEntail);
@@ -1371,25 +1369,19 @@ let rec extendREpitation (eff:effect) : effect =
   | Disj (eff1, eff2) -> Disj (extendREpitation eff1, extendREpitation eff2)
   ;;
 
-let printReportHelper lhs rhs (mode:bool): (binary_tree * bool * int * hypotheses) = 
-  (*
-  let delta = getProductHypo lhs rhs in 
-    let varList = append (getAllVarFromEff lhs) (getAllVarFromEff rhs) in  
-  let varList = getAllVarFromEff lhs in  
+let printReportHelper lhs rhs : (binary_tree * bool * int * hypotheses) = 
 
-  *)
-
-  containment1 (normalEffect (extendREpitation lhs ) 1 ) rhs [] mode
+  containment1 (normalEffect (extendREpitation lhs ) ) rhs [] 
   ;;
 
 
 
 
 
-let printReport lhs rhs (mode:bool):string =
+let printReport lhs rhs :string =
   let startTimeStamp = Sys.time() in
-  let (tree, re, states, hypo) =  printReportHelper lhs rhs mode in
-  let verification_time = "[Verification Time: " ^ string_of_float (Sys.time() -. startTimeStamp) ^ " s]\n" in
+  let (tree, re, states, hypo) =  printReportHelper lhs rhs  in
+  let verification_time = "[Verification Time: " ^ string_of_float ((Sys.time() -. startTimeStamp) *. 1000.0) ^ " ms]\n" in
   let result = printTree ~line_prefix:"* " ~get_name ~get_children tree in
   let states = "[Explored "^ string_of_int (states) ^ " States]\n" in 
   let buffur = ( "===================================="^"\n" ^(showEntailmentEff lhs rhs)^"\n[Result] " ^(if re then "Succeed\n" else "Fail\n") ^ states ^verification_time^" \n\n"^ result)
