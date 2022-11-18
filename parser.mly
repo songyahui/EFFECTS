@@ -46,6 +46,7 @@
  
 %type <(int option)> parm
 %type <Ast.program > prog_rest
+%type <Ast.terms > term
 %%
 
 ee: 
