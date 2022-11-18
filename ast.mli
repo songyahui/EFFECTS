@@ -17,14 +17,12 @@ type includ = string
 type es = Bot 
         | Emp 
         | Event of event * int option 
+        | Not of event * int option 
         | Cons of es * es
         | ESOr of es * es
         | ESAnd of es * es
         | Ttimes of es * terms
         | Kleene of es
-        | Omega of es
-        | Range of (es list)
-        | Not of es
         | Underline
 
 (*Arithimetic pure formulae*)
@@ -65,6 +63,9 @@ type expression = Unit
           | Assign of var * expression
           | Seq of expression * expression
           | EventRaise of (event*int option)
+          | Timeout of (expression * int)  
+          | Deadline of (expression * int)
+          | Delay of int
           | IfElse of expression * expression * expression
           | Cond of expression * expression * string
           | BinOp of expression * expression * string

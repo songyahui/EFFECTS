@@ -74,74 +74,7 @@ let rec translateLTL (pi:pure) (ltl:ltl) (varList:string list) :(pure * es * str
   ;;
 *)
 
-let rec translateLTL (pi:pure) (ltl:ltl) (varList:string list) :(pure * es * string list) =
-  match ltl with 
-    Lable str -> (pi, Event (str, None), varList)
-  | Next l -> 
-    let (piii, ess, varList') =  translateLTL pi l varList in 
-    (piii,  Cons (Underline,ess), varList')
-  | Until (l1, l2) -> 
-      let newVar = getAfreeVar varList in 
-      let newPi =pi (* PureAnd (pi, Gt (Var newVar, Number 0)) *) in 
-      let (pi1, ess1, varList1) =  translateLTL newPi l1 (newVar :: varList) in 
-      let (pi2, ess2, varList2) =  translateLTL pi1 l2 varList1 in 
-      let prefix = Ttimes (ess1, Var newVar) in 
-      (*(pi2, Cons (Cons(ess1, Kleene (ess1)) , ess2), varList2)*)
-      (pi2, Cons (prefix, ess2), varList2)
-  | Global l -> 
-      let (piii , ess1, varList') =  translateLTL pi l varList in 
 
-      (piii, Kleene (ess1), varList')
-  | Future l -> 
-      let newVar = getAfreeVar varList in 
-      let prefix = Ttimes (Underline, Var newVar) in 
-      let (piii, ess, varList') =  translateLTL pi l (newVar::varList) in 
- 
-      (*(piii, Cons (Kleene(Not ess ), ess), varList')*)
-      (piii, Cons (prefix, ess), varList')
-  | NotLTL l -> 
-      let (piii, ess, varList') =  translateLTL pi l varList in 
-      (piii, Not (ess), varList')
-  | Imply (l1, l2) -> 
-      let (pi1, ess1, varList1) =  translateLTL pi l1 varList in 
-      let (pi2, ess2, varList2) =  translateLTL pi1 l2 varList1 in 
-      (pi2, ESOr ( (Not (ess1)),   ess2), varList2)
-  | AndLTL (l1, l2) -> 
-      let (pi1, ess1, varList1) =  translateLTL pi l1 varList in 
-      let (pi2, ess2, varList2) =  translateLTL pi1 l2 varList1 in 
-      (pi2, ESAnd (ess1, ess2), varList2)
-  | OrLTL (l1, l2) -> 
-      let (pi1, ess1, varList1) =  translateLTL pi l1 varList in 
-      let (pi2, ess2, varList2) =  translateLTL pi1 l2 varList1 in 
-      (pi2, ESOr (ess1, ess2), varList2)
-  ;;
-
-
-(*
-let rec translateLTL (pi:pure) (ltlOUT:ltl) (varList:string list) :(pure * es * string list) =
-  let rec inner (ltl:ltl): es = 
-    match ltl with 
-      Lable str -> Event (str, None)
-    | Next l -> 
-      Cons (Underline, inner l)
-    | Until (l1, l2) -> 
-      Cons (Kleene (inner l1), inner l2)
-    | Global l -> 
-      Omega (inner l)
-    | Future l -> 
-      Cons (Kleene (Underline), inner l)
-    | NotLTL l ->
-      Not (inner l)
-    | Imply (l1, l2) -> 
-      ESOr ( (Not (inner l1)),   inner l2)
-    | AndLTL (l1, l2) -> 
-      ESAnd (inner l1, inner l2)
-    | OrLTL (l1, l2) -> 
-      ESOr (inner l1, inner l2)  
-  in 
-  (TRUE, inner ltlOUT, [])
-;;
- *)
 
 let rec input_lines file =
   match try [input_line file] with End_of_file -> [] with
@@ -271,99 +204,20 @@ let rec showES (es:es):string =
   | Emp -> "emp"
   | Event (ev, None) -> ev  
   | Event (ev, Some num) -> ev ^"("^string_of_int num^")"
+  | Not (ev, None) ->  "!(" ^ (ev) ^")"
+  | Not (ev, Some num) -> "!(" ^ ev ^"("^string_of_int num^")" ^")"
   | Cons (es1, es2) -> "("^(showES es1) ^ " . " ^ (showES es2)^")"
   | ESOr (es1, es2) -> "("^(showES es1) ^ "|" ^ (showES es2)^")"
   | ESAnd (es1, es2) -> "("^(showES es1) ^ "/\\" ^ (showES es2)^")"
   | Ttimes (es, t) -> "("^(showES es) ^ "^" ^ (showTerms t)^")"
-  | Omega es -> "("^(showES es) ^ "^" ^  "w" ^")"
   | Underline -> "_"
   | Kleene es -> "(" ^ (showES es) ^ "^" ^ "*"^")"
-  | Not es -> "!(" ^ (showES es) ^")"
-  | Range (esList) -> 
-      let rec helperHere acc esL =
-        match esL with
-          [] -> acc ^ "}"
-        | [x] -> acc ^ showES x ^"}"
-        | x::xs ->  (helperHere (acc ^  showES x ^ ", ") xs)
-      in
-      let range = helperHere "{" esList in 
-      range 
   ;;
 
 
 
-let rec showESReg (es:es):string = 
-  match es with
-  | Bot -> "false"
-  | Emp -> ""
-  | Event (ev,None) -> ev 
-  | Cons (es1, es2) -> (showESReg es1) ^ (showESReg es2)
-  | ESOr (es1, es2) -> "("^(showESReg es1) ^ "|" ^ (showESReg es2)^")"
-  | Kleene es -> "(" ^"(" ^ (showESReg es) ^")" ^ "*"^")"
-  | _ -> raise (Foo "showESReg exception!")
-  ;;
 
-let encodeStrToInt (str:string):int = 
-  match String.get str 0 with
-    'A' -> 13
-  | 'B' -> 7 
-  | 'C' -> 1
-  | 'D' -> 4
-  | 'E' -> 5
-  | 'F' -> 6
-  | 'G' -> 7 
-  | 'H' -> 8
-  | 'I' -> 9
-  | 'J' -> 10 
-  | 'K' -> 11
-  | 'L' -> 12
-  | 'M' -> 13
-  | 'N' -> 14
-  | 'P' -> 15
-  | 'Q' -> 16
-  | 'R' -> 17
-  | 'S' -> 18
-  | 'T' -> 19
-  | 'V' -> 20
-  | 'X' -> 21
-  | 'Y' -> 22
-  | 'Z' -> 23
-  | _ -> 24
-  ;;
 
-let rec termToInt (t:terms) : int = 
-match t with
-      Var s -> encodeStrToInt s
-    | Number num -> num 
-    | Plus (t1, t2) -> termToInt t1 + termToInt t2
-    | Minus (t1, t2) -> termToInt t1 - termToInt t2
-  
-;;
-
-let rec regToInt (esIn:es):int32  = 
-  let rec helper es : int = 
-    match es with
-    | Bot -> -1
-    | Emp -> 0
-    | Underline -> 5
-    | Event (ev, None) ->  encodeStrToInt ev
-    | Event (ev, Some num) ->  encodeStrToInt ev + num
-    | Cons (es1, es2) -> 5 * (helper es1) + (helper es2)
-    | ESOr (es1, es2) -> (helper es1) + 7* (helper es2) 
-    | ESAnd (es1, es2) -> (helper es1) + 9* (helper es2) 
-    | Kleene es ->  (helper es) * 11
-    | Not es ->  (helper es) * (-1)
-    | Ttimes (esIn, t) -> (helper esIn (*+ termToInt t*) ) * 13
-    | Omega esIn -> (helper esIn ) * 17
-    | Range (esList) -> 
-        (let range = List.fold_left (fun acc a -> acc + (helper a)) 0 esList in 
-        range 
-        )
-  in 
-  let temp =  (helper esIn) in 
-  
-  of_int temp
-  ;;
 
 
 (*To pretty print pure formulea*)
@@ -397,7 +251,6 @@ let showEntailmentEff (eff1:effect)( eff2:effect):string = showEffect eff1 ^ " |
 (*To pretty print event sequence entailment*)
 let showEntailmentES (es1:es) (es2:es):string = showES es1 ^ " |- "  ^ showES es2;;
 
-let showEntailmentESReg (es1:es) (es2:es):string = showESReg es1 ^ " |- "  ^ showESReg es2;;
 
 (*To pretty print entialment rules*)
 let showRule (r:rule):string = 
@@ -429,18 +282,13 @@ let rec reverseEs (es:es) : es =
     Bot -> Bot
   | Emp -> Emp
   | Event _ -> es
+  | Not _ ->  es
   | Cons (es1, es2) -> Cons (reverseEs es2, reverseEs es1)
   | ESOr (es1, es2) -> ESOr (reverseEs es1, reverseEs es2)
   | ESAnd (es1, es2) -> ESAnd (reverseEs es1, reverseEs es2)
   | Ttimes (es1, t) -> Ttimes (reverseEs es1, t)
-  | Omega (es1) ->  Omega (reverseEs es1) 
   | Underline -> Underline
   | Kleene es1 ->  Kleene (reverseEs es1)
-  | Not es1 ->  Kleene (reverseEs es1)
-  | Range (esList) -> 
-    (let range = List.map (fun a -> reverseEs a) esList in 
-    Range range 
-  )
   ;;
 
 let rec reverseEff (eff:effect) : effect =
@@ -473,18 +321,13 @@ let rec substituteESWithAgr (es:es) (realArg:expression) (formalArg: var):es =
     Bot  -> es
   | Emp  -> es
   | Event _  -> es
+  | Not _  -> es
   | Cons (es1, es2) ->  Cons (substituteESWithAgr es1 realArg formalArg, substituteESWithAgr es2 realArg formalArg)
   | ESOr (es1, es2) ->  ESOr (substituteESWithAgr es1 realArg formalArg, substituteESWithAgr es2 realArg formalArg)
   | ESAnd (es1, es2) ->  ESAnd (substituteESWithAgr es1 realArg formalArg, substituteESWithAgr es2 realArg formalArg)
   | Ttimes (esIn, t) -> Ttimes (substituteESWithAgr esIn realArg formalArg, substituteTermWithAgr t realArg formalArg)
   | Kleene esIn -> Kleene (substituteESWithAgr esIn realArg formalArg)
-  | Omega esIn -> Omega (substituteESWithAgr esIn realArg formalArg)
-  | Not esIn -> Not (substituteESWithAgr esIn realArg formalArg)
   | Underline -> es
-  | Range (esList) -> 
-    (let range = List.map (fun a -> substituteESWithAgr a realArg formalArg) esList in 
-    Range range 
-    )
   ;;
 
 
@@ -579,7 +422,7 @@ let rec normalTerms (t:terms):terms  =
 
 
 let rec aCompareES es1 es2 = 
-  let rec subESsetOf (small : es list) (big : es list) :bool = 
+  (*let rec subESsetOf (small : es list) (big : es list) :bool = 
     let rec oneOf a set :bool = 
       match set with 
         [] -> false 
@@ -589,11 +432,14 @@ let rec aCompareES es1 es2 =
       [] -> true 
     | x :: xs -> if oneOf x big == false then false else subESsetOf xs big
   in 
+  *)
 
   match (es1, es2) with 
     (Bot, Bot) -> true
   | (Emp, Emp) -> true
   | (Event (s1, p1), Event (s2,p2)) -> 
+    String.compare s1 s2 == 0 && compareParm p1 p2 
+  | (Not (s1, p1), Not (s2,p2)) -> 
     String.compare s1 s2 == 0 && compareParm p1 p2 
   | (Cons (es1L, es1R), Cons (es2L, es2R)) -> 
     if (aCompareES es1L es2L) == false then false
@@ -605,8 +451,6 @@ let rec aCompareES es1 es2 =
       if ((aCompareES es1L es2L) && (aCompareES es1R es2R)) then true 
       else ((aCompareES es1L es2R) && (aCompareES es1R es2L))
   | (Kleene esL, Kleene esR) -> aCompareES esL esR
-  | (Not esL, Not esR) -> aCompareES esL esR
-  | (Range (esList1), Range (esList2)) ->  subESsetOf esList1 esList2 && subESsetOf esList2 esList1
   | _ -> false
 ;;
  

@@ -16,36 +16,3 @@ ocamlc -c -o trs.cmo EE/trs.ml
 
 ocamlc -o trs parser.cmo lexer.cmo Askz3.cmo Pretty.cmo Rewriting.cmo trs.cmo
 ocamlc -o verify parser.cmo lexer.cmo Askz3.cmo Pretty.cmo Rewriting.cmo Forward.cmo 
-
-ocamlc -c -o Antimirov.cmo EE/Antimirov.ml
-
-
-
-
-ocamlc -c -o nfa.cmi Lib/nfa.mli 
-ocamlc -c -o nfa.cmo Lib/nfa.ml  
-
-ocamlc -c -o dfa.cmi Lib/dfa.mli 
-ocamlc -c -o dfa.cmo Lib/dfa.ml 
-
-ocamlc -c -o regex.cmi Lib/regex.mli 
-ocamlc -c  -o regex.cmo Lib/regex.ml 
-
-ocamlc -c -o nfa_dot.cmi Lib/nfa_dot.mli 
-ocamlc -c -o nfa_dot.cmo Lib/nfa_dot.ml 
-
-ocamlc -c -o RegToNfa regex.cmo nfa_dot.cmo dfa.cmo nfa.cmo Lib/RegToNfa.ml 
-
-ocamlc -c -o regexGen.cmo Testing/regexGen.ml
-
-ocamlc -o gen nfa.cmo dfa.cmo regex.cmo nfa_dot.cmo RegToNfa.cmo  parser.cmo lexer.cmo Askz3.cmo Pretty.cmo Antimirov.cmo regexGen.cmo
-
-ocamlc -c -o LTL_test.cmo Testing/LTL_test.ml
-
-
-ocamlc -c -o TranslateLTL.cmo Testing/translateLTL.ml
-
-ocamlc -o ltl parser.cmo lexer.cmo Askz3.cmo  Pretty.cmo  Rewriting.cmo  TranslateLTL.cmo
-
-ocamlc -o verifyLTL parser.cmo lexer.cmo Askz3.cmo Pretty.cmo Antimirov.cmo Rewriting.cmo  LTL_test.cmo
-

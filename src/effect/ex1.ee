@@ -1,2 +1,2 @@
-TRUE /\((Green.(Yellow.Red))^w) |- TRUE /\((_^n).(Green^*));
+TRUE /\((Green.(Yellow.Red))^*) |- TRUE /\((_#n).(Green^*));
 

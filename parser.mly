@@ -7,10 +7,11 @@
 %token <string> STRING
 %token <bool> TRUEE  
 %token <bool> FALSEE
-%token EMPTY ASSERTKEY EVENTKEY CHOICE LPAR RPAR CONCAT OMEGA POWER PLUS MINUS TRUE FALSE DISJ CONJ   ENTIL INTT BOOLT VOIDT 
+%token EMPTY ASSERTKEY EVENTKEY CHOICE LPAR RPAR CONCAT  POWER PLUS MINUS TRUE FALSE DISJ CONJ   ENTIL INTT BOOLT VOIDT  (* OMEGA *)
 %token LBRACK RBRACK COMMA SIMI  IF ELSE REQUIRE ENSURE LSPEC RSPEC RETURN LBrackets  RBrackets
 %token EOF GT LT EQ GTEQ LTEQ INCLUDE SHARP EQEQ UNDERLINE KLEENE NEGATION
 %token FUTURE GLOBAL IMPLY LTLNOT NEXT UNTIL LILAND LILOR
+%token TimeoutKEY DeadlineKEY DelayKEY
 
 %left CHOICE
 %left CONCAT
@@ -23,6 +24,28 @@
 %type <Ast.es> es_p
 %type <(Ast.ltl) list > ltl_p
 %type <(Ast.es * (Ast.ltl list) ) > ltl_verify
+%type <Ast.expression> cond
+%type <Ast.effect> effect
+%type <Ast.entilment>  entailment
+%type <Ast.es> es
+%type <string list> existVar
+%type <Ast.expression> expres
+%type <Ast.expression> expres_help
+%type <Ast.declare> head
+%type <Ast.ltl> ltl
+%type <Ast.declare> meth
+%type <(Ast._type * string) list> param
+
+%type <Ast._type> type_
+%type <Ast.pure> pure
+%type <Ast.expression list> real_param
+%type <Ast.expression list>  real_singleP
+%type <(Ast._type * string) list> singleP
+%type <string list> singleVAR
+%type <Ast.spec> spec
+ 
+%type <(int option)> parm
+%type <Ast.program > prog_rest
 %%
 
 ee: 
@@ -70,6 +93,9 @@ expres_help :
 | name = VAR LPAR vlist = real_param RPAR {Call (name, vlist)}
 | v = VAR EQ e = expres_help{Assign (v, e)}
 | EVENTKEY LPAR ev = STRING p=parm RPAR {EventRaise (ev,p)}
+| TimeoutKEY LPAR e = expres_help COMMA t = INTE  RPAR  {Timeout(e, t)}
+| DeadlineKEY LPAR e = expres_help COMMA t = INTE  RPAR {Deadline(e, t)}
+| DelayKEY t = INTE {Delay t}
 | ASSERTKEY LPAR eff = effect RPAR {Assertion eff}
 
 cond:
@@ -126,9 +152,6 @@ pure:
 | a = pure CONJ b = pure {PureAnd (a, b)}
 | a = pure DISJ b = pure {PureOr (a, b)}
 
-es_range :
-| single = es {[single]}
-| e = es_range COMMA eddd = es {append e [eddd]}
 
 parm:
 | {None}
@@ -138,16 +161,14 @@ parm:
 es:
 | EMPTY { Emp }
 | str = EVENT p=parm { Event ( str, p) }
+| NEGATION str = EVENT p=parm {Not ( str, p)}
 | LPAR r = es RPAR { r }
 | a = es CHOICE b = es { ESOr(a, b) }
 | a = es CONJ b = es { ESAnd(a, b) }
-| LPAR r = es POWER t = term RPAR { Ttimes(r, t )}
-| LPAR r = es POWER OMEGA RPAR{ Omega r }
+| LPAR r = es SHARP t = term RPAR { Ttimes(r, t )}
 | UNDERLINE {Underline}
 | a = es CONCAT b = es { Cons(a, b) } 
 | LPAR a = es POWER KLEENE RPAR{Kleene a}
-| LBRACK a = es_range RBRACK {Range a}
-| NEGATION LPAR a = es RPAR {Not a}
 
 
 
