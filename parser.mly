@@ -24,6 +24,28 @@
 %type <Ast.es> es_p
 %type <(Ast.ltl) list > ltl_p
 %type <(Ast.es * (Ast.ltl list) ) > ltl_verify
+%type <Ast.expression> cond
+%type <Ast.effect> effect
+%type <Ast.entilment>  entailment
+%type <Ast.es> es
+%type <string list> existVar
+%type <Ast.expression> expres
+%type <Ast.expression> expres_help
+%type <Ast.declare> head
+%type <Ast.ltl> ltl
+%type <Ast.declare> meth
+%type <(Ast._type * string) list> param
+
+%type <Ast._type> type_
+%type <Ast.pure> pure
+%type <Ast.expression list> real_param
+%type <Ast.expression list>  real_singleP
+%type <(Ast._type * string) list> singleP
+%type <string list> singleVAR
+%type <Ast.spec> spec
+ 
+%type <(int option)> parm
+%type <Ast.program > prog_rest
 %%
 
 ee: 

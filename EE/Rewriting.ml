@@ -54,14 +54,16 @@ let rec nullable (pi :pure) (es:es) : bool=
   | _ -> raise (Foo "nullable")
 ;;
 
+let syhmax i1 i2 = if i1 > i2 then i1 else i2
+
 let rec getSize (es:es) : int=
   match es with
     Bot -> 0 
   | Emp -> 1
   | Event _ -> 1 
   | Cons (es1 , es2) ->  (getSize es1) + (getSize es2)
-  | ESOr (es1 , es2) ->  max (getSize es1)  (getSize es2)
-  | ESAnd (es1 , es2) -> max (getSize es1) (getSize es2)
+  | ESOr (es1 , es2) ->  syhmax (getSize es1)  (getSize es2)
+  | ESAnd (es1 , es2) -> syhmax (getSize es1) (getSize es2)
   | Ttimes (es1, t) ->  
     (match t with 
       Number n -> (getSize es1) * n
